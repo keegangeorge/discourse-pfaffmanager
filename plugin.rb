@@ -17,5 +17,7 @@ PLUGIN_NAME ||= 'Pfaffmanager'
 load File.expand_path('lib/pfaffmanager/engine.rb', __dir__)
 
 after_initialize do
+  load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
+
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
 end
