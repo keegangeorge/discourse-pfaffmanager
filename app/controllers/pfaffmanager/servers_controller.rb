@@ -5,7 +5,10 @@ module Pfaffmanager
     before_action :ensure_logged_in
 
     def index
-      render_json_dump({ servers: [] })
+      puts "\n\n\n\nServer controller user #{current_user.username} in the house.\n\n\n\n"
+      servers = ::Pfaffmanager::Server.where(user_id: current_user.id)
+      puts "-----------------> Server controller found #{servers.count} servers"
+      render_json_dump({ servers: servers })
     end
 
     def show
