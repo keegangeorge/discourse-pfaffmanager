@@ -1,3 +1,13 @@
 en:
   js:
+    user:
+
     pfaffmanager:
+      title: "Disourse Manager"
+      show: "Show server"
+      hostname: "Discourse Hostname"
+      api_key: "Discourse Api Key"
+      do_api_key: "Digital Ocean Api Key"
+      mg_api_key: "Mailgun Api Key"
+      cloudflare_api_key: "Cloudflare Api Key (not implemented)"
+      b3_api_key: "Backblaze B3 Api Key (not implemented)"
