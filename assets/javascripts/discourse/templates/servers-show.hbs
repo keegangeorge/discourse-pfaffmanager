@@ -1,1 +1,7 @@
-servers controller-show.hbs id: {{model.id}}
+<h3>We can call a component!</h3>
+{{server-item server=model}}
+
+<h3>but not save</h3>
+
+{{save-controls model=model action=(action "save") saved=saved}}
+
