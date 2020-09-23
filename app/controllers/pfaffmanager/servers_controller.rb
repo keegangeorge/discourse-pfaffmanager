@@ -12,7 +12,9 @@ module Pfaffmanager
     end
 
     def show
-      render_json_dump({ server: { id: params[:id] } })
+      # TODO: Allow admin to see server of other users
+      server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
+      render_json_dump({ server: server })
     end
   end
 end
