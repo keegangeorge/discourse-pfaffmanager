@@ -1,13 +1,11 @@
 <h3>servers-show.hbs calling server-item component!</h3>
+<form>
 {{server-item server=model}}
-
-<h3>Here is where we would like to save</h3>
-
+</form>
   <div class="pull-right">
-
-    {{#if model.server.isNew}}
+    {{#if model.isNew}}
       {{d-button label="pfaffmanager.server.create" action="createServer" icon="plus" class="btn btn-primary"}}
     {{else}}
-      {{d-button label="pfaffmanager.server.update" action="updateServer" icon="check" class="btn btn-primary"}}
+      {{d-button label="pfaffmanager.server.update" action="serverUpdatessss" icon="check" class="btn btn-primary"}}
     {{/if}}
   </div>
