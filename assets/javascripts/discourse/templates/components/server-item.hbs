@@ -1,0 +1,19 @@
+ <h3>{{model.hostname}} </h3>
+      <br />Created at: {{~format-date model.created_at format="medium" }}
+      <br />Updated at: {{~format-date model.updated_at format="medium" }}
+      <br />
+    Open: <a href="https://{{model.hostname}}">{{model.hostname}}</a> 
+
+ 
+<div class="pfaffmanager-group pref-manager-hostname">
+  <label class="control-label">{{i18n 'pfaffmanager.discourse_manager_hostname'}}</label>
+  <div class="pfaffmanager">
+    {{input type="text" value=model.hostname class="input-large"}}
+  </div>
+</div>
+<div class="pfaffmanager-group pref-manager-api-key">
+  <label class="control-label">{{i18n 'user.discourse_manager_api_key'}}</label>
+  <div class="manager">
+    {{input type="text" value=model.discourse_api_key class="input-large"}}
+  </div>
+</div>
