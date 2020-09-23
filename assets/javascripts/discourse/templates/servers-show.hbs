@@ -3,5 +3,11 @@
 
 <h3>Here is where we would like to save</h3>
 
-{{save-controls model=model action=(action "save") saved=saved}}
+  <div class="pull-right">
 
+    {{#if model.server.isNew}}
+      {{d-button label="pfaffmanager.server.create" action="createServer" icon="plus" class="btn btn-primary"}}
+    {{else}}
+      {{d-button label="pfaffmanager.server.update" action="updateServer" icon="check" class="btn btn-primary"}}
+    {{/if}}
+  </div>

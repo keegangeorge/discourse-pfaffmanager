@@ -11,3 +11,6 @@ en:
       mg_api_key: "Mailgun Api Key"
       cloudflare_api_key: "Cloudflare Api Key (not implemented)"
       b3_api_key: "Backblaze B3 Api Key (not implemented)"
+      server:
+        create: "Create server"
+        update: "Update server"
