@@ -1,6 +1,6 @@
 # Pfaffmanager
 
-Pfaffmanager is a plugin for ...
+Pfaffmanager is a plugin for a proof of concept for adding a model.
 
 ## Installation
 
@@ -9,6 +9,8 @@ how-to from the official Discourse Meta, using `git clone https://github.com/pfa
 as the plugin command.
 
 ## Usage
+
+Not good for much right now!
 
 ## Feedback
 
