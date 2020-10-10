@@ -1,3 +1,5 @@
+require 'byebug'
+
 module Pfaffmanager
   class ServersController < ::ApplicationController
     requires_plugin Pfaffmanager
@@ -15,6 +17,33 @@ module Pfaffmanager
       # TODO: Allow admin to see server of other users
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
       render_json_dump({ server: server })
+    end
+    
+    def update
+      if server = ::Pfaffmanager::Server.find_by(id: params[:id])
+        data = server_params
+        
+        server.user_id = data[:user_id]
+        server.hostname = data[:hostname]
+        server.discourse_api_key = data[:discourse_api_key]
+        server.save
+        
+        if server.errors.present?
+          return render_json_error(server.errors.full_messages)
+        else
+          return render json: success_json
+        end
+      end
+      
+      render json: failed_json
+    end
+    
+    def server_params
+      params.require(:server).permit(
+        :user_id,
+        :hostname,
+        :discourse_api_key
+      )
     end
   end
 end
