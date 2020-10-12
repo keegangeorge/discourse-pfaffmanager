@@ -26,6 +26,9 @@ module Pfaffmanager
         server.user_id = data[:user_id]
         server.hostname = data[:hostname]
         server.discourse_api_key = data[:discourse_api_key]
+        server.do_api_key = data[:do_api_key]
+        server.mg_api_key = data[:mg_api_key]
+        server.inventory =  data[:inventory]
         server.save
         
         if server.errors.present?
@@ -42,6 +45,8 @@ module Pfaffmanager
       params.require(:server).permit(
         :user_id,
         :hostname,
+        :do_api_key,
+        :mg_api_key,
         :discourse_api_key
       )
     end

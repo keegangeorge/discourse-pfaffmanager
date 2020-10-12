@@ -7,6 +7,7 @@ Pfaffmanager::Engine.routes.draw do
   get "/servers" => "servers#index", constraints: PfaffmanagerConstraint.new
   get "/servers/:id" => "servers#show", constraints: PfaffmanagerConstraint.new
   put "/servers/:id" => "servers#update", constraints: PfaffmanagerConstraint.new
+  post "/servers" => "servers#create", constraints: PfaffmanagerConstraint.new
   get "/githubs" => "githubs#index", constraints: PfaffmanagerConstraint.new
   get "/githubs/:id" => "githubs#show", constraints: PfaffmanagerConstraint.new
 end

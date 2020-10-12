@@ -1,10 +1,15 @@
 <hr />
 server-item.hbs
  <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
+
+ <div class="pfaffmanager-status">
+  <label class="control-label">{{i18n 'pfaffmanager.server_status'}}</label>  {{ server.server_status }}
+ </div>
       
- <div class="pfaffmanager-group server-dates">Created&nbsp; {{~format-date server.created_at format="medium" }}
-     (updated&nbsp; {{~format-date server.updated_at format="medium" }})
-     </div>
+ <div class="pfaffmanager-group server-dates">
+   <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
+   <br />Last update&nbsp; {{~format-date server.updated_at format="medium" }})
+ </div>
 
  
 <div class="pfaffmanager-group pref-manager-hostname">
@@ -13,11 +18,43 @@ server-item.hbs
     {{input type="text" value=server.hostname class="input-large"}}
   </div>
 </div>
+<div class="pfaffmanager-group pfaffmanager-do-api-key">
+  <label class="control-label">{{i18n 'pfaffmanager.do_api_key'}}</label>
+  <div class="do-api-key">
+    {{input type="text" value=server.do_api_key class="input-large"}}
+  </div>
+</div>
+<div class="pfaffmanager-group pfaffmanager-mg-api-key">
+  <label class="control-label">{{i18n 'pfaffmanager.mg_api_key'}}</label>
+  <div class="mg-api-key">
+    {{input type="text" value=server.mg_api_key class="input-large"}}
+  </div>
+</div>
 <div class="pfaffmanager-group pref-manager-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.api_key'}}</label>
   <div class="manager">
     {{input type="text" value=server.discourse_api_key class="input-large"}}
   </div>
 </div>
+<div class="pfaffmanager-group pref-manager-inventory">
+  <label class="control-label">{{i18n 'pfaffmanager.inventory'}}</label>
+  <div class="inventory">
+    {{input type="text" value=server.inventory class="input-large"}}
+  </div>
+</div>
 end server-item.hbs
 <hr />
+
+
+
+#     t.string :ssh_key_private
+#     t.string :ssh_key_public
+#     t.string :discourse_api_key
+#     t.string :do_api_key
+#     t.string :mg_api_key
+#     t.string :maxmind_license_key
+#     t.string :discourse_url
+#     t.text   :inventory
+#     t.text   :discourse_env
+#     t.text   :discourse_templates
+#     t.text   :discourse_plugins

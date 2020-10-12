@@ -6,6 +6,8 @@ export default Controller.extend({
   actions: {
     updateServer() {
       Server.update(this.model).then((result) => {
+        console.log("updateServer");
+        console.log(this.model);
         console.log(result);
         
         if (result.errors) {
