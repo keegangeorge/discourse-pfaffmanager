@@ -5,6 +5,7 @@ import EmberObject from "@ember/object";
 const Server = EmberObject.extend();
 
 Server.reopenClass({
+  server_status(model) { return JSON.parse(model)},
   update(model) {
     console.log("do:" + model.do_api_key);
     console.log(model);
@@ -13,7 +14,6 @@ Server.reopenClass({
       hostname: model.hostname,
       do_api_key: model.do_api_key,
       mg_api_key: model.mg_api_key,
-      my_text: "this is my text",
       inventory: model.inventory,
       discourse_api_key: model.discourse_api_key
     };

@@ -13,8 +13,12 @@ module Pfaffmanager
         create(user_id: user_id, hostname: hostname, ssh_key_public: public_key, ssh_key_private: private_key)
       end
 
+      def version_check
+        version_check = JSON.parse(server_status_json)['version_check']
+      end
+
       private
-      
+
       def update_server_status
         if discourse_api_key.present? && (Time.now - server_status_updated_at < 60)
           headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
@@ -23,32 +27,90 @@ module Pfaffmanager
           update_column(:server_status_updated_at, Time.now)
         end
       end
-      
+
       # todo: update only if changed?
       # maybe it doesn't matter if we update the column anyway
       def discourse_api_key_validator
-          headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
-          result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
-          if result.status == 200
-            update_column(:server_status_json, result.body)
-            update_column(:server_status_updated_at, Time.now)
-            true
-          else 
-            false
-          end  
+        headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
+        result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
+        if result.status == 200
+          update_column(:server_status_json, result.body)
+          update_column(:server_status_updated_at, Time.now)
+          true
+        else 
+          false
+        end  
       end
 
-      def connection_validator
+      def mg_api_key_validator
+        url = "https://api:#{mg_api_key}@api.mailgun.net/v3/domains"
+        result = Excon.get(url)
+         #accounts = result.body
+      if result.status == 200
+          true
+        else 
+          errors.add(:mg_api_key, result.reason_phrase)
+          false
+        end  
+      end
+
+#     $url="https://api.digitalocean.com/v2/account";
+#     curl_setopt($ch, CURLOPT_URL, $url);
+#     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+#     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+#     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+#         'Authorization: Bearer ' . "$value"
+#     ));
+#     $response = curl_exec($ch);
+#     $stats = json_decode($response, true);
+#     $active = $stats['account']['status'] == 'active';
+#     if ( $active ) {
+#         // wc_add_notice ("Digital Ocean Key: " . $stats['account']['status'] );
+#     } else {
+#         $this->failed_validation = true;
+#         $this->validation_message = "Digital Ocean API Key is invalid";
+#     }
+
+# }
+
+
+
+    def do_api_key_validator
+      puts "DO API KEY: #{do_api_key}"
+      url = "https://api.digitalocean.com/v2/account"
+      headers = {'Authorization' => "Bearer #{do_api_key}"}
+      begin
+        result = Excon.get(url, :headers => headers)
+        puts "result: #{result}"
+        puts "Status: #{result.status}"
+        do_status = JSON.parse(result.body)['account']['status']
+        puts "DO status: #{do_status}"
+        if result.status == 200 && do_status=="active"
+          true
+        else 
+          errors.add(:do_api_key, "Account not active")
+          false
+        end
+      rescue
+        errors.add(:do_api_key, 'Key Invalid (401)')  
+      end
+    end
+
+    def connection_validator
         unless hostname.present?
           errors.add(:hostname, "Hostname must be present")
         end
 
         if discourse_api_key.present? && !discourse_api_key_validator
-          errors.add(:discourse_api_key, "API key is bad")
+          errors.add(:discourse_api_key, "discourse API key is bad")
         end
-      end
+
+        mg_api_key.present? && !mg_api_key_validator
+        do_api_key.present? && !do_api_key_validator
+        
     end
   end
+end
 # == schema informaion
 # class CreatePfaffmanagerServer < ActiveRecord::Migration[6.0]
 # def change

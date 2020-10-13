@@ -11,6 +11,13 @@ server-item.hbs
    <br />Last update&nbsp; {{~format-date server.updated_at format="medium" }})
  </div>
 
+{{# if server.server_status_json}}
+<h3>Server Status goes here</h3>
+ <div class="pfaffmanager-group server-status">
+   <br />{{i18n 'pfaffmanager.server-status' }}:&nbsp; {{server.server_status_json }}
+   <br />{{i18n 'pfaffmanager.server-status-retrieved' }}&nbsp; {format-date server.server_status_updated_at format="medium" }}
+ </div>
+{{/if }}
  
 <div class="pfaffmanager-group pref-manager-hostname">
   <label class="control-label">{{i18n 'pfaffmanager.hostname'}}</label>
