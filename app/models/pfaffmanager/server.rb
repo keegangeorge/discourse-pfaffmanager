@@ -37,12 +37,21 @@ module Pfaffmanager
       # maybe it doesn't matter if we update the column anyway
       def discourse_api_key_validator
         headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
-        result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
-        if result.status == 200
-          update_column(:server_status_json, result.body)
-          update_column(:server_status_updated_at, Time.now)
-          true
-        else 
+        begin 
+          result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
+          if result.status == 200
+            update_column(:server_status_json, result.body)
+            update_column(:server_status_updated_at, Time.now)
+            true
+            elsif result.status = 422
+              errors.add(:discourse_api_key, "invalid")
+          else
+
+            errors.add(:discourse_api_key, "invalid")
+          end
+        rescue => e
+          puts "Error #{e}"
+          errors.add(:discourse_api_key, "-- #{e}")
           false
         end  
       end
@@ -96,9 +105,7 @@ module Pfaffmanager
           errors.add(:hostname, "Hostname must be present")
         end
 
-        if discourse_api_key.present? && !discourse_api_key_validator
-          errors.add(:discourse_api_key, "discourse API key is bad")
-        end
+        discourse_api_key.present? && !discourse_api_key_validator
 
         mg_api_key.present? && !mg_api_key_validator
         do_api_key.present? && !do_api_key_validator

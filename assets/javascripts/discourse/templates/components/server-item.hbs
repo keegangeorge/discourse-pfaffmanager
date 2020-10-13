@@ -2,23 +2,21 @@
 server-item.hbs
  <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
 
- <div class="pfaffmanager-status">
-  <label class="control-label">{{i18n 'pfaffmanager.server_status'}}</label>  {{ server.server_status }}
- </div>
-      
- <div class="pfaffmanager-group server-dates">
-   <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
-   <br />Last update&nbsp; {{~format-date server.updated_at format="medium" }})
- </div>
 
 {{# if server.server_status_json}}
-<h3>Server Status goes here</h3>
- <div class="pfaffmanager-group server-status">
-   <br />{{i18n 'pfaffmanager.server-status' }}:&nbsp; {{server.server_status_json }}
-   <br />{{i18n 'pfaffmanager.server-status-retrieved' }}&nbsp; {format-date server.server_status_updated_at format="medium" }}
+<div class="pfaffmanager-group server-status">
+<span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
+   <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
+   <br />Last update&nbsp; {{~format-date server.updated_at format="medium" }}
+   <br />{{i18n 'pfaffmanager.server.installed_version' }}:&nbsp; {{server.installed_version }}
+   <br />{{i18n 'pfaffmanager.server.installed_sha' }}:&nbsp; <a href="https://github.com/discourse/discourse/commit/{{server.installed_sha}}">{{server.installed_sha}}</a>
+   <br />{{i18n 'pfaffmanager.server.status_retrieved' }}&nbsp; {{format-date server.server_status_updated_at format="medium" }}
  </div>
-{{/if }}
+{{else }}
  
+<div class="pfaffmanager-group server-edit">
+<span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
+
 <div class="pfaffmanager-group pref-manager-hostname">
   <label class="control-label">{{i18n 'pfaffmanager.hostname'}}</label>
   <div class="pfaffmanager">
@@ -28,33 +26,35 @@ server-item.hbs
 <div class="pfaffmanager-group pfaffmanager-do-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.do_api_key'}}</label>
   <div class="do-api-key">
-    {{input type="text" value=server.do_api_key class="input-large"}}
+    {{input type="password" value=server.do_api_key class="input-large"}}
   </div>
 </div>
 <div class="pfaffmanager-group pfaffmanager-mg-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.mg_api_key'}}</label>
   <div class="mg-api-key">
-    {{input type="text" value=server.mg_api_key class="input-large"}}
+    {{input type="password" value=server.mg_api_key class="input-large"}}
   </div>
 </div>
 <div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
-  <label class="control-label">{{i18n 'pfaffmanager.maxmind_license_key'}}</label>
+  <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
   <div class="maxmind-license-key">
-    {{input type="text" value=server.maxmind_license_key class="input-large"}}
+    {{input type="password" value=server.maxmind_license_key class="input-large"}}
   </div>
 </div>
 <div class="pfaffmanager-group pref-manager-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.api_key'}}</label>
-  <div class="manager">
-    {{input type="text" value=server.discourse_api_key class="input-large"}}
+  <div class="manager" >
+    {{input type="password" value=server.discourse_api_key class="input-large" title='For existing sites only' data-tip='something-else'}}
   </div>
 </div>
-<div class="pfaffmanager-group pref-manager-inventory">
-  <label class="control-label">{{i18n 'pfaffmanager.inventory'}}</label>
+{{!-- <div class="pfaffmanager-group pref-manager-inventory">
+  <label class="control-label">{{i18n 'pfaffmanager.server.inventory'}}</label>
   <div class="inventory">
     {{input type="text" value=server.inventory class="input-large"}}
   </div>
+</div> --}}
 </div>
+{{/if}}
 end server-item.hbs
 <hr />
 

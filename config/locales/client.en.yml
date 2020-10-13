@@ -14,3 +14,9 @@ en:
       server:
         create: "Create server"
         update: "Update server"
+        status_header: "Current Server Status"
+        installed_version: 'Installed Version'
+        installed_sha: 'Commit'
+        status_retrieved: "Retrieved"
+        inventory: 'inventory'
+        maxmind_license_key: 'Maxmind License Key'
