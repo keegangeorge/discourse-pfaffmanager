@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+MAXMIND_PRODUCT = 'GeoLite2-City'
 
 module Pfaffmanager
     class Server < ActiveRecord::Base
@@ -54,26 +55,16 @@ module Pfaffmanager
         end  
       end
 
-#     $url="https://api.digitalocean.com/v2/account";
-#     curl_setopt($ch, CURLOPT_URL, $url);
-#     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-#     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-#     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-#         'Authorization: Bearer ' . "$value"
-#     ));
-#     $response = curl_exec($ch);
-#     $stats = json_decode($response, true);
-#     $active = $stats['account']['status'] == 'active';
-#     if ( $active ) {
-#         // wc_add_notice ("Digital Ocean Key: " . $stats['account']['status'] );
-#     } else {
-#         $this->failed_validation = true;
-#         $this->validation_message = "Digital Ocean API Key is invalid";
-#     }
-
-# }
-
-
+      def maxmind_license_key_validator
+        url = "https://download.maxmind.com/app/geoip_download?license_key=#{maxmind_license_key}&edition_id=#{MAXMIND_PRODUCT}&suffix=tar.gz"
+        result = Excon.get(url)
+        if result.status == 200
+          true
+        else 
+          errors.add(:maxmind_license_key, result.body)
+          false
+        end  
+      end
 
     def do_api_key_validator
       puts "DO API KEY: #{do_api_key}"
@@ -107,6 +98,7 @@ module Pfaffmanager
 
         mg_api_key.present? && !mg_api_key_validator
         do_api_key.present? && !do_api_key_validator
+        maxmind_license_key.present? && !maxmind_license_key_validator
         
     end
   end

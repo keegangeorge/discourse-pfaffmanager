@@ -14,6 +14,7 @@ Server.reopenClass({
       hostname: model.hostname,
       do_api_key: model.do_api_key,
       mg_api_key: model.mg_api_key,
+      maxmind_license_key: model.maxmind_license_key,
       inventory: model.inventory,
       discourse_api_key: model.discourse_api_key
     };

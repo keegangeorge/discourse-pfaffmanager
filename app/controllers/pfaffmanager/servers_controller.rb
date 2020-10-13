@@ -28,6 +28,7 @@ module Pfaffmanager
         server.discourse_api_key = data[:discourse_api_key]
         server.do_api_key = data[:do_api_key]
         server.mg_api_key = data[:mg_api_key]
+        server.maxmind_license_key = data[:maxmind_license_key]
         server.inventory =  data[:inventory]
         server.save
         
@@ -47,6 +48,7 @@ module Pfaffmanager
         :hostname,
         :do_api_key,
         :mg_api_key,
+        :maxmind_license_key,
         :discourse_api_key
       )
     end

@@ -37,6 +37,12 @@ server-item.hbs
     {{input type="text" value=server.mg_api_key class="input-large"}}
   </div>
 </div>
+<div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
+  <label class="control-label">{{i18n 'pfaffmanager.maxmind_license_key'}}</label>
+  <div class="maxmind-license-key">
+    {{input type="text" value=server.maxmind_license_key class="input-large"}}
+  </div>
+</div>
 <div class="pfaffmanager-group pref-manager-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.api_key'}}</label>
   <div class="manager">
@@ -56,9 +62,6 @@ end server-item.hbs
 
 #     t.string :ssh_key_private
 #     t.string :ssh_key_public
-#     t.string :discourse_api_key
-#     t.string :do_api_key
-#     t.string :mg_api_key
 #     t.string :maxmind_license_key
 #     t.string :discourse_url
 #     t.text   :inventory
