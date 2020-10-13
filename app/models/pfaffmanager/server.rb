@@ -3,6 +3,7 @@ MAXMIND_PRODUCT = 'GeoLite2-City'
 
 module Pfaffmanager
     class Server < ActiveRecord::Base
+      include ActiveModel::Dirty
       self.table_name = "pfaffmanager_servers"
       
       validate :connection_validator
@@ -21,8 +22,8 @@ module Pfaffmanager
       private
 
       def update_server_status
-        puts "Calling update_serfver_startus"
-        if discourse_api_key.present? && (Time.now - server_status_updated_at < 60)
+        puts "Calling update_server_status"
+        if discourse_api_key.present? && discourse_api_key_changed? && (Time.now - server_status_updated_at < 60)
           headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
           result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
           update_column(:server_status_json, result.body)
@@ -108,7 +109,7 @@ module Pfaffmanager
         discourse_api_key.present? && !discourse_api_key_validator
 
         mg_api_key.present? && !mg_api_key_validator
-        do_api_key.present? && !do_api_key_validator
+        do_api_key.present? && do_api_key_changed? && !do_api_key_validator
         maxmind_license_key.present? && !maxmind_license_key_validator
         
     end

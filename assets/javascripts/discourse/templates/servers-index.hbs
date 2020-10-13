@@ -2,6 +2,7 @@ servers controller-index.hbs
 <br />Have {{model.length}} server!
 <br />
 {{#each model as |server|}}
+<hr />
      EDIT: {{#link-to "pfaffmanager.servers.show" server.id}} 
         {{server.hostname}} 
       {{/link-to}}

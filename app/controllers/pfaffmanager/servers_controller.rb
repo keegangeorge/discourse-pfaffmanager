@@ -30,6 +30,8 @@ module Pfaffmanager
         server.mg_api_key = data[:mg_api_key]
         server.maxmind_license_key = data[:maxmind_license_key]
         server.inventory =  data[:inventory]
+        server.request = data[:request]
+        server.request_status = data[:request_status]
         server.save
         
         if server.errors.present?
@@ -49,7 +51,9 @@ module Pfaffmanager
         :do_api_key,
         :mg_api_key,
         :maxmind_license_key,
-        :discourse_api_key
+        :discourse_api_key,
+        :request,
+        :request_status
       )
     end
   end

@@ -15,6 +15,7 @@ enabled_site_setting :pfaffmanager_enabled
 PLUGIN_NAME ||= 'Pfaffmanager'
 
 load File.expand_path('lib/pfaffmanager/engine.rb', __dir__)
+load File.expand_path('lib/pfaffmanager/pfaffmanager_requests.rb', __dir__)
 
 after_initialize do
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
