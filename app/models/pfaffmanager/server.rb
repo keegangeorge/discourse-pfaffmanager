@@ -21,11 +21,15 @@ module Pfaffmanager
       private
 
       def update_server_status
+        puts "Calling update_serfver_startus"
         if discourse_api_key.present? && (Time.now - server_status_updated_at < 60)
           headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
           result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
           update_column(:server_status_json, result.body)
           update_column(:server_status_updated_at, Time.now)
+          update_column(:installed_version, version_check['installed_version'])
+          update_column(:installed_sha, version_check['installed_sha'])
+          update_column(:git_branch, version_check['git_branch'])
         end
       end
 
