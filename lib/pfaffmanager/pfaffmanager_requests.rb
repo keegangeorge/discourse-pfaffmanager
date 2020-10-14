@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module PfaffmanagerRequests
-    def self.request
-        @request ||= Enum.new(rebuild: 0,
-                                 install: 1
+  def self.request
+        @request ||= Enum.new(idle: 0,
+            rebuild: 1,
+            install: 2
                                 )
     end
       def self.status

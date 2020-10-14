@@ -18,20 +18,29 @@ module Pfaffmanager
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
       render_json_dump({ server: server })
     end
+
+    def set_server_status
+      puts "Set server status in the contro9ller!!!"
+    end
     
     def update
+      puts "\n\n#{params}\n\n\n\n\nTHIS IS UPDATE #{params[:id]}\nSTAT #{params[:request_status]}\n\n\n\n\n\n"
       if server = ::Pfaffmanager::Server.find_by(id: params[:id])
         data = server_params
-        
-        server.user_id = data[:user_id]
-        server.hostname = data[:hostname]
-        server.discourse_api_key = data[:discourse_api_key]
-        server.do_api_key = data[:do_api_key]
-        server.mg_api_key = data[:mg_api_key]
-        server.maxmind_license_key = data[:maxmind_license_key]
-        server.inventory =  data[:inventory]
-        server.request = data[:request]
-        server.request_status = data[:request_status]
+        if data[:request_status]
+          server.request_status=data[:request_status]
+          server.request_status_updated_at=Time.now
+          puts "\n\nANSIBLE IS DOING IT #{server.request_status_updated_at}\n\n"
+        else
+          server.user_id = data[:user_id]
+          server.hostname = data[:hostname]
+          server.discourse_api_key = data[:discourse_api_key]
+          server.do_api_key = data[:do_api_key]
+          server.mg_api_key = data[:mg_api_key]
+          server.maxmind_license_key = data[:maxmind_license_key]
+          server.request = data[:request]
+      end
+
         server.save
         
         if server.errors.present?

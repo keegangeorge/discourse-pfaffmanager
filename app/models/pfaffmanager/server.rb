@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-MAXMIND_PRODUCT = 'GeoLite2-City'
+MAXMIND_PRODUCT ||= 'GeoLite2-City'
 
 module Pfaffmanager
     class Server < ActiveRecord::Base
@@ -8,6 +8,9 @@ module Pfaffmanager
       
       validate :connection_validator
       after_save :update_server_status
+      after_save :process_server_request
+      before_save :reset_request 
+      before_save :fill_empty_server_fields
   
       scope :find_user, ->(user) { find_by_user_id(user.id) }
     
@@ -20,6 +23,80 @@ module Pfaffmanager
       end
 
       private
+
+      def reset_request
+        puts " -=--------------------- RESET #{request_status}\n"
+        if request_status=='done'
+        puts "\n\n\n\nWE DID THE RESET"
+        update_column(:request, 0)
+        end
+      end
+
+      def process_server_request
+        if request == 1
+          puts "Need to process request"
+          update_column(:request, -1)
+          update_column(:request_status_updated_at, Time.now)
+          update_column(:request_status, "Processing rebuild")
+          inventory=build_server_inventory
+          run_ansible_upgrade(inventory)
+        end
+      end
+
+      def managed_inventory_template
+        user = User.find(user_id)
+        <<~HEREDOC
+        ---
+        all:
+          vars:
+            ansible_user: root
+            ansible_python_interpreter: /usr/bin/python3
+            lc_smtp_password: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              30643766333939393233396330353461303431633262306661633332376262323661616639373232
+              3966626533373938373637363132386464323337346537380a333361613663633034383663323539
+              36626661663739313036363761313665353236646238376163316430656634343530646666303465
+              3563323532633330350a616662386233343534653762653762336466633863646332383735616463
+              30346533323635313663383030666532383664353465343165343265386639663662613463376432
+              35626335323165343636336261646461396666653966306365383037616130663939306135303230
+              613430336166663466373032343238353933
+            discourse_yml: 'app'
+          children:
+            discourse:
+              hosts:
+                #{hostname}:
+                  pfaffmanager_server_id: #{id}
+                  discourse_name: #{user.name}
+                  discourse_email: #{user.email}
+                  discourse_url: #{discourse_url}
+                  discourse_smtp_host: ""
+                  discourse_smtp_password: ""
+                  discourse_smtp_user: ""
+                  discourse_extra_envs:
+                    - "CURRENTLY_IGNORED: true"
+                  discourse_custom_plugins:
+                    - https://github.com/discourse/discourse-subscriptions.git
+          HEREDOC
+      end
+
+      def run_ansible_upgrade(inventory, log = "/tmp/upgrade.log")
+        dir = SiteSetting.pfaffmanager_playbook_dir
+        playbook = SiteSetting.pfaffmanager_upgrade_playbook
+        vault = SiteSetting.pfaffmanager_vault_file
+        #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
+        fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}")}
+      end
+
+      def build_server_inventory
+        user = User.find(user_id)
+        now = Time.now.strftime('%Y-%m%d-%H%M')
+        filename = "#{SiteSetting.pfaffmanager_inventory_dir}/#{id}-#{hostname}-#{now}-inventory.yml"
+        File.open(filename, "w") do |f|
+          f.write(managed_inventory_template)
+        end
+        puts "Writing #{filename} with \n#{managed_inventory_template}"
+        filename
+      end
 
       def update_server_status
         puts "Calling update_server_status"
@@ -80,6 +157,13 @@ module Pfaffmanager
         end  
       end
 
+      def server_request_validator
+        if !request.in? [-1, 0, 1, 2]
+          puts "Request bad: #{request}"
+          errors.add(:request, "Valid values: 0..2")
+        end
+      end
+
     def do_api_key_validator
       puts "DO API KEY: #{do_api_key}"
       url = "https://api.digitalocean.com/v2/account"
@@ -101,6 +185,12 @@ module Pfaffmanager
       end
     end
 
+    def fill_empty_server_fields
+      discourse_url ||= "https://#{hostname}"
+      puts "XXXXXXXXXXXXX filling the fields URL: (#{discourse_url})"
+      update_column(:discourse_url, discourse_url)
+    end
+
     def connection_validator
         unless hostname.present?
           errors.add(:hostname, "Hostname must be present")
@@ -111,7 +201,7 @@ module Pfaffmanager
         mg_api_key.present? && !mg_api_key_validator
         do_api_key.present? && do_api_key_changed? && !do_api_key_validator
         maxmind_license_key.present? && !maxmind_license_key_validator
-        
+        request.present? && server_request_validator
     end
   end
 end

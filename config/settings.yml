@@ -2,3 +2,19 @@ plugins:
   pfaffmanager_enabled:
     default: true
     client: true
+  pfaffmanager_inventory_dir:
+    default: /data/pfaffmanager/inventories
+    client: false
+    hidden: true
+  pfaffmanager_vault_file:
+    default: /data/pfaffmanager/vault-password.txt
+    client: false
+    hidden: true    
+  pfaffmanager_playbook_dir:
+    default: /home/pfaffman/src/literatecomputing/lc-manager-playbook/
+    client: false
+    hidden: true        
+  pfaffmanager_upgrade_playbook:
+    default: upgrade.yml
+    client: false
+    hidden: true            

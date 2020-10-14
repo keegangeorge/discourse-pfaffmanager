@@ -1,4 +1,4 @@
 en:
   site_settings:
     pfaffmanager_enabled: "Enable Pfaffmanager plugin"
-  
+    pfaffmanager_inventory_dir: "Directory for inventories"

@@ -10,6 +10,12 @@
    <br />{{i18n 'pfaffmanager.server.installed_sha' }}:&nbsp; <a href="https://github.com/discourse/discourse/commit/{{server.installed_sha}}">{{server.installed_sha}}</a>
    <br />{{i18n 'pfaffmanager.server.status_retrieved' }}&nbsp; {{format-date server.server_status_updated_at format="medium" }}
  </div>
+<div class="pfaffmanager-group server-action">
+  <label class="control-label">{{i18n 'pfaffmanager.server.rebuild'}}</label>
+  <div class="pfaffmanager">
+  {{input type="text" value=server.request}}
+  </div>
+</div>
 {{else }}
  
 <div class="pfaffmanager-group server-edit">
@@ -43,15 +49,6 @@
   <label class="control-label">{{i18n 'pfaffmanager.api_key'}}</label>
   <div class="manager" >
     {{input type="password" value=server.discourse_api_key class="input-large" title='For existing sites only' data-tip='something-else'}}
-  </div>
-</div>
-<div class="pfaffmanager-group pfaffmanager-action">
-  <label class="control-label">{{i18n 'pfaffmanager.action'}}</label>
-  <div class="request" >
-    <select name="upgrade">
-      <option value="0">rebuild</option>
-      <option value="1">install</option>
-    </select>
   </div>
 </div>
 
