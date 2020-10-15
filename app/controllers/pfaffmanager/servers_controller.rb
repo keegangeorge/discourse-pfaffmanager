@@ -39,7 +39,12 @@ module Pfaffmanager
           server.do_api_key = data[:do_api_key]
           server.mg_api_key = data[:mg_api_key]
           server.maxmind_license_key = data[:maxmind_license_key]
-          server.request = data[:request]
+          # don't try to start a build if one is running
+          if server.request >= 0
+            server.request = data[:request]
+          else
+            puts "\n\nprocess running skip rebuild!!\n\n"
+          end
           if server.request > 0
             server.request_status = "Processing"
           end

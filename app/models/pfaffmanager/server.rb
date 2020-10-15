@@ -35,7 +35,7 @@ module Pfaffmanager
           when "Success"
             update_column(:request_result, 'ok')
             puts "Set request_result OK"
-          when "Processing"
+          when "Processing rebuild"
             update_column(:request_result, 'running')
             puts "Set request_result running"
           when "Failed"
