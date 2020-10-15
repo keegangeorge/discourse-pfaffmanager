@@ -24,7 +24,7 @@ module Pfaffmanager
     end
     
     def update
-      puts "\n\n#{params}\n\n\n\n\nTHIS IS UPDATE #{params[:id]}\nSTAT #{params[:request_status]}\n\n\n\n\n\n"
+      puts "\n\n#{params}\n\n\n\n\server UPDATE controller id: #{params[:id]}\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
       if server = ::Pfaffmanager::Server.find_by(id: params[:id])
         data = server_params
         if data[:request_status]
@@ -40,9 +40,12 @@ module Pfaffmanager
           server.mg_api_key = data[:mg_api_key]
           server.maxmind_license_key = data[:maxmind_license_key]
           server.request = data[:request]
+          if server.request > 0
+            server.request_status = "Processing"
+          end
       end
 
-        puts "server controller update about to save #{server}"
+        puts "server controller update about to save R: #{server.request}"
         server.save
         
         if server.errors.present?

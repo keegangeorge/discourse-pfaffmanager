@@ -8,8 +8,8 @@ module Pfaffmanager
       
       validate :connection_validator
       after_save :update_server_status
-      before_save :process_server_request if :request == 1
-      before_save :reset_request
+      before_save :process_server_request 
+      before_save :reset_request if :request_status
       before_save :fill_empty_server_fields
   
       scope :find_user, ->(user) { find_by_user_id(user.id) }
@@ -34,16 +34,19 @@ module Pfaffmanager
           case request_status
           when "Success"
             update_column(:request_result, 'ok')
-          when "Processing rebuild"
+            puts "Set request_result OK"
+          when "Processing"
             update_column(:request_result, 'running')
+            puts "Set request_result running"
           when "Failed"
             update_column(:request_result, 'failed')
+            puts "Set request_result failed"
           end
         end
       end
 
       def process_server_request
-        puts "\n\nPROCESS SERVER REQUETS\n\n"
+        puts "\n\nPROCESS SERVER REQUEST\n\n"
         if request == 1
           puts "Need to process request"
           update_column(:request, -1)
