@@ -10,12 +10,20 @@
    <br />{{i18n 'pfaffmanager.server.installed_sha' }}:&nbsp; <a href="https://github.com/discourse/discourse/commit/{{server.installed_sha}}">{{server.installed_sha}}</a>
    <br />{{i18n 'pfaffmanager.server.status_retrieved' }}&nbsp; {{format-date server.server_status_updated_at format="medium" }}
  </div>
-<div class="pfaffmanager-group server-action">
+
+ <div class="pfaffmanager-server-status"><hr>
+  <span class='pfaffmanager-status-header'>Request Activity Status</span>
+   <br />{{i18n 'pfaffmanager.server.request_status' }}:&nbsp; {{server.request_status }}  
+        ({{format-date server.request_status_updated_at format="medium" }})
+   <br />{{i18n 'pfaffmanager.server.request_result' }}:&nbsp; {{server.request_result }}  
+</div>
+<div class="pfaffmanager-group server-action"><hr>
   <label class="control-label">{{i18n 'pfaffmanager.server.rebuild'}}</label>
   <div class="pfaffmanager">
-  {{input type="text" value=server.request}}
+   <br />{{i18n 'pfaffmanager.server.request' }}&nbsp; {{input type="text" value=server.request}}
   </div>
 </div>
+
 {{else }}
  
 <div class="pfaffmanager-group server-edit">

@@ -20,5 +20,7 @@ en:
         status_retrieved: "Retrieved"
         inventory: 'inventory'
         maxmind_license_key: 'Maxmind License Key'
-        request: "Initiate Server Action"        
+        request: "Enter 1 to start rebuild"        
         rebuild: "Rebuild Server"
+        request_status: "Request Activity"
+        request_result: "Request Status"
