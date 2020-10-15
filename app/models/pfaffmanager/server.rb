@@ -213,9 +213,7 @@ module Pfaffmanager
           errors.add(:hostname, "Hostname must be present")
         end
 
-        puts "CHanged? #{discourse_api_key_changed?}"
         discourse_api_key.present? && discourse_api_key_changed? && !discourse_api_key_validator
-
         mg_api_key.present? && mg_api_key.changed? && !mg_api_key_validator
         do_api_key.present? && do_api_key_changed? && !do_api_key_validator
         maxmind_license_key.present? && maxmind_license_key.changed? && !maxmind_license_key_validator
