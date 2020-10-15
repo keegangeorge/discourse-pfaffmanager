@@ -8,8 +8,8 @@ module Pfaffmanager
       
       validate :connection_validator
       after_save :update_server_status
-      after_save :process_server_request
-      before_save :reset_request 
+      before_save :process_server_request if :request == 1
+      before_save :reset_request
       before_save :fill_empty_server_fields
   
       scope :find_user, ->(user) { find_by_user_id(user.id) }
@@ -19,20 +19,31 @@ module Pfaffmanager
       end
 
       def version_check
+        puts "\n\nVERSION CHECK\n\n"
         version_check = JSON.parse(server_status_json)['version_check']
       end
 
       private
 
-      def reset_request
+      def reset_request # update server model that process is finished
         puts " -=--------------------- RESET #{request_status}\n"
-        if request_status=='done'
-        puts "\n\n\n\nWE DID THE RESET"
-        update_column(:request, 0)
+        if request_status=='Success'
+          puts "\n\n\n\nAnsible process completeed! #{request_status=='Success'? 0 : -1}"
+          update_column(:request, request_status=='Success'? 0 : -1)
+          update_column(:request_status_updated_at, Time.now)
+          case request_status
+          when "Success"
+            update_column(:request_result, 'ok')
+          when "Processing rebuild"
+            update_column(:request_result, 'running')
+          when "Failed"
+            update_column(:request_result, 'failed')
+          end
         end
       end
 
       def process_server_request
+        puts "\n\nPROCESS SERVER REQUETS\n\n"
         if request == 1
           puts "Need to process request"
           update_column(:request, -1)
@@ -100,6 +111,7 @@ module Pfaffmanager
 
       def update_server_status
         puts "Calling update_server_status"
+        begin
         if discourse_api_key.present? && discourse_api_key_changed? && (Time.now - server_status_updated_at < 60)
           headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
           result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
@@ -109,11 +121,16 @@ module Pfaffmanager
           update_column(:installed_sha, version_check['installed_sha'])
           update_column(:git_branch, version_check['git_branch'])
         end
+      rescue => e 
+        puts "cannot update server status"
+      end
       end
 
       # todo: update only if changed?
       # maybe it doesn't matter if we update the column anyway
       def discourse_api_key_validator
+        puts "\n\nAPI KEY VALIDATOR\n\n"
+
         headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
         begin 
           result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
@@ -196,11 +213,12 @@ module Pfaffmanager
           errors.add(:hostname, "Hostname must be present")
         end
 
-        discourse_api_key.present? && !discourse_api_key_validator
+        puts "CHanged? #{discourse_api_key_changed?}"
+        discourse_api_key.present? && discourse_api_key_changed? && !discourse_api_key_validator
 
-        mg_api_key.present? && !mg_api_key_validator
+        mg_api_key.present? && mg_api_key.changed? && !mg_api_key_validator
         do_api_key.present? && do_api_key_changed? && !do_api_key_validator
-        maxmind_license_key.present? && !maxmind_license_key_validator
+        maxmind_license_key.present? && maxmind_license_key.changed? && !maxmind_license_key_validator
         request.present? && server_request_validator
     end
   end

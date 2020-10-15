@@ -30,8 +30,9 @@ module Pfaffmanager
         if data[:request_status]
           server.request_status=data[:request_status]
           server.request_status_updated_at=Time.now
-          puts "\n\nANSIBLE IS DOING IT #{server.request_status_updated_at}\n\n"
+          puts "\n\REQUEST STATUS UPDATE with #{data[:request_status]} at #{server.request_status_updated_at}\n\n"
         else
+          puts "\n\nserver controller update!"
           server.user_id = data[:user_id]
           server.hostname = data[:hostname]
           server.discourse_api_key = data[:discourse_api_key]
@@ -41,6 +42,7 @@ module Pfaffmanager
           server.request = data[:request]
       end
 
+        puts "server controller update about to save #{server}"
         server.save
         
         if server.errors.present?
