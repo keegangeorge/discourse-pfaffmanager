@@ -14,7 +14,7 @@ module Pfaffmanager
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
-    def self.createServer(user_id, hostname, public_key = nil, private_key = nil)
+    def self.createServer(user_id, hostname = "new-server-for-#{user_id}")
       create(user_id: user_id, hostname: hostname, ssh_key_public: public_key, ssh_key_private: private_key)
     end
 
@@ -27,23 +27,21 @@ module Pfaffmanager
 
     def reset_request # update server model that process is finished
       puts " -=--------------------- RESET #{request_status}\n"
-      if request_status == 'Success'
-        puts "\n\n\n\nAnsible process completeed! #{request_status == 'Success' ? 0 : -1}"
-        update_server_status
-        update_column(:request, request_status == 'Success' ? 0 : -1)
-        update_column(:request_status_updated_at, Time.now)
-        case request_status
+      case request_status
         when "Success"
-          update_column(:request_result, 'ok')
           puts "Set request_result OK"
-        when "Processing rebuild"
+          update_column(:request_result, 'ok')
+          update_server_status
+          update_column(:request, 0)
+          when "Processing rebuild"
           update_column(:request_result, 'running')
           puts "Set request_result running"
         when "Failed"
           update_column(:request_result, 'failed')
+          update_column(:request, 0)
           puts "Set request_result failed"
         end
-      end
+        update_column(:request_status_updated_at, Time.now)
     end
 
     def process_server_request
@@ -53,7 +51,9 @@ module Pfaffmanager
         update_column(:request, -1)
         update_column(:request_status_updated_at, Time.now)
         update_column(:request_status, "Processing rebuild")
+        update_column(:last_action, "Process rebuild")
         inventory = build_server_inventory
+        update_column(:inventory, inventory)
         run_ansible_upgrade(inventory)
       end
     end
@@ -66,6 +66,7 @@ module Pfaffmanager
           vars:
             ansible_user: root
             ansible_python_interpreter: /usr/bin/python3
+            pfaffmanager_base_url: #{Discourse.base_url}
             lc_smtp_password: !vault |
               $ANSIBLE_VAULT;1.1;AES256
               30643766333939393233396330353461303431633262306661633332376262323661616639373232
@@ -81,6 +82,7 @@ module Pfaffmanager
               hosts:
                 #{hostname}:
                   pfaffmanager_server_id: #{id}
+                  skip_rebuild: yes
                   discourse_name: #{user.name}
                   discourse_email: #{user.email}
                   discourse_url: #{discourse_url}
@@ -100,6 +102,7 @@ module Pfaffmanager
       vault = SiteSetting.pfaffmanager_vault_file
       #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
       fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
+      #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
     end
 
     def build_server_inventory
@@ -114,11 +117,12 @@ module Pfaffmanager
     end
 
     def update_server_status
-      puts "Calling update_server_status"
+      puts "update_server_status running NOW"
       begin
-      if discourse_api_key.present? && discourse_api_key_changed? && (Time.now - server_status_updated_at < 60)
+      if discourse_api_key.present? && (Time.now - server_status_updated_at > 60)
         headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
         result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
+        puts "update server status got: #{result.body}"
         update_column(:server_status_json, result.body)
         update_column(:server_status_updated_at, Time.now)
         update_column(:installed_version, version_check['installed_version'])

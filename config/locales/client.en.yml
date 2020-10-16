@@ -24,3 +24,4 @@ en:
         rebuild: "Rebuild Server"
         request_status: "Request Activity"
         request_result: "Request Status"
+        request_section_header: "Remote Activity Status"
