@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class ChangeDataTypeForRequest < ActiveRecord::Migration[6.0]
   def change
     remove_column :pfaffmanager_servers, :request

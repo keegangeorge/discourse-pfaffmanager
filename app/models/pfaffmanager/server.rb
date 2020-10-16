@@ -2,64 +2,65 @@
 MAXMIND_PRODUCT ||= 'GeoLite2-City'
 
 module Pfaffmanager
-    class Server < ActiveRecord::Base
-      include ActiveModel::Dirty
-      self.table_name = "pfaffmanager_servers"
-      
-      validate :connection_validator
-      after_save :update_server_status
-      before_save :process_server_request 
-      before_save :reset_request if :request_status
-      before_save :fill_empty_server_fields
-  
-      scope :find_user, ->(user) { find_by_user_id(user.id) }
-    
-      def self.createServer(user_id, hostname, public_key=nil, private_key=nil)
-        create(user_id: user_id, hostname: hostname, ssh_key_public: public_key, ssh_key_private: private_key)
-      end
+  class Server < ActiveRecord::Base
+    include ActiveModel::Dirty
+    self.table_name = "pfaffmanager_servers"
 
-      def version_check
-        puts "\n\nVERSION CHECK\n\n"
-        version_check = JSON.parse(server_status_json)['version_check']
-      end
+    validate :connection_validator
+    after_save :update_server_status
+    before_save :process_server_request
+    before_save :reset_request if :request_status
+    before_save :fill_empty_server_fields
 
-      private
+    scope :find_user, ->(user) { find_by_user_id(user.id) }
 
-      def reset_request # update server model that process is finished
-        puts " -=--------------------- RESET #{request_status}\n"
-        if request_status=='Success'
-          puts "\n\n\n\nAnsible process completeed! #{request_status=='Success'? 0 : -1}"
-          update_column(:request, request_status=='Success'? 0 : -1)
-          update_column(:request_status_updated_at, Time.now)
-          case request_status
-          when "Success"
-            update_column(:request_result, 'ok')
-            puts "Set request_result OK"
-          when "Processing rebuild"
-            update_column(:request_result, 'running')
-            puts "Set request_result running"
-          when "Failed"
-            update_column(:request_result, 'failed')
-            puts "Set request_result failed"
-          end
+    def self.createServer(user_id, hostname, public_key = nil, private_key = nil)
+      create(user_id: user_id, hostname: hostname, ssh_key_public: public_key, ssh_key_private: private_key)
+    end
+
+    def version_check
+      puts "\n\nVERSION CHECK\n\n"
+      version_check = JSON.parse(server_status_json)['version_check']
+    end
+
+    private
+
+    def reset_request # update server model that process is finished
+      puts " -=--------------------- RESET #{request_status}\n"
+      if request_status == 'Success'
+        puts "\n\n\n\nAnsible process completeed! #{request_status == 'Success' ? 0 : -1}"
+        update_server_status
+        update_column(:request, request_status == 'Success' ? 0 : -1)
+        update_column(:request_status_updated_at, Time.now)
+        case request_status
+        when "Success"
+          update_column(:request_result, 'ok')
+          puts "Set request_result OK"
+        when "Processing rebuild"
+          update_column(:request_result, 'running')
+          puts "Set request_result running"
+        when "Failed"
+          update_column(:request_result, 'failed')
+          puts "Set request_result failed"
         end
       end
+    end
 
-      def process_server_request
-        puts "\n\nPROCESS SERVER REQUEST\n\n"
-        if request == 1
-          puts "Need to process request"
-          update_column(:request, -1)
-          update_column(:request_status_updated_at, Time.now)
-          update_column(:request_status, "Processing rebuild")
-          inventory=build_server_inventory
-          run_ansible_upgrade(inventory)
-        end
+    def process_server_request
+      puts "\n\nPROCESS SERVER REQUEST\n\n"
+      if request == 1
+        puts "Need to process request"
+        update_column(:request, -1)
+        update_column(:request_status_updated_at, Time.now)
+        update_column(:request_status, "Processing rebuild")
+        inventory = build_server_inventory
+        run_ansible_upgrade(inventory)
       end
+    end
 
-      def managed_inventory_template
-        user = User.find(user_id)
-        <<~HEREDOC
+    def managed_inventory_template
+      user = User.find(user_id)
+      <<~HEREDOC
         ---
         all:
           vars:
@@ -91,117 +92,117 @@ module Pfaffmanager
                   discourse_custom_plugins:
                     - https://github.com/discourse/discourse-subscriptions.git
           HEREDOC
-      end
+    end
 
-      def run_ansible_upgrade(inventory, log = "/tmp/upgrade.log")
-        dir = SiteSetting.pfaffmanager_playbook_dir
-        playbook = SiteSetting.pfaffmanager_upgrade_playbook
-        vault = SiteSetting.pfaffmanager_vault_file
-        #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
-        fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}")}
-      end
+    def run_ansible_upgrade(inventory, log = "/tmp/upgrade.log")
+      dir = SiteSetting.pfaffmanager_playbook_dir
+      playbook = SiteSetting.pfaffmanager_upgrade_playbook
+      vault = SiteSetting.pfaffmanager_vault_file
+      #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
+      fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
+    end
 
-      def build_server_inventory
-        user = User.find(user_id)
-        now = Time.now.strftime('%Y-%m%d-%H%M')
-        filename = "#{SiteSetting.pfaffmanager_inventory_dir}/#{id}-#{hostname}-#{now}-inventory.yml"
-        File.open(filename, "w") do |f|
-          f.write(managed_inventory_template)
-        end
-        puts "Writing #{filename} with \n#{managed_inventory_template}"
-        filename
+    def build_server_inventory
+      user = User.find(user_id)
+      now = Time.now.strftime('%Y-%m%d-%H%M')
+      filename = "#{SiteSetting.pfaffmanager_inventory_dir}/#{id}-#{hostname}-#{now}-inventory.yml"
+      File.open(filename, "w") do |f|
+        f.write(managed_inventory_template)
       end
+      puts "Writing #{filename} with \n#{managed_inventory_template}"
+      filename
+    end
 
-      def update_server_status
-        puts "Calling update_server_status"
-        begin
-        if discourse_api_key.present? && discourse_api_key_changed? && (Time.now - server_status_updated_at < 60)
-          headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
-          result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
+    def update_server_status
+      puts "Calling update_server_status"
+      begin
+      if discourse_api_key.present? && discourse_api_key_changed? && (Time.now - server_status_updated_at < 60)
+        headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
+        result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
+        update_column(:server_status_json, result.body)
+        update_column(:server_status_updated_at, Time.now)
+        update_column(:installed_version, version_check['installed_version'])
+        update_column(:installed_sha, version_check['installed_sha'])
+        update_column(:git_branch, version_check['git_branch'])
+      end
+    rescue => e
+      puts "cannot update server status"
+    end
+    end
+
+    # todo: update only if changed?
+    # maybe it doesn't matter if we update the column anyway
+    def discourse_api_key_validator
+      puts "\n\nAPI KEY VALIDATOR\n\n"
+
+      headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
+      begin
+        result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
+        if result.status == 200
           update_column(:server_status_json, result.body)
           update_column(:server_status_updated_at, Time.now)
-          update_column(:installed_version, version_check['installed_version'])
-          update_column(:installed_sha, version_check['installed_sha'])
-          update_column(:git_branch, version_check['git_branch'])
-        end
-      rescue => e 
-        puts "cannot update server status"
-      end
-      end
-
-      # todo: update only if changed?
-      # maybe it doesn't matter if we update the column anyway
-      def discourse_api_key_validator
-        puts "\n\nAPI KEY VALIDATOR\n\n"
-
-        headers = {'api-key' => discourse_api_key, 'api-username' => 'system'}
-        begin 
-          result = Excon.get("https://#{hostname}/admin/dashboard.json", :headers => headers)
-          if result.status == 200
-            update_column(:server_status_json, result.body)
-            update_column(:server_status_updated_at, Time.now)
-            true
-            elsif result.status = 422
-              errors.add(:discourse_api_key, "invalid")
-          else
-
+          true
+          elsif result.status = 422
             errors.add(:discourse_api_key, "invalid")
-          end
-        rescue => e
-          puts "Error #{e}"
-          errors.add(:discourse_api_key, "-- #{e}")
-          false
-        end  
-      end
+        else
 
-      def mg_api_key_validator
-        url = "https://api:#{mg_api_key}@api.mailgun.net/v3/domains"
-        result = Excon.get(url)
-         #accounts = result.body
-      if result.status == 200
-          true
-        else 
-          errors.add(:mg_api_key, result.reason_phrase)
-          false
-        end  
-      end
-
-      def maxmind_license_key_validator
-        url = "https://download.maxmind.com/app/geoip_download?license_key=#{maxmind_license_key}&edition_id=#{MAXMIND_PRODUCT}&suffix=tar.gz"
-        result = Excon.get(url)
-        if result.status == 200
-          true
-        else 
-          errors.add(:maxmind_license_key, result.body)
-          false
-        end  
-      end
-
-      def server_request_validator
-        if !request.in? [-1, 0, 1, 2]
-          puts "Request bad: #{request}"
-          errors.add(:request, "Valid values: 0..2")
+          errors.add(:discourse_api_key, "invalid")
         end
+      rescue => e
+        puts "Error #{e}"
+        errors.add(:discourse_api_key, "-- #{e}")
+        false
       end
+    end
+
+    def mg_api_key_validator
+      url = "https://api:#{mg_api_key}@api.mailgun.net/v3/domains"
+      result = Excon.get(url)
+    #accounts = result.body
+    if result.status == 200
+      true
+      else
+        errors.add(:mg_api_key, result.reason_phrase)
+        false
+    end
+    end
+
+    def maxmind_license_key_validator
+      url = "https://download.maxmind.com/app/geoip_download?license_key=#{maxmind_license_key}&edition_id=#{MAXMIND_PRODUCT}&suffix=tar.gz"
+      result = Excon.get(url)
+      if result.status == 200
+        true
+      else
+        errors.add(:maxmind_license_key, result.body)
+        false
+      end
+    end
+
+    def server_request_validator
+      if !request.in? [-1, 0, 1, 2]
+        puts "Request bad: #{request}"
+        errors.add(:request, "Valid values: 0..2")
+      end
+    end
 
     def do_api_key_validator
       puts "DO API KEY: #{do_api_key}"
       url = "https://api.digitalocean.com/v2/account"
-      headers = {'Authorization' => "Bearer #{do_api_key}"}
+      headers = { 'Authorization' => "Bearer #{do_api_key}" }
       begin
-        result = Excon.get(url, :headers => headers)
+        result = Excon.get(url, headers: headers)
         puts "result: #{result}"
         puts "Status: #{result.status}"
         do_status = JSON.parse(result.body)['account']['status']
         puts "DO status: #{do_status}"
-        if result.status == 200 && do_status=="active"
+        if result.status == 200 && do_status == "active"
           true
-        else 
+        else
           errors.add(:do_api_key, "Account not active")
           false
         end
       rescue
-        errors.add(:do_api_key, 'Key Invalid (401)')  
+        errors.add(:do_api_key, 'Key Invalid (401)')
       end
     end
 
@@ -212,9 +213,9 @@ module Pfaffmanager
     end
 
     def connection_validator
-        unless hostname.present?
-          errors.add(:hostname, "Hostname must be present")
-        end
+      unless hostname.present?
+        errors.add(:hostname, "Hostname must be present")
+      end
 
         discourse_api_key.present? && discourse_api_key_changed? && !discourse_api_key_validator
         mg_api_key.present? && mg_api_key.changed? && !mg_api_key_validator

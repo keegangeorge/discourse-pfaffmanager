@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Pfaffmanager
   DO_API_KEY = "do_api_key".freeze
   MG_API_KEY = "mg_api_key".freeze

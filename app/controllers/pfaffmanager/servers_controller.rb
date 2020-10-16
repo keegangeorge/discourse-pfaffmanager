@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'byebug'
 
 module Pfaffmanager
@@ -22,14 +23,14 @@ module Pfaffmanager
     def set_server_status
       puts "Set server status in the contro9ller!!!"
     end
-    
+
     def update
       puts "\n\n#{params}\n\n\n\n\server UPDATE controller id: #{params[:id]}\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
       if server = ::Pfaffmanager::Server.find_by(id: params[:id])
         data = server_params
         if data[:request_status]
-          server.request_status=data[:request_status]
-          server.request_status_updated_at=Time.now
+          server.request_status = data[:request_status]
+          server.request_status_updated_at = Time.now
           puts "\n\REQUEST STATUS UPDATE with #{data[:request_status]} at #{server.request_status_updated_at}\n\n"
         else
           puts "\n\nserver controller update!"
@@ -48,21 +49,21 @@ module Pfaffmanager
           if server.request > 0
             server.request_status = "Processing"
           end
-      end
+        end
 
         puts "server controller update about to save R: #{server.request}"
         server.save
-        
+
         if server.errors.present?
           return render_json_error(server.errors.full_messages)
         else
           return render json: success_json
         end
       end
-      
+
       render json: failed_json
     end
-    
+
     def server_params
       params.require(:server).permit(
         :user_id,

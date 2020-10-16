@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Pfaffmanager
   class PfaffmanagerController < ::ApplicationController
     requires_plugin Pfaffmanager
