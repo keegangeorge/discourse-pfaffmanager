@@ -7,19 +7,19 @@ module Pfaffmanager
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
-    after_save :update_server_status
-    before_save :process_server_request
+    after_save :update_server_status if :id
+    before_save :process_server_request if !:request.nil?
     before_save :reset_request if :request_status
-    before_save :fill_empty_server_fields
+    before_save :fill_empty_server_fields if :id
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
     def self.createServer(user_id, hostname = "new-server-for-#{user_id}")
-      create(user_id: user_id, hostname: hostname, ssh_key_public: public_key, ssh_key_private: private_key)
+      puts "Creating server #{hostname} for #{user_id}"
+      create(user_id: user_id, hostname: hostname)
     end
 
     def version_check
-      puts "\n\nVERSION CHECK\n\n"
       version_check = JSON.parse(server_status_json)['version_check']
     end
 
@@ -33,24 +33,25 @@ module Pfaffmanager
           update_column(:request_result, 'ok')
           update_server_status
           update_column(:request, 0)
-          when "Processing rebuild"
+          update_column(:request_status_updated_at, Time.now)
+        when "Processing rebuild"
           update_column(:request_result, 'running')
           puts "Set request_result running"
+          update_column(:request_status_updated_at, Time.now)
         when "Failed"
           update_column(:request_result, 'failed')
           update_column(:request, 0)
           puts "Set request_result failed"
+          update_column(:request_status_updated_at, Time.now)
         end
-        update_column(:request_status_updated_at, Time.now)
     end
 
     def process_server_request
-      puts "\n\nPROCESS SERVER REQUEST\n\n"
+      puts "\n\nPROCESS SERVER REQUEST: #{request}\n\n"
       if request == 1
         puts "Need to process request"
         update_column(:request, -1)
         update_column(:request_status_updated_at, Time.now)
-        update_column(:request_status, "Processing rebuild")
         update_column(:last_action, "Process rebuild")
         inventory = build_server_inventory
         update_column(:inventory, inventory)
@@ -82,7 +83,7 @@ module Pfaffmanager
               hosts:
                 #{hostname}:
                   pfaffmanager_server_id: #{id}
-                  skip_rebuild: yes
+                  skip_bootstrap: yes
                   discourse_name: #{user.name}
                   discourse_email: #{user.email}
                   discourse_url: #{discourse_url}
@@ -211,9 +212,10 @@ module Pfaffmanager
     end
 
     def fill_empty_server_fields
+      puts "FIlling empty... for #{id}"
       discourse_url ||= "https://#{hostname}"
       puts "XXXXXXXXXXXXX filling the fields URL: (#{discourse_url})"
-      update_column(:discourse_url, discourse_url)
+      #update_column(:discourse_url, discourse_url)
     end
 
     def connection_validator
@@ -221,10 +223,13 @@ module Pfaffmanager
         errors.add(:hostname, "Hostname must be present")
       end
 
-        discourse_api_key.present? && discourse_api_key_changed? && !discourse_api_key_validator
-        mg_api_key.present? && mg_api_key.changed? && !mg_api_key_validator
-        do_api_key.present? && do_api_key_changed? && !do_api_key_validator
-        maxmind_license_key.present? && maxmind_license_key.changed? && !maxmind_license_key_validator
+        puts "discourse: #{discourse_api_key}"
+        discourse_api_key.present? && !discourse_api_key_validator
+        puts "MG: #{mg_api_key}"
+        mg_api_key.present? &&  !mg_api_key_validator
+        puts "DO: #{do_api_key}"
+        do_api_key.present? && !do_api_key_validator
+        maxmind_license_key.present? && !maxmind_license_key_validator
         request.present? && server_request_validator
     end
   end
