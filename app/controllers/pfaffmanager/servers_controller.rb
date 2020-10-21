@@ -20,6 +20,12 @@ module Pfaffmanager
       render_json_dump({ server: server })
     end
 
+    def create
+      puts "Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
+      server = ::Pfaffmanager::Server.createServer(params[:server][:user_id])
+      render_json_dump({ server: server})
+    end
+
     def set_server_status
       puts "Set server status in the contro9ller!!!"
     end

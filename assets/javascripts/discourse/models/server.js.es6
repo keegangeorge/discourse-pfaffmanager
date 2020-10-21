@@ -13,10 +13,10 @@ Server.reopenClass({
     console.log('model');
     console.log(model)
     let server = {
-      user_id: model.currentUser.user_id
+      user_id: model.currentUser.id
     };
     console.log(server);
-    return ajax(`/pfaffmanager/servers/${model.id}`, {
+    return ajax(`/pfaffmanager/servers`, {
       type: "POST",
       data: {
         server

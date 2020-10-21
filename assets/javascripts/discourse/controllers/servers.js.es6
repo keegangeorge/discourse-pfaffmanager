@@ -25,7 +25,7 @@ export default Controller.extend({
             user_id: this.currentUser.id
           };
           console.log(server);
-          return ajax(`/pfaffmanager/servers/${this.currentUser.id}`, {
+          return ajax(`/pfaffmanager/servers`, {
             type: "POST",
             data: {
               server

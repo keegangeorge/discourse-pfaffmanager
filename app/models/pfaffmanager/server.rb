@@ -212,7 +212,7 @@ module Pfaffmanager
     end
 
     def fill_empty_server_fields
-      puts "FIlling empty... for #{id}"
+      puts "DOING NOTHING. FIlling empty... for #{id}"
       discourse_url ||= "https://#{hostname}"
       puts "XXXXXXXXXXXXX filling the fields URL: (#{discourse_url})"
       #update_column(:discourse_url, discourse_url)
