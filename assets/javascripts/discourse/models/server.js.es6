@@ -6,7 +6,25 @@ const Server = EmberObject.extend();
 
 Server.reopenClass({
   server_status(model) { return JSON.parse(model)},
+  createServer(model) {
+    console.log("createServer in j/d/models/");
+    console.log('user');
+    console.log(currentUser);
+    console.log('model');
+    console.log(model)
+    let server = {
+      user_id: model.currentUser.user_id
+    };
+    console.log(server);
+    return ajax(`/pfaffmanager/servers/${model.id}`, {
+      type: "POST",
+      data: {
+        server
+      }
+    }).catch(popupAjaxError);
+  },
   update(model) {
+    console.log("update in j/d/models/");
     console.log("do:" + model.do_api_key);
     console.log(model);
     let server = {
@@ -20,9 +38,7 @@ Server.reopenClass({
       rebuild: model.rebuild,
       discourse_api_key: model.discourse_api_key
     };
-
     console.log(server);
-    
     return ajax(`/pfaffmanager/servers/${model.id}`, {
       type: "PUT",
       data: {

@@ -9,6 +9,9 @@ export default DiscourseRoute.extend({
   updateServer() {
     console.log("showing in the map");
   },
+  createServer() {
+    console.log("createServer showing in the map");
+  },
   renderTemplate() {
     this.render("servers-show");
   }
