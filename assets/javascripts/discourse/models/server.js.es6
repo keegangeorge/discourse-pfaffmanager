@@ -6,18 +6,15 @@ const Server = EmberObject.extend();
 
 Server.reopenClass({
   server_status(model) { return JSON.parse(model)},
-  createServer(model) {
-    console.log("createServer in j/d/models/");
-    console.log('user');
-    console.log(currentUser);
+  dropletCreate(model) {
+    console.log("dropletCreate in j/d/models/");
     console.log('model');
     console.log(model)
     let server = {
-      user_id: model.currentUser.id
+      request: 2
     };
-    console.log(server);
-    return ajax(`/pfaffmanager/servers`, {
-      type: "POST",
+    return ajax(`/pfaffmanager/servers/${model.id}`, {
+      type: "PUT",
       data: {
         server
       }

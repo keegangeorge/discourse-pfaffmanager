@@ -1,7 +1,7 @@
  <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
 
 
-{{# if server.server_status_json}}
+{{# if server.server_status_json }}
 <div class="pfaffmanager-group server-status">
 <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
    <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
@@ -23,8 +23,9 @@
    <br />{{i18n 'pfaffmanager.server.request' }}&nbsp; {{input type="text" value=server.request}}
   </div>
 </div>
+{{/if }}
 
-{{else }}
+{{# unless server.server_status_json}}
  
 <div class="pfaffmanager-group server-edit">
 <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
@@ -67,7 +68,7 @@
   </div>
 </div> --}}
 </div>
-{{/if}}
+{{/unless}}
 
      {{!-- t.string :ssh_key_private
      t.string :ssh_key_public
