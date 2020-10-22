@@ -32,32 +32,35 @@ module Pfaffmanager
     end
 
     def update
-      puts "\n\n#{params}\n\n\n\n\server UPDATE controller id: #{params[:id]}\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
+      puts "\n\n#{params}\n\n\n\nserver UPDATE controller id: #{params[:id]}\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
+      request = params[:server][:request].to_i
+      puts "------------------> GOT REQUEST: #{request}"
       if server = ::Pfaffmanager::Server.find_by(id: params[:id])
         data = server_params
-        if data[:request_status]
+        puts "Data: #{data}"
+        if !data[:request_status].nil?
           server.request_status = data[:request_status]
           server.request_status_updated_at = Time.now
           puts "\n\REQUEST STATUS UPDATE with #{data[:request_status]} at #{server.request_status_updated_at}\n\n"
-        else
-          puts "\n\nserver controller update!"
-          server.user_id = data[:user_id]
-          server.hostname = data[:hostname]
-          server.discourse_api_key = data[:discourse_api_key]
-          server.do_api_key = data[:do_api_key]
-          server.mg_api_key = data[:mg_api_key]
-          server.maxmind_license_key = data[:maxmind_license_key]
-          # don't try to start a build if one is running
-          if server.request 
-          if server.request >= 0
-            server.request = data[:request]
+        elsif !request.nil?
+          puts "Request exists: #{request}"
+          if request >= 0
+            server.request = request
           else
             puts "\n\nprocess running skip rebuild!!\n\n"
           end
-          if server.request > 0
+          if request > 0
             server.request_status = "Processing"
           end
-        end
+        else
+          puts "\n\nserver controller update!"
+          server.user_id = data[:user_id] if data[:user_id]
+          server.hostname = data[:hostname] if data[:hostname] 
+          server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
+          server.do_api_key = data[:do_api_key] if data[:do_api_key]
+          server.mg_api_key = data[:mg_api_key] if data[:mg_api_key]
+          server.maxmind_license_key = data[:maxmind_license_key]
+          # don't try to start a build if one is running
         end
 
         puts "server controller update about to save R: #{server.request}"
@@ -72,6 +75,7 @@ module Pfaffmanager
 
       render json: failed_json
     end
+  
 
     def server_params
       params.require(:server).permit(

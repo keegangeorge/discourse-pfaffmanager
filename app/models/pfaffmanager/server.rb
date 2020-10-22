@@ -7,10 +7,10 @@ module Pfaffmanager
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
-    after_save :update_server_status if :id
-    before_save :process_server_request if !:request.nil?
-    before_save :reset_request if :request_status
-    before_save :fill_empty_server_fields if :id
+    after_save :update_server_status if !:id.nil?
+    before_save :process_server_request 
+    before_save :reset_request if !:request_status.nil?
+    #before_save :fill_empty_server_fields if !:id.nil?
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
@@ -20,7 +20,7 @@ module Pfaffmanager
     end
 
     def version_check
-      version_check = JSON.parse(server_status_json)['version_check']
+      JSON.parse(server_status_json)['version_check']
     end
 
     private
@@ -28,35 +28,60 @@ module Pfaffmanager
     def reset_request # update server model that process is finished
       puts " -=--------------------- RESET #{request_status}\n"
       case request_status
-        when "Success"
-          puts "Set request_result OK"
+      when "Success"
+        puts "Set request_result OK"
           update_column(:request_result, 'ok')
           update_server_status
           update_column(:request, 0)
           update_column(:request_status_updated_at, Time.now)
-        when "Processing rebuild"
-          update_column(:request_result, 'running')
+      when "Processing rebuild"
+        update_column(:request_result, 'running')
           puts "Set request_result running"
           update_column(:request_status_updated_at, Time.now)
-        when "Failed"
-          update_column(:request_result, 'failed')
+      when "Failed"
+        update_column(:request_result, 'failed')
           update_column(:request, 0)
           puts "Set request_result failed"
           update_column(:request_status_updated_at, Time.now)
-        end
+      end
     end
 
     def process_server_request
       puts "\n\nPROCESS SERVER REQUEST: #{request}\n\n"
-      if request == 1
-        puts "Need to process request"
+      case request
+      when 1
+        puts "Processing request 1 -- rebuild"
         update_column(:request, -1)
-        update_column(:request_status_updated_at, Time.now)
+             update_column(:request_status_updated_at, Time.now)
         update_column(:last_action, "Process rebuild")
         inventory = build_server_inventory
         update_column(:inventory, inventory)
         run_ansible_upgrade(inventory)
+      when 2
+        puts "Processing request 2 -- createDroplet"
+        update_column(:request, -1)
+        update_column(:request_status_updated_at, Time.now)
+        update_column(:last_action, "Create droplet")
+        do_install
       end
+    end
+
+    def installation_script_template
+      user = User.find(user_id)
+      playbook_dir = SiteSetting.pfaffmanager_playbook_dir
+      <<~HEREDOC
+      #!/usr/bin/env bash
+      # Custom Order Placed at #{Time.now}
+      export EMAIL="#{user.email}"
+      export NAME="#{user.name}"
+      export DO_HOSTNAME="#{hostname}"
+      export DO_API_KEY="#{do_api_key}"
+      export MG_API_KEY="#{mg_api_key}"
+      export DO_REGION="nyc3"
+      export DO_SIZE=""
+      export DISCOURSE_SSH_USER=root
+      #{playbook_dir}/bin/do_install pro
+      HEREDOC
     end
 
     def managed_inventory_template
@@ -106,8 +131,14 @@ module Pfaffmanager
       #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
     end
 
+    def do_install
+      install_script = build_install_script
+      puts "Wrote #{install_script}"
+      fork { exec("#{install_script}") }
+    end
+
     def build_server_inventory
-      user = User.find(user_id)
+      #user = User.find(user_id)
       now = Time.now.strftime('%Y-%m%d-%H%M')
       filename = "#{SiteSetting.pfaffmanager_inventory_dir}/#{id}-#{hostname}-#{now}-inventory.yml"
       File.open(filename, "w") do |f|
@@ -117,22 +148,34 @@ module Pfaffmanager
       filename
     end
 
+    def build_install_script
+      dir = SiteSetting.pfaffmanager_inventory_dir
+      now = Time.now.strftime('%Y-%m%d-%H%M')
+      filename = "#{dir}/#{id}-#{hostname}-#{now}-droplet_create"
+      File.open(filename, "w") do |f|
+        f.write(installation_script_template)
+      end
+      File.chmod(0777,"#{filename}")
+      puts "Wrote #{filename} with \n#{installation_script_template}"
+      filename
+    end
+
     def update_server_status
       puts "update_server_status running NOW"
       begin
-      if discourse_api_key.present? && (Time.now - server_status_updated_at > 60)
-        headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
-        result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
-        puts "update server status got: #{result.body}"
-        update_column(:server_status_json, result.body)
-        update_column(:server_status_updated_at, Time.now)
-        update_column(:installed_version, version_check['installed_version'])
-        update_column(:installed_sha, version_check['installed_sha'])
-        update_column(:git_branch, version_check['git_branch'])
+        if discourse_api_key.present? && (Time.now - server_status_updated_at > 60)
+          headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
+          result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
+          puts "update server status got: #{result.body}"
+          update_column(:server_status_json, result.body)
+             update_column(:server_status_updated_at, Time.now)
+    update_column(:installed_version, version_check['installed_version'])
+          update_column(:installed_sha, version_check['installed_sha'])
+          update_column(:git_branch, version_check['git_branch'])
+        end
+      rescue => e
+        puts "cannot update server status: #{e}"
       end
-    rescue => e
-      puts "cannot update server status"
-    end
     end
 
     # todo: update only if changed?
@@ -147,10 +190,9 @@ module Pfaffmanager
           update_column(:server_status_json, result.body)
           update_column(:server_status_updated_at, Time.now)
           true
-          elsif result.status = 422
-            errors.add(:discourse_api_key, "invalid")
+        elsif result.status == 422
+          errors.add(:discourse_api_key, "invalid")
         else
-
           errors.add(:discourse_api_key, "invalid")
         end
       rescue => e
@@ -163,13 +205,13 @@ module Pfaffmanager
     def mg_api_key_validator
       url = "https://api:#{mg_api_key}@api.mailgun.net/v3/domains"
       result = Excon.get(url)
-    #accounts = result.body
-    if result.status == 200
-      true
+      #accounts = result.body
+      if result.status == 200
+        true
       else
         errors.add(:mg_api_key, result.reason_phrase)
         false
-    end
+      end
     end
 
     def maxmind_license_key_validator
@@ -226,7 +268,7 @@ module Pfaffmanager
         puts "discourse: #{discourse_api_key}"
         discourse_api_key.present? && !discourse_api_key_validator
         puts "MG: #{mg_api_key}"
-        mg_api_key.present? &&  !mg_api_key_validator
+        mg_api_key.present? && !mg_api_key_validator
         puts "DO: #{do_api_key}"
         do_api_key.present? && !do_api_key_validator
         maxmind_license_key.present? && !maxmind_license_key_validator

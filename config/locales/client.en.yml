@@ -14,6 +14,7 @@ en:
       server:
         create: "Create server"
         update: "Update server"
+        do_create: "Install on new droplet"
         status_header: "Current Server Status"
         installed_version: 'Installed Version'
         installed_sha: 'Commit'

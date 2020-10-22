@@ -25,6 +25,7 @@ export default Controller.extend({
       let server = {
         request: 2
       };
+      console.log(server);
       return ajax(`/pfaffmanager/servers/${this.model.id}`, {
         type: "PUT",
         data: {
