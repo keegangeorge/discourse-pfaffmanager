@@ -1,5 +1,6 @@
 import Controller from "@ember/controller";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { ajax } from 'discourse/lib/ajax';
 import Server from "../models/server";
 
 export default Controller.extend({
@@ -17,7 +18,21 @@ export default Controller.extend({
         }
       });
     },
-    createServer() {
+    dropletCreate(model) {
+      console.log("dropletCreate in controller");
+      console.log('this.model');
+      console.log(this.model)
+      let server = {
+        request: 2
+      };
+      return ajax(`/pfaffmanager/servers/${this.model.id}`, {
+        type: "PUT",
+        data: {
+          server
+        }
+      }).catch(popupAjaxError);
+    },
+      createServer() {
       Server.createServer(this.model).then((result) => {
         console.log("createServer");
         console.log(this.model);
