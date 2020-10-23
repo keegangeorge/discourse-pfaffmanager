@@ -79,8 +79,10 @@ module Pfaffmanager
       export MG_API_KEY="#{mg_api_key}"
       export DO_REGION="nyc3"
       export DO_SIZE=""
+      export PFAFFMANAGER_BASE_URL="#{Discourse.base_url}"
+      export PFAFFMANAGER_SERVER_ID="#{id}"
       export DISCOURSE_SSH_USER=root
-      #{playbook_dir}/bin/do_install pro
+      #{playbook_dir}/#{SiteSetting.pfaffmanager_do_install} pro
       HEREDOC
     end
 

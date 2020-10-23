@@ -1,7 +1,7 @@
  <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
 
 
-{{# if server.server_status_json }}
+{{# if true }}
 <div class="pfaffmanager-group server-status">
 <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
    <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
@@ -12,7 +12,7 @@
  </div>
 
  <div class="pfaffmanager-server-status"><hr>
-  <span class='pfaffmanager-status-header'>{{i18n 'pfaffmanager.server.request_section_header' }} for {{server.last_action}}</span>
+  <span class='pfaffmanager-status-header'>{{i18n 'pfaffmanager.server.request_section_header' }}: <b>{{server.last_action}}</b></span>
    <br />{{i18n 'pfaffmanager.server.request_status' }}:&nbsp; {{server.request_status }}  
         ({{format-date server.request_status_updated_at format="medium" }})
    <br />{{i18n 'pfaffmanager.server.request_result' }}:&nbsp; {{server.request_result }}  
@@ -25,7 +25,7 @@
 </div>
 {{/if }}
 
-{{# unless server.server_status_json}}
+{{# unless false}}
  
 <div class="pfaffmanager-group server-edit">
 <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>

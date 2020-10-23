@@ -34,14 +34,20 @@ module Pfaffmanager
     def update
       puts "\n\n#{params}\n\n\n\nserver UPDATE controller id: #{params[:id]}\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
       request = params[:server][:request].to_i
+      field = params[:server][:field]
+      value = params[:server][:value]
       puts "------------------> GOT REQUEST: #{request}"
       if server = ::Pfaffmanager::Server.find_by(id: params[:id])
         data = server_params
         puts "Data: #{data}"
         if !data[:request_status].nil?
+          # ansible updates server status via API
           server.request_status = data[:request_status]
           server.request_status_updated_at = Time.now
           puts "\n\REQUEST STATUS UPDATE with #{data[:request_status]} at #{server.request_status_updated_at}\n\n"
+        elsif field && value
+          # updates a single field via API
+          server[field] = value
         elsif !request.nil?
           puts "Request exists: #{request}"
           if request >= 0

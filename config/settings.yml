@@ -4,21 +4,25 @@ plugins:
     client: true
   pfaffmanager_inventory_dir:
     default: /data/pfaffmanager/inventories
-    client: false
+    client: true
     hidden: false
   pfaffmanager_vault_file:
     default: /data/pfaffmanager/vault-password.txt
-    client: false
+    client: true
     hidden: false    
   pfaffmanager_playbook_dir:
-    default: /home/pfaffman/src/literatecomputing/lc-manager-playbook/
-    client: false
+    default: /home/pfaffman/src/literatecomputing/lc-manager-playbook
+    client: true
     hidden: false        
-  pfaffmanager_upgrade_playbook:
+    pfaffmanager_upgrade_playbook:
     default: upgrade.yml
-    client: false
-    hidden: flase            
+    client: true
+    hidden: false            
+  pfaffmanager_do_install:
+    default: bin/pfaffmanager_do_install
+    client: true
+    hidden: false            
   pfaffmanager_api_key:
     default: 2943ebacaaace1ac38535c68714cda3d109f6ffaba3efec5579d84b845a70b77
-    client: false
+    client: true
     hidden: false
