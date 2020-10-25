@@ -14,9 +14,17 @@ module Pfaffmanager
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
-    def self.createServer(user_id, hostname = "new-server-for-#{user_id}")
+    def self.createServerForUser(user_id, hostname = "new-server-for-#{user_id}")
       puts "Creating server #{hostname} for #{user_id}"
       create(user_id: user_id, hostname: hostname)
+    end
+
+    def self.createServerFromParams(params)
+      current_user_id = params[:user_id]
+      return nil unless current_user_id
+      params[:hostname] ||= "new-server-for-#{current_user_id}"
+      puts "Creating server #{params[:hostname]} for #{current_user_id}"
+      create(params)
     end
 
     def version_check
@@ -129,6 +137,9 @@ module Pfaffmanager
       playbook = SiteSetting.pfaffmanager_upgrade_playbook
       vault = SiteSetting.pfaffmanager_vault_file
       #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
+      # consider https://github.com/pgeraghty/ansible-wrapper-ruby
+      # consider Discourse::Utils.execute_command('ls')
+
       fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
       #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
     end

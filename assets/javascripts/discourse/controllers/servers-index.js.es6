@@ -15,8 +15,8 @@ export default Controller.extend({
           }
         });
       },
-      createServer() {
-        Server.createServer(this.model).then((result) => {
+      createServerForUser() {
+        Server.createServerForUser(this.model).then((result) => {
           console.log("createServer");
           console.log(this.model);
           console.log(result);

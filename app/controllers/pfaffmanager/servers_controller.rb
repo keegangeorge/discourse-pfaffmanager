@@ -22,7 +22,7 @@ module Pfaffmanager
 
     def create
       puts "Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
-      server = ::Pfaffmanager::Server.createServer(params[:server][:user_id])
+      server = ::Pfaffmanager::Server.createServerForUser(params[:server][:user_id])
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id)
       render_json_dump({ server: server})
     end
