@@ -216,7 +216,11 @@ module Pfaffmanager
     end
 
     def mg_api_key_validator
-      url = "https://api:#{mg_api_key}@api.mailgun.net/v3/domains"
+      url = "https://api.mailgun.net/v3/domains"
+      headers = { 'Authorization' => "Basic #{do_api_key}", 
+                  'Host' => 'api.mailgun.net',
+                  'Accept'=>'*/*',
+                }
       result = Excon.get(url)
       #accounts = result.body
       if result.status == 200
@@ -252,6 +256,8 @@ module Pfaffmanager
       begin
         result = Excon.get(url, headers: headers)
         puts "result: #{result}"
+        puts "body: #{result.body}"
+        puts "account: #{JSON.parse(result.body)['account']}"
         puts "Status: #{result.status}"
         do_status = JSON.parse(result.body)['account']['status']
         puts "DO status: #{do_status}"
