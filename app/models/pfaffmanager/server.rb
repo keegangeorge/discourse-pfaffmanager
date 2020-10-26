@@ -181,8 +181,8 @@ module Pfaffmanager
           result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
           puts "update server status got: #{result.body}"
           update_column(:server_status_json, result.body)
-             update_column(:server_status_updated_at, Time.now)
-    update_column(:installed_version, version_check['installed_version'])
+          update_column(:server_status_updated_at, Time.now)
+          update_column(:installed_version, version_check['installed_version'])
           update_column(:installed_sha, version_check['installed_sha'])
           update_column(:git_branch, version_check['git_branch'])
         end
