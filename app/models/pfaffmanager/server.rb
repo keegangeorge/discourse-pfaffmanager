@@ -241,19 +241,12 @@ module Pfaffmanager
     end
 
     def do_api_key_validator
-      puts "DO API KEY: #{do_api_key}"
-      puts "BLANK" if do_api_key.blank?
       return true if do_api_key.blank?
       url = "https://api.digitalocean.com/v2/account"
       headers = { 'Authorization' => "Bearer #{do_api_key}" }
       begin
         result = Excon.get(url, headers: headers)
-        puts "result: #{result}"
-        puts "body: #{result.body}"
-        puts "account: #{JSON.parse(result.body)['account']}"
-        puts "Status: #{result.status}"
         do_status = JSON.parse(result.body)['account']['status']
-        puts "DO status: #{do_status}"
         if result.status == 200 && do_status == "active"
           true
         else

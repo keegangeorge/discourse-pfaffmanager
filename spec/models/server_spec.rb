@@ -117,10 +117,10 @@ end
       expect(discourse_server.installed_sha).to eq 'abb00c3780987678fbc6f21ab0c8e46ac297ca75'
     end
 
-    # it 'updates last_action and others on request' do
-    #   discourse_server.request = 1
-    #   discourse_server.save
-    #   expect(discourse_server.request).to eq -1
-    # end
+    it 'updates last_action and others on request' do
+      discourse_server.request = 1
+      discourse_server.save
+      expect(discourse_server.request).to eq -1
+    end
   end
 end
