@@ -8,20 +8,22 @@ module Pfaffmanager
     before_action :ensure_logged_in
 
     def index
-      puts "\n\n\n\nServer controller user #{current_user.username} in the house.\n\n\n\n"
+      puts "\n\n\n\nServer controller INDEX user #{current_user.username} in the house.\n\n\n\n"
       servers = ::Pfaffmanager::Server.where(user_id: current_user.id)
       puts "-----------------> Server controller found #{servers.count} servers"
       render_json_dump({ servers: servers })
     end
 
     def show
+      puts "\n\n\n\nServer controller SHOW for user #{current_user.username} in the house.\n\n\n\n"
+
       # TODO: Allow admin to see server of other users
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
       render_json_dump({ server: server })
     end
 
     def create
-      puts "Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
+      puts "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
       server = ::Pfaffmanager::Server.createServerForUser(params[:server][:user_id])
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id)
       render_json_dump({ server: server})
@@ -32,8 +34,10 @@ module Pfaffmanager
     end
 
     def update
-      puts "\n\n#{params}\n\n\n\nserver UPDATE controller id: #{params[:id]}\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
-      request = params[:server][:request].to_i
+      puts "Hello, world."
+      puts "\n\nParams: #{params}\n\n\n\n===============> qserver UPDATE controller id: #{params[:id]}\n"
+      puts "\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
+      request = params[:server][:request].present? ? params[:server][:request].to_i : nil
       field = params[:server][:field]
       value = params[:server][:value]
       puts "------------------> GOT REQUEST: #{request}"

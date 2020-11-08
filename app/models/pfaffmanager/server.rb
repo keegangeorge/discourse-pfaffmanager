@@ -7,7 +7,7 @@ module Pfaffmanager
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
-    after_save :update_server_status if !:id.nil?
+    before_save :update_server_status if !:id.nil?
     before_save :process_server_request 
     before_save :reset_request if !:request_status.nil?
     #before_save :fill_empty_server_fields if !:id.nil?
@@ -27,8 +27,8 @@ module Pfaffmanager
       create(params)
     end
 
-    def version_check
-      JSON.parse(server_status_json)['version_check']
+    def version_check(body)
+      JSON.parse(body)['version_check']
     end
 
     private
@@ -174,17 +174,19 @@ module Pfaffmanager
     end
 
     def update_server_status
-      puts "update_server_status running NOW"
+      puts "\n\n\n\n#{'-'*50}\nupdate_server_status running NOW with api: #{discourse_api_key}"
       begin
-        if discourse_api_key.present? && (Time.now - server_status_updated_at > 60)
+        if discourse_api_key.present?
           headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
           puts "update server status got: #{result.body}"
-          update_column(:server_status_json, result.body)
-          update_column(:server_status_updated_at, Time.now)
-          update_column(:installed_version, version_check['installed_version'])
-          update_column(:installed_sha, version_check['installed_sha'])
-          update_column(:git_branch, version_check['git_branch'])
+
+          self.server_status_json=result.body
+          self.server_status_updated_at=Time.now
+          puts "VERSION: #{version_check(result.body)}"
+          self.installed_version = version_check['installed_version']
+          #update_column(:installed_sha, version_check['installed_sha'])
+          #update_column(:git_branch, version_check['git_branch'])
         end
       rescue => e
         puts "cannot update server status: #{e}"
@@ -200,8 +202,8 @@ module Pfaffmanager
       begin
         result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
         if result.status == 200
-          update_column(:server_status_json, result.body)
-          update_column(:server_status_updated_at, Time.now)
+          # server_status_json=result.body
+          # server_status_updated_at=Time.now
           true
         elsif result.status == 422
           errors.add(:discourse_api_key, "invalid")
@@ -216,11 +218,7 @@ module Pfaffmanager
     end
 
     def mg_api_key_validator
-      url = "https://api.mailgun.net/v3/domains"
-      headers = { 'Authorization' => "Basic #{do_api_key}", 
-                  'Host' => 'api.mailgun.net',
-                  'Accept'=>'*/*',
-                }
+      url = "https://api:#{mg_api_key}@api.mailgun.net/v3/domains"
       result = Excon.get(url)
       #accounts = result.body
       if result.status == 200
