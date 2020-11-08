@@ -8,7 +8,8 @@ module Pfaffmanager
 
     validate :connection_validator
     before_save :update_server_status if !:id.nil?
-    before_save :process_server_request 
+    before_save :process_server_request
+    before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
     #before_save :fill_empty_server_fields if !:id.nil?
 
@@ -25,10 +26,6 @@ module Pfaffmanager
       params[:hostname] ||= "new-server-for-#{current_user_id}"
       puts "Creating server #{params[:hostname]} for #{current_user_id}"
       create(params)
-    end
-
-    def version_check(body)
-      JSON.parse(body)['version_check']
     end
 
     private
@@ -168,25 +165,29 @@ module Pfaffmanager
       File.open(filename, "w") do |f|
         f.write(installation_script_template)
       end
-      File.chmod(0777,"#{filename}")
+      File.chmod(0777, "#{filename}")
       puts "Wrote #{filename} with \n#{installation_script_template}"
       filename
     end
 
     def update_server_status
-      puts "\n\n\n\n#{'-'*50}\nupdate_server_status running NOW with api: #{discourse_api_key}"
+      puts "\n\n\n\n#{'-' * 50}\nupdate_server_status running NOW for #{hostname} with api: #{discourse_api_key}"
+      puts "discourse_api_key is blank" if discourse_api_key.blank?
       begin
-        if discourse_api_key.present?
+        if discourse_api_key.present? && !discourse_api_key.blank?
+          puts "update_server_status still attempting to get dashboard.json"
           headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
           puts "update server status got: #{result.body}"
 
-          self.server_status_json=result.body
-          self.server_status_updated_at=Time.now
-          puts "VERSION: #{version_check(result.body)}"
+          self.server_status_json = result.body
+          self.server_status_updated_at = Time.now
+          version_check = JSON.parse(result.body)['version_check']
+          puts "VERSION: #{version_check}"
           self.installed_version = version_check['installed_version']
-          #update_column(:installed_sha, version_check['installed_sha'])
-          #update_column(:git_branch, version_check['git_branch'])
+          puts "Setting installed_sha to #{version_check['installed_sha']}"
+          self.installed_sha = version_check['installed_sha']
+          self.git_branch = version_check['git_branch']
         end
       rescue => e
         puts "cannot update server status: #{e}"
@@ -196,10 +197,12 @@ module Pfaffmanager
     # todo: update only if changed?
     # maybe it doesn't matter if we update the column anyway
     def discourse_api_key_validator
-      puts "\n\nAPI KEY VALIDATOR\n\n"
+      puts "\n\nAPI KEY VALIDATOR for #{hostname} with #{discourse_api_key}\n\n"
+      return true if discourse_api_key.nil? || discourse_api_key.blank?
 
       headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
       begin
+        puts "api key validator trying to get #{hostname} with #{discourse_api_key}"
         result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
         if result.status == 200
           # server_status_json=result.body
@@ -249,6 +252,8 @@ module Pfaffmanager
 
     def do_api_key_validator
       puts "DO API KEY: #{do_api_key}"
+      puts "BLANK" if do_api_key.blank?
+      return true if do_api_key.blank?
       url = "https://api.digitalocean.com/v2/account"
       headers = { 'Authorization' => "Bearer #{do_api_key}" }
       begin

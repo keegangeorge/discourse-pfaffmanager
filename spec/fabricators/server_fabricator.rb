@@ -1,6 +1,5 @@
 # frozen_string_literal: true
-
-Fabricator(:server, from: :user) do
-  user
-  hostname { sequence(:title) { |i| "test_hostname_#{i}" } }
+#require 'rails_helper'
+Fabricator(:server, from: "Pfaffmanager::Server") do
+  hostname { sequence(:hostname) { |i| "test-hostname-#{i}" } }
 end
