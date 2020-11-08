@@ -37,6 +37,31 @@ before do
         "missing_versions_count": 0,
         "stale_data": false
         }}', headers: {})
+   stub_request(:get, "https://api.digitalocean.com/v2/account").
+     with(
+          headers: {
+         'Authorization' => 'Bearer do-INvalid-key',
+         'Host' => 'api.digitalocean.com'
+          }).
+
+     to_return(status: 404, body: '{"errors":["The requested URL or resource could not be found."],"error_type":"not_found"}', headers: {})
+     # the api:key gets converted to this basic auth authorization
+     # TODO: generate this rrather than hard-code it.
+     stub_request(:get, "https://api.mailgun.net/v3/domains").
+       with(
+          headers: {
+         'Authorization' => 'Basic YXBpOm1nLXZhbGlkLWtleQ==',
+         'Host' => 'api.mailgun.net'
+          }).
+
+       to_return(status: 200, body: "", headers: {})
+     stub_request(:get, "https://api.mailgun.net/v3/domains").
+       with(
+            headers: {
+           'Authorization' => 'Basic YXBpOmludmFsaWQtbWctdmFsaWQta2V5',
+           'Host' => 'api.mailgun.net'
+            }).
+       to_return(status: 403, body: "", headers: {}) #not sure what the actual error status is
 end
     it "has a table name" do
       expect(described_class.table_name).to eq ("pfaffmanager_servers")
@@ -53,10 +78,28 @@ end
       expect(s.id).not_to be_nil
     end
 
-    it 'can add do_api_key' do
+    it 'can add valid do_api_key' do
       server.do_api_key = 'do-valid-key'
       server.save
       expect(server).to be_valid
+    end
+
+    it 'cannot add invalid do_api_key' do
+      server.do_api_key = 'do-INvalid-key'
+      server.save
+      expect(server).not_to be_valid
+    end
+
+    it 'can add valid mg api key' do
+      server.mg_api_key = 'mg-valid-key'
+      server.save
+      expect(server.mg_api_key).to eq 'mg-valid-key'
+    end
+
+    it 'will not accpt invalid mg api key' do
+      server.mg_api_key = 'invalid-mg-valid-key'
+      server.save
+      expect(server.mg_api_key).to eq 'invalid-mg-valid-key'
     end
 
     it 'setting an empty discourse_api_key does not update version fields' do
@@ -74,5 +117,10 @@ end
       expect(discourse_server.installed_sha).to eq 'abb00c3780987678fbc6f21ab0c8e46ac297ca75'
     end
 
+    # it 'updates last_action and others on request' do
+    #   discourse_server.request = 1
+    #   discourse_server.save
+    #   expect(discourse_server.request).to eq -1
+    # end
   end
 end
