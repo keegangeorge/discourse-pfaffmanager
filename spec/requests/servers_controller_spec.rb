@@ -19,9 +19,9 @@ end
 
 it 'can list when there is a server' do
   sign_in(user)
-  hostname='bogus.invalid'
-  s=Pfaffmanager::Server.createServerFromParams(user_id: user.id,
-    hostname: hostname , request_status: 'not updated')  
+  hostname = 'bogus.invalid'
+  s = Pfaffmanager::Server.createServerFromParams(user_id: user.id,
+                                                  hostname: hostname , request_status: 'not updated')
   get "/pfaffmanager/servers.json"
   expect(response.status).to eq(200)
   json = response.parsed_body
@@ -35,14 +35,27 @@ it 'cannot list if not logged in' do
   expect(response.status).to eq(403)
 end
 
+it 'can create a server' do
+  sign_in(user)
+  params = {}
+  params['server'] = { user_id: user.id }
+  post '/pfaffmanager/servers.json', params: params
+  expect(response.status).to eq(200)
+  server = response.parsed_body['server']
+  puts "CREATESERVER: #{server} ----> #{server['id']}"
+  expect(server["id"]).not_to eq nil
+  new_server = Pfaffmanager::Server.find(server['id'])
+  expect(new_server).not_to eq nil
+end
+
 it 'can update status' do
   request_status = 'new status'
   sign_in(admin)
-  s=Pfaffmanager::Server.createServerFromParams(user_id: user.id,
-       hostname: 'bogus.invalid' , request_status: 'not updated')
+  s = Pfaffmanager::Server.createServerFromParams(user_id: user.id,
+                                                  hostname: 'bogus.invalid' , request_status: 'not updated')
   puts "can update status created server id: #{s.id}"
-  params = {server: {git_branch: 'not'}}
- 
+  params = { server: { git_branch: 'not' } }
+
   expect {
     put "/pfaffmanager/servers/#{s.id}", params: params
   }.not_to change { s.request_status }
@@ -51,19 +64,19 @@ it 'can update status' do
   #assigns(:request_status).should eq(request_status)
 end
 
-# it 'can update status' do
-#   request_status = 'new status'
-#   s=Pfaffmanager::Server.createServerFromParams(user_id: user.id,
-#                                                 hostname: 'bogus.invalid' , request_status: 'not updated')
-#   puts "can update status created server id: #{s.id}"
-#   params = {server: {git_branch: 'not'}}
+  # it 'can update status' do
+  #   request_status = 'new status'
+  #   s=Pfaffmanager::Server.createServerFromParams(user_id: user.id,
+  #                                                 hostname: 'bogus.invalid' , request_status: 'not updated')
+  #   puts "can update status created server id: #{s.id}"
+  #   params = {server: {git_branch: 'not'}}
 
-#   expect {
-#     puts "/pfaffmanager/servers/#{s.id}", params: params
-#   }.not_to change { s.request_status }
-#   #expect(s.git_branch).to eq('new status')
-#   expect(response.status).to eq(200)
-#   #assigns(:request_status).should eq(request_status)
-# end
+  #   expect {
+  #     puts "/pfaffmanager/servers/#{s.id}", params: params
+  #   }.not_to change { s.request_status }
+  #   #expect(s.git_branch).to eq('new status')
+  #   expect(response.status).to eq(200)
+  #   #assigns(:request_status).should eq(request_status)
+  # end
 
 end

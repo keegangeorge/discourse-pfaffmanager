@@ -25,8 +25,8 @@ module Pfaffmanager
     def create
       puts "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
       server = ::Pfaffmanager::Server.createServerForUser(params[:server][:user_id])
-      server = ::Pfaffmanager::Server.find_by(user_id: current_user.id)
-      render_json_dump({ server: server})
+      #server = ::Pfaffmanager::Server.find_by(user_id: current_user.id)
+      render_json_dump({ server: server })
     end
 
     def set_server_status
@@ -65,7 +65,7 @@ module Pfaffmanager
         else
           puts "\n\nserver controller update!"
           server.user_id = data[:user_id] if data[:user_id]
-          server.hostname = data[:hostname] if data[:hostname] 
+          server.hostname = data[:hostname] if data[:hostname]
           server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
           server.do_api_key = data[:do_api_key] if data[:do_api_key]
           server.mg_api_key = data[:mg_api_key] if data[:mg_api_key]
@@ -85,7 +85,6 @@ module Pfaffmanager
 
       render json: failed_json
     end
-  
 
     def server_params
       params.require(:server).permit(
