@@ -107,34 +107,37 @@ end
 
     it 'setting an empty discourse_api_key does not update version fields' do
       server.discourse_api_key = ''
-      server.save
-      expect(server.server_status_json).to be_nil
-      expect(server.installed_version).not_to eq('2.6.0.beta4')
-      expect(server.installed_sha).not_to eq 'abb00c3780987678fbc6f21ab0c8e46ac297ca75'
+      expect { server.save }
+        .not_to change(server, :server_status_json)
+      expect(server.installed_version).to eq(nil)
+      expect(server.installed_sha).to eq nil
     end
+
     it 'setting a discourse_api_key updates version fields' do
       discourse_server.discourse_api_key = 'working-discourse-key'
-      discourse_server.save
-      expect(discourse_server.server_status_json).not_to be_nil
-      expect(discourse_server.installed_version).to eq('2.6.0.beta4')
-      expect(discourse_server.installed_sha).to eq 'abb00c3780987678fbc6f21ab0c8e46ac297ca75'
+      discourse_server.server_status_json = 'bogus'
+      discourse_server.installed_version = 'none'
+
+      expect { discourse_server.save }
+        .to change(discourse_server, :server_status_json)
+        .and change(discourse_server, :installed_version)
     end
 
     it 'updates last_action and others on rebuild request' do
       discourse_server.request = 1
-      discourse_server.request_status_updated_at = Time.now - 10
-      pre_save_time = discourse_server.request_status_updated_at
-      discourse_server.save
+      expect { discourse_server.save }
+        .to change(discourse_server, :inventory)
+        .and change(discourse_server, :request_status_updated_at)
       expect(discourse_server.request).to eq -1
-      expect(discourse_server.request_status_updated_at).to be > pre_save_time
+      expect(discourse_server.last_action).to eq 'Process rebuild'
     end
+
     it 'updates last_action and others on create request' do
       discourse_server.request = 2
-      discourse_server.request_status_updated_at = Time.now - 10
-      pre_save_time = discourse_server.request_status_updated_at
-      discourse_server.save
+      expect { discourse_server.save }
+        .to change(discourse_server, :request_status_updated_at)
       expect(discourse_server.request).to eq -1
-      expect(discourse_server.request_status_updated_at).to be > pre_save_time
+      expect(discourse_server.last_action).to eq 'Create droplet'
     end
   end
 end

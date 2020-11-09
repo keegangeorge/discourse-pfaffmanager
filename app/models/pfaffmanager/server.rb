@@ -157,7 +157,7 @@ module Pfaffmanager
         f.write(managed_inventory_template)
       end
       puts "Writing #{filename} with \n#{managed_inventory_template}"
-      filename
+      managed_inventory_template
     end
 
     def build_install_script
