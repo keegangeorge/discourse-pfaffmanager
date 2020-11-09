@@ -10,6 +10,8 @@ module Pfaffmanager
       discourse_api_key: 'working-discourse-key')}
 
 before do
+  SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
+  SiteSetting.pfaffmanager_do_install = '/bin/true'
   stub_request(:get, "https://api.digitalocean.com/v2/account").
     with(
     headers: {
@@ -71,6 +73,7 @@ end
       server = described_class.createServerForUser(user.id, hostname = "new-server-for-#{user.id}")
       expect(server.hostname).to eq "new-server-for-#{user.id}"
     end
+
     it 'can create from params' do
       puts "create from params user id #{user}"
       s = described_class.createServerFromParams(user_id: user.id)
@@ -117,10 +120,21 @@ end
       expect(discourse_server.installed_sha).to eq 'abb00c3780987678fbc6f21ab0c8e46ac297ca75'
     end
 
-    it 'updates last_action and others on request' do
+    it 'updates last_action and others on rebuild request' do
       discourse_server.request = 1
+      discourse_server.request_status_updated_at = Time.now - 10
+      pre_save_time = discourse_server.request_status_updated_at
       discourse_server.save
       expect(discourse_server.request).to eq -1
+      expect(discourse_server.request_status_updated_at).to be > pre_save_time
+    end
+    it 'updates last_action and others on create request' do
+      discourse_server.request = 2
+      discourse_server.request_status_updated_at = Time.now - 10
+      pre_save_time = discourse_server.request_status_updated_at
+      discourse_server.save
+      expect(discourse_server.request).to eq -1
+      expect(discourse_server.request_status_updated_at).to be > pre_save_time
     end
   end
 end

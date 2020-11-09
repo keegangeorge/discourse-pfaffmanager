@@ -3,7 +3,8 @@ MAXMIND_PRODUCT ||= 'GeoLite2-City'
 
 module Pfaffmanager
   class Server < ActiveRecord::Base
-    include ActiveModel::Dirty
+    #include ActiveModel::Dirty
+    belongs_to :user
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
@@ -35,19 +36,19 @@ module Pfaffmanager
       case request_status
       when "Success"
         puts "Set request_result OK"
-          update_column(:request_result, 'ok')
+          self.request_result = 'ok'
           update_server_status
-          update_column(:request, 0)
-          update_column(:request_status_updated_at, Time.now)
+          self.request = 0
+          self.request_status_updated_at = Time.now
       when "Processing rebuild"
-        update_column(:request_result, 'running')
+        self.request_result = 'running'
           puts "Set request_result running"
-          update_column(:request_status_updated_at, Time.now)
+          self.request_status_updated_at = Time.now
       when "Failed"
-        update_column(:request_result, 'failed')
-          update_column(:request, 0)
+        self.request_result = 'failed'
+          self.request = 0
           puts "Set request_result failed"
-          update_column(:request_status_updated_at, Time.now)
+          self.request_status_updated_at = Time.now
       end
     end
 
@@ -56,17 +57,17 @@ module Pfaffmanager
       case request
       when 1
         puts "Processing request 1 -- rebuild"
-        update_column(:request, -1)
-        update_column(:request_status_updated_at, Time.now)
-        update_column(:last_action, "Process rebuild")
+        self.request = -1
+        self.request_status_updated_at = Time.now
+        self.last_action = "Process rebuild"
         inventory = build_server_inventory
-        update_column(:inventory, inventory)
+        self.inventory = inventory
         run_ansible_upgrade(inventory)
       when 2
         puts "Processing request 2 -- createDroplet"
-        update_column(:request, -1)
-        update_column(:request_status_updated_at, Time.now)
-        update_column(:last_action, "Create droplet")
+        self.request = -1
+        self.request_status_updated_at = Time.now
+        self.last_action = "Create droplet"
         do_install
       end
     end
@@ -144,6 +145,7 @@ module Pfaffmanager
     def do_install
       install_script = build_install_script
       puts "Wrote #{install_script}"
+      # TODO: consider Discourse::Utils.execute_command
       fork { exec("#{install_script}") }
     end
 
@@ -162,6 +164,7 @@ module Pfaffmanager
       dir = SiteSetting.pfaffmanager_inventory_dir
       now = Time.now.strftime('%Y-%m%d-%H%M')
       filename = "#{dir}/#{id}-#{hostname}-#{now}-droplet_create"
+      # TODO: consider Discourse::Utils.atomic_write_file
       File.open(filename, "w") do |f|
         f.write(installation_script_template)
       end

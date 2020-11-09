@@ -14,6 +14,10 @@ plugins:
     default: /home/pfaffman/src/literatecomputing/lc-manager-playbook
     client: true
     hidden: false        
+  pfaffmanager_upgrade_playbook:
+    default: upgrade.yml
+    client: true
+    hidden: false        
     pfaffmanager_upgrade_playbook:
     default: upgrade.yml
     client: true
