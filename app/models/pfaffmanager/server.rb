@@ -12,7 +12,6 @@ module Pfaffmanager
     before_save :process_server_request
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
-    #before_save :fill_empty_server_fields if !:id.nil?
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
@@ -259,13 +258,6 @@ module Pfaffmanager
       rescue
         errors.add(:do_api_key, 'Key Invalid (401)')
       end
-    end
-
-    def fill_empty_server_fields
-      puts "DOING NOTHING. FIlling empty... for #{id}"
-      discourse_url ||= "https://#{hostname}"
-      puts "XXXXXXXXXXXXX filling the fields URL: (#{discourse_url})"
-      #update_column(:discourse_url, discourse_url)
     end
 
     def connection_validator

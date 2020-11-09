@@ -139,5 +139,27 @@ end
       expect(discourse_server.request).to eq -1
       expect(discourse_server.last_action).to eq 'Create droplet'
     end
+
+    it 'updates request result when request_status succeeds' do
+      discourse_server.request_status = "Success"
+      expect { discourse_server.save }
+        .to change(discourse_server, :request_result).to('ok')
+        .and change(discourse_server, :request).to(0)
+        .and change(discourse_server, :request_status_updated_at)
+    end
+    it 'updates request result when request_status running' do
+      discourse_server.request_status = "Processing rebuild"
+      expect { discourse_server.save }
+        .to change(discourse_server, :request_result).to('running')
+        .and change(discourse_server, :request_status_updated_at)
+      expect(discourse_server.request).not_to eq 0
+    end
+    it 'updates request result when request_status failed' do
+      discourse_server.request_status = "Failed"
+      expect { discourse_server.save }
+        .to change(discourse_server, :request_result).to('failed')
+        .and change(discourse_server, :request_status_updated_at)
+        .and change(discourse_server, :request).to(0)
+    end
   end
 end
