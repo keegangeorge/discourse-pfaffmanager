@@ -9,10 +9,11 @@ describe Pfaffmanager::ServersController do
   fab!(:trust_level_2) { Fabricate(:user, trust_level: TrustLevel[2]) }
   create_server_group_name = "create_server"
   group = Group.create(name: create_server_group_name)
-  puts "Group made: #{group.name}"
   looking = Group.find_by_name(group.name)
-  puts "FOund #{looking.id}"
   SiteSetting.pfaffmanager_create_server_group = create_server_group_name
+  unlimited_server_group_name = "unlimited_servers"
+  unlimited_group = Group.create(name: unlimited_server_group_name)
+  SiteSetting.pfaffmanager_unlimited_server_group = unlimited_server_group_name
 
   before do
     Jobs.run_immediately!
@@ -55,6 +56,21 @@ it 'CreateServer group can create a server and be removed from group' do
   new_server = Pfaffmanager::Server.find(server['id'])
   expect(new_server).not_to eq nil
   expect(group.users.where(id: user.id)).to be_empty
+end
+
+it 'UnlimitedCreate group can create a server and NOT be removed from group' do
+  group = Group.find_by_name(SiteSetting.pfaffmanager_unlimited_server_group)
+  group.add(user)
+  sign_in(user)
+  params = {}
+  params['server'] = { user_id: user.id }
+  post '/pfaffmanager/servers.json', params: params
+  expect(response.status).to eq(200)
+  server = response.parsed_body['server']
+  expect(server["id"]).not_to eq nil
+  new_server = Pfaffmanager::Server.find(server['id'])
+  expect(new_server).not_to eq nil
+  expect(group.users.where(id: user.id)).not_to be_empty
 end
 
 it 'CreateServer fails if not in create group' do
