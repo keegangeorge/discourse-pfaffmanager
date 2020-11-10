@@ -24,7 +24,20 @@ module Pfaffmanager
 
     def create
       puts "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
-      server = ::Pfaffmanager::Server.createServerForUser(params[:server][:user_id])
+      create_groups = Group.where(name: SiteSetting.pfaffmanager_create_server_group).or(Group.where(name: SiteSetting.pfaffmanager_unlimited_server_group)).or(Group.where(name: 'admins'))
+      can_create = !Group.member_of(create_groups, current_user).empty?
+      if can_create
+        puts "Creasting for the group"
+        server = ::Pfaffmanager::Server.createServerForUser(params[:server][:user_id])
+        group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
+        puts "Group found: #{group.name}"
+        group.remove(current_user)
+        puts "removed."
+      else
+        puts "create denied"
+        server = {}
+      end
+      # I don't know why this next line was ever here
       #server = ::Pfaffmanager::Server.find_by(user_id: current_user.id)
       render_json_dump({ server: server })
     end

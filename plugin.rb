@@ -18,6 +18,8 @@ load File.expand_path('lib/pfaffmanager/engine.rb', __dir__)
 load File.expand_path('lib/pfaffmanager/pfaffmanager_requests.rb', __dir__)
 
 after_initialize do
+  SeedFu.fixture_paths << Rails.root.join("plugins", "discourse-pfaffmanager", "db", "fixtures").to_s
+
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
 
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb

@@ -17,10 +17,6 @@ plugins:
   pfaffmanager_upgrade_playbook:
     default: upgrade.yml
     client: true
-    hidden: false        
-    pfaffmanager_upgrade_playbook:
-    default: upgrade.yml
-    client: true
     hidden: false            
   pfaffmanager_do_install:
     default: bin/pfaffmanager_do_install
@@ -30,3 +26,19 @@ plugins:
     default: 2943ebacaaace1ac38535c68714cda3d109f6ffaba3efec5579d84b845a70b77
     client: true
     hidden: false
+  pfaffmanager_create_server_group:
+    default: ""
+    client: true
+    hidden: false
+    type: string
+  pfaffmanager_unlimited_server_group:
+    default: ""
+    client: true
+    hidden: false
+    type: group
+  pfaffmanager_server_manager_group:
+    default: ""
+    client: true
+    hidden: false
+    type: group
+    

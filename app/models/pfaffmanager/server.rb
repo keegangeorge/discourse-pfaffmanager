@@ -16,7 +16,7 @@ module Pfaffmanager
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
     def self.createServerForUser(user_id, hostname = "new-server-for-#{user_id}")
-      puts "Creating server #{hostname} for #{user_id}"
+      puts "Creating server for user #{hostname} for #{user_id}"
       create(user_id: user_id, hostname: hostname)
     end
 
