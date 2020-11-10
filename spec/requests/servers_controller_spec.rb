@@ -73,6 +73,18 @@ it 'UnlimitedCreate group can create a server and NOT be removed from group' do
   expect(group.users.where(id: user.id)).not_to be_empty
 end
 
+it 'Admin can create a server' do
+  sign_in(admin)
+  params = {}
+  params['server'] = { user_id: admin.id }
+  post '/pfaffmanager/servers.json', params: params
+  expect(response.status).to eq(200)
+  server = response.parsed_body['server']
+  expect(server["id"]).not_to eq nil
+  new_server = Pfaffmanager::Server.find(server['id'])
+  expect(new_server).not_to eq nil
+end
+
 it 'CreateServer fails if not in create group' do
   group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
   sign_in(user)
