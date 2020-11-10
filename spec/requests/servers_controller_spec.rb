@@ -43,11 +43,8 @@ it 'cannot list if not logged in' do
 end
 
 it 'CreateServer group can create a server and be removed from group' do
-  puts "Looking for #{SiteSetting.pfaffmanager_create_server_group}"
   group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
-  puts "WE found it -- #{group.id}"
   group.add(user)
-  before_count = group.users.count
   sign_in(user)
   params = {}
   params['server'] = { user_id: user.id }
@@ -57,23 +54,19 @@ it 'CreateServer group can create a server and be removed from group' do
   expect(server["id"]).not_to eq nil
   new_server = Pfaffmanager::Server.find(server['id'])
   expect(new_server).not_to eq nil
-  after_count = group.users.count
-  expect(before_count - after_count).to eq 1
+  expect(group.users.where(id: user.id)).to be_empty
 end
 
-# it 'CreateServer fails unless in a create group' do
-#   group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
-#   group.add(user)
-#   sign_in(user)
-#   params = {}
-#   params['server'] = { user_id: user.id }
-#   post '/pfaffmanager/servers.json', params: params
-#   expect(response.status).to eq(200)
-#   server = response.parsed_body['server']
-#   expect(server["id"]).not_to eq nil
-#   new_server = Pfaffmanager::Server.find(server['id'])
-#   expect(new_server).not_to eq nil
-# end
+it 'CreateServer fails if not in create group' do
+  group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
+  sign_in(user)
+  params = {}
+  params['server'] = { user_id: user.id }
+  post '/pfaffmanager/servers.json', params: params
+  expect(response.status).to eq(200)
+  server = response.parsed_body['server']
+  expect(server["id"]).to eq nil
+end
 
 it 'can update status' do
   request_status = 'new status'
