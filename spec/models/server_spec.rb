@@ -161,5 +161,6 @@ end
         .and change(discourse_server, :request_status_updated_at)
         .and change(discourse_server, :request).to(0)
     end
+
   end
 end

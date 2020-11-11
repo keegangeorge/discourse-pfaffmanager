@@ -30,7 +30,7 @@ plugins:
     default: ""
     client: true
     hidden: false
-    type: string
+    type: group
   pfaffmanager_unlimited_server_group:
     default: ""
     client: true

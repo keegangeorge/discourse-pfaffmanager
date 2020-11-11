@@ -28,10 +28,27 @@ module Pfaffmanager
       create(params)
     end
 
+    def self.create_default_groups
+      create_group_name = 'CreateServer'
+      Group.create(name: create_group_name,
+                   visibility_level: Group.visibility_levels[:owners],
+                  )
+      SiteSetting.pfaffmanager_create_server_group = create_group_name
+      unlimited_group_name = 'UnlimitedServers'
+      Group.create(name: unlimited_group_name,
+                   visibility_level: Group.visibility_levels[:owners],
+                  )
+      SiteSetting.pfaffmanager_unlimited_server_group = unlimited_group_name
+      manager_group_name = 'ServerManager'
+      Group.create(name: manager_group_name,
+                   visibility_level: Group.visibility_levels[:owners],
+                  )
+      SiteSetting.pfaffmanager_server_manager_group = manager_group_name
+    end
     private
 
     def reset_request # update server model that process is finished
-      puts " -=--------------------- RESET #{request_status}\n"
+      puts " -=--------------------- RESET #{request_status}\n" unless false
       case request_status
       when "Success"
         puts "Set request_result OK"
@@ -55,7 +72,7 @@ module Pfaffmanager
       puts "\n\nPROCESS SERVER REQUEST: #{request}\n\n"
       case request
       when 1
-        puts "Processing request 1 -- rebuild"
+        puts "Processing request 1 -- rebuild -- run_ansible_upgrade"
         self.request = -1
         self.request_status_updated_at = Time.now
         self.last_action = "Process rebuild"
@@ -63,7 +80,7 @@ module Pfaffmanager
         self.inventory = inventory
         run_ansible_upgrade(inventory)
       when 2
-        puts "Processing request 2 -- createDroplet"
+        puts "Processing request 2 -- createDroplet -- do_install"
         self.request = -1
         self.request_status_updated_at = Time.now
         self.last_action = "Create droplet"
@@ -72,6 +89,7 @@ module Pfaffmanager
     end
 
     def installation_script_template
+      puts "installation_script_template running now"
       user = User.find(user_id)
       playbook_dir = SiteSetting.pfaffmanager_playbook_dir
       <<~HEREDOC
@@ -92,6 +110,7 @@ module Pfaffmanager
     end
 
     def managed_inventory_template
+      put "managed_inventory_template running now"
       user = User.find(user_id)
       <<~HEREDOC
         ---
@@ -137,6 +156,7 @@ module Pfaffmanager
       # consider https://github.com/pgeraghty/ansible-wrapper-ruby
       # consider Discourse::Utils.execute_command('ls')
 
+      puts "Going to fork: #{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}"
       fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
       #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
     end
@@ -145,6 +165,7 @@ module Pfaffmanager
       install_script = build_install_script
       puts "Wrote #{install_script}"
       # TODO: consider Discourse::Utils.execute_command
+      puts "GOING TO RUN #{install_script}"
       fork { exec("#{install_script}") }
     end
 
@@ -155,7 +176,7 @@ module Pfaffmanager
       File.open(filename, "w") do |f|
         f.write(managed_inventory_template)
       end
-      puts "Writing #{filename} with \n#{managed_inventory_template}"
+      puts "Writing #{filename}"
       managed_inventory_template
     end
 

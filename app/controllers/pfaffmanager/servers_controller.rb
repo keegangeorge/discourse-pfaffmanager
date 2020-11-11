@@ -27,12 +27,16 @@ module Pfaffmanager
       create_groups = Group.where(name: SiteSetting.pfaffmanager_create_server_group).or(Group.where(name: SiteSetting.pfaffmanager_unlimited_server_group))
       can_create = !Group.member_of(create_groups, current_user).empty? || current_user.admin
       if can_create
-        puts "Creasting for the group"
+        puts "Creating for the group"
         server = ::Pfaffmanager::Server.createServerForUser(params[:server][:user_id])
         group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
-        puts "Group found: #{group.name}"
-        group.remove(current_user) unless current_user.admin
-        puts "removed." unless current_user.admin
+        if group
+          puts "Group found: #{group.name}"
+          group.remove(current_user) unless current_user.admin
+          puts "removed." unless current_user.admin
+        else
+          puts "pfaffmanager_create_server_group not configured."
+        end
       else
         puts "create denied"
         server = {}
@@ -47,22 +51,28 @@ module Pfaffmanager
     end
 
     def update
-      puts "Hello, world."
       puts "\n\nParams: #{params}\n\n\n\n===============> qserver UPDATE controller id: #{params[:id]}\n"
       puts "\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
-      request = params[:server][:request].present? ? params[:server][:request].to_i : nil
+      manage_group = Group.where(name: SiteSetting.pfaffmanager_server_manager_group)
+      can_manage = !Group.member_of(create_groups, current_user).empty? || current_user.admin
+
+      if can_manage
+        request = params[:server][:request].present? ? params[:server][:request].to_i : nil
+      else
+        puts "You are not allowed to manage"
+      end
       field = params[:server][:field]
       value = params[:server][:value]
       puts "------------------> GOT REQUEST: #{request}"
       if server = ::Pfaffmanager::Server.find_by(id: params[:id])
         data = server_params
         puts "Data: #{data}"
-        if !data[:request_status].nil?
+        if !data[:request_status].nil? && current_user.admin
           # ansible updates server status via API
           server.request_status = data[:request_status]
           server.request_status_updated_at = Time.now
           puts "\n\REQUEST STATUS UPDATE with #{data[:request_status]} at #{server.request_status_updated_at}\n\n"
-        elsif field && value
+        elsif field && value && current_user.admin
           # updates a single field via API
           server[field] = value
         elsif !request.nil?
@@ -77,12 +87,17 @@ module Pfaffmanager
           end
         else
           puts "\n\nserver controller update!"
-          server.user_id = data[:user_id] if data[:user_id]
-          server.hostname = data[:hostname] if data[:hostname]
+          # server.user_id = data[:user_id] if data[:user_id]
+          # server.hostname = data[:hostname] if data[:hostname]
           server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
-          server.do_api_key = data[:do_api_key] if data[:do_api_key]
-          server.mg_api_key = data[:mg_api_key] if data[:mg_api_key]
-          server.maxmind_license_key = data[:maxmind_license_key]
+          server.do_api_key = data[:do_api_key] unless data[:do_api_key].nil?
+          server.mg_api_key = data[:mg_api_key] unless data[:mg_api_key].nil?
+          server.maxmind_license_key = data[:maxmind_license_key] unless ata[:maxmind_license_key].nil?
+          server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
+          server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?
+          server.smtp_port = data[:smtp_port] unless data[:smtp_port].nil?
+          server.smtp_password = data[:smtp_password] unless data[:smtp_password].nil?
+          server.smtp_user = data[:smtp_user] unless data[:smtp_user].nil?
           # don't try to start a build if one is running
         end
 

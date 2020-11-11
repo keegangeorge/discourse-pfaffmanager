@@ -7,6 +7,13 @@ describe Pfaffmanager::ServersController do
   fab!(:admin) { Fabricate(:admin) }
   fab!(:another_user) { Fabricate(:user) }
   fab!(:trust_level_2) { Fabricate(:user, trust_level: TrustLevel[2]) }
+  let(:discourse_server) { Fabricate(:server,
+    user_id: user.id,
+    hostname: 'working.discourse.invalid',
+    discourse_api_key: 'working-discourse-key')}
+  SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
+  SiteSetting.pfaffmanager_do_install = 'true'
+
   create_server_group_name = "create_server"
   group = Group.create(name: create_server_group_name)
   looking = Group.find_by_name(group.name)
@@ -15,8 +22,42 @@ describe Pfaffmanager::ServersController do
   unlimited_group = Group.create(name: unlimited_server_group_name)
   SiteSetting.pfaffmanager_unlimited_server_group = unlimited_server_group_name
 
+  server_manager_group_name = "UpgradeServers"
+  server_manager_group = Group.create(name: server_manager_group_name)
+  SiteSetting.pfaffmanager_server_manager_group = server_manager_group_name
+
   before do
     Jobs.run_immediately!
+    stub_request(:get, "https://working.discourse.invalid/admin/dashboard.json").
+      with(
+        headers: {
+          'Api-Key' => 'working-discourse-key',
+          'Api-Username' => 'system',
+          'Host' => 'working.discourse.invalid'
+        }).
+      to_return(status: 200, body: '{
+      "updated_at": "2020-10-26T17:21:00.678Z",
+      "version_check": {
+      "installed_version": "2.6.0.beta4",
+      "installed_sha": "abb00c3780987678fbc6f21ab0c8e46ac297ca75",
+      "installed_describe": "v2.6.0.beta4 +56",
+      "git_branch": "tests-passed",
+      "updated_at": "2020-10-26T17:01:08.197Z",
+      "latest_version": "2.6.0.beta4",
+      "critical_updates": false,
+      "missing_versions_count": 0,
+      "stale_data": false
+      }}', headers: {})
+  end
+
+  after do
+    # TODO: figure out how to do these with a fabricator?
+    SiteSetting.pfaffmanager_create_server_group = ""
+    SiteSetting.pfaffmanager_unlimited_server_group = ""
+    SiteSetting.pfaffmanager_server_manager_group = ""
+    Group.find_by_name(create_server_group_name).destroy
+    Group.find_by_name(unlimited_server_group_name).destroy
+    Group.find_by_name(server_manager_group_name).destroy
   end
 
 it 'can list if no servers' do
@@ -111,6 +152,61 @@ it 'can update status' do
   expect(response.status).to eq(200)
   #assigns(:request_status).should eq(request_status)
 end
+
+it 'server manager group can initiate upgrades' do
+  group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
+    group.add(user)
+    sign_in(user)
+    params = {}
+    params['server'] = { id: discourse_server.id, user_id: user.id, request: 1 }
+    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(response.status).to eq(200)
+    expect(response.parsed_body['success']).to eq "OK"
+    discourse_server.reload
+    expect(discourse_server.request).to eq -1
+    expect(discourse_server.last_action).to eq 'Process rebuild'
+end
+
+it 'can update smtp parameters if user' do
+  sign_in(user)
+  puts "can update status created server id: #{discourse_server.id}"
+  params = { server: { smtp_host: 'smtp.invalid',
+    smtp_password: 'smtp-password' } }
+  put "/pfaffmanager/servers/#{discourse_server.id}", params: params
+
+  # expect {
+  #   put "/pfaffmanager/servers/#{discourse_server.id}", params: params
+  # }.to change(discourse_server, :smtp_host).to 'smtp.invalid'
+  puts "smtp: #{discourse_server.smtp_host}"
+  discourse_server.reload
+  puts "smtp2: #{discourse_server.smtp_host}"
+  #expect(s.git_branch).to eq('new status')
+  expect(response.status).to eq(200)
+  #assigns(:request_status).should eq(request_status)
+end
+
+  # it 'allows updates of non-request fields for all users'
+  #   expect(true).to eq false
+  # end
+  # it 'does not allow updates of request field for non-managerse'
+  #   expect(true).to eq false
+  # end
+
+  it 'enforces update to server owner or admin' do
+    expect('spec').to eq 'something'
+  end
+
+  # it 'does not initiate a new request if one is running'
+  #   expect(true).to eq false
+  # end
+  # it 'does initiate a new request is not running'
+  #   expect(true).to eq false
+  # end
+
+  # it 'allows a single field to be updated via API'
+  # end
+  # it 'does not allow a single field to be updated via API if not admin'
+  # end
 
   # it 'can update status' do
   #   request_status = 'new status'
