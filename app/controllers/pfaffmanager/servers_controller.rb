@@ -25,9 +25,9 @@ module Pfaffmanager
     def create
       puts "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
       create_groups = Group.where(name: SiteSetting.pfaffmanager_create_server_group).or(Group.where(name: SiteSetting.pfaffmanager_unlimited_server_group))
-      can_create = !Group.member_of(create_groups, current_user).empty? || current_user.admin
+      can_create = create_groups && !Group.member_of(create_groups, current_user).empty? || current_user.admin
       if can_create
-        puts "Creating for the group"
+        puts "Creating for the group" unless false
         server = ::Pfaffmanager::Server.createServerForUser(params[:server][:user_id])
         group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
         if group
@@ -51,28 +51,39 @@ module Pfaffmanager
     end
 
     def update
-      puts "\n\nParams: #{params}\n\n\n\n===============> qserver UPDATE controller id: #{params[:id]}\n"
-      puts "\nrequest_status: #{params[:request_status]}\n\n\n\n\n\n"
+      puts "\n\nParams: #{params}\n--> qserver UPDATE controller id: #{params[:id]}\n"
+      puts "\nrequest_status: #{params[:request_status]}"
       manage_group = Group.where(name: SiteSetting.pfaffmanager_server_manager_group)
-      can_manage = !Group.member_of(create_groups, current_user).empty? || current_user.admin
+      can_manage = !Group.member_of(manage_group, current_user).empty? || current_user.admin
 
       if can_manage
+        puts "you can manage"
         request = params[:server][:request].present? ? params[:server][:request].to_i : nil
+        puts "got the request"
       else
         puts "You are not allowed to manage"
       end
-      field = params[:server][:field]
-      value = params[:server][:value]
-      puts "------------------> GOT REQUEST: #{request}"
-      if server = ::Pfaffmanager::Server.find_by(id: params[:id])
+           field = params[:server][:field] unless params[:server].nil?
+           value = params[:server][:value] unless params[:server].nil?
+      puts "gonna look"
+      server = ::Pfaffmanager::Server.find_by(id: params[:id])
+      puts "Server? Got '#{server.hostname}'"
+
+      puts "------------------> GOT REQUEST: #{request}" if request
+      if server
         data = server_params
-        puts "Data: #{data}"
+        puts "\nProcessing server! Data: #{data}"
+        puts "dst: #{data[:request_status].nil?}"
+        puts "current admin: #{current_user.admin}"
+
         if !data[:request_status].nil? && current_user.admin
+          puts "update..."
           # ansible updates server status via API
           server.request_status = data[:request_status]
           server.request_status_updated_at = Time.now
           puts "\n\REQUEST STATUS UPDATE with #{data[:request_status]} at #{server.request_status_updated_at}\n\n"
         elsif field && value && current_user.admin
+          puts 'got a field'
           # updates a single field via API
           server[field] = value
         elsif !request.nil?
@@ -86,13 +97,13 @@ module Pfaffmanager
             server.request_status = "Processing"
           end
         else
-          puts "\n\nserver controller update!"
+          puts "\n\nNORMAL server controller update!"
           # server.user_id = data[:user_id] if data[:user_id]
           # server.hostname = data[:hostname] if data[:hostname]
           server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
           server.do_api_key = data[:do_api_key] unless data[:do_api_key].nil?
           server.mg_api_key = data[:mg_api_key] unless data[:mg_api_key].nil?
-          server.maxmind_license_key = data[:maxmind_license_key] unless ata[:maxmind_license_key].nil?
+          server.maxmind_license_key = data[:maxmind_license_key] unless data[:maxmind_license_key].nil?
           server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
           server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?
           server.smtp_port = data[:smtp_port] unless data[:smtp_port].nil?
@@ -115,6 +126,7 @@ module Pfaffmanager
     end
 
     def server_params
+      puts "server_params . . . processing #{params}"
       params.require(:server).permit(
         :user_id,
         :hostname,
@@ -123,6 +135,11 @@ module Pfaffmanager
         :maxmind_license_key,
         :discourse_api_key,
         :request,
+        :smtp_host,
+        :smtp_password,
+        :smtp_notification_email,
+        :smtp_user,
+        :smtp_port,
         :request_status
       )
     end

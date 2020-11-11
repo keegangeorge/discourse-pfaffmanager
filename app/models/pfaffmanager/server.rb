@@ -69,7 +69,7 @@ module Pfaffmanager
     end
 
     def process_server_request
-      puts "\n\nPROCESS SERVER REQUEST: #{request}\n\n"
+      puts "\n\nPROCESS SERVER REQUEST: '#{request}'\n\n"
       case request
       when 1
         puts "Processing request 1 -- rebuild -- run_ansible_upgrade"
@@ -110,7 +110,7 @@ module Pfaffmanager
     end
 
     def managed_inventory_template
-      put "managed_inventory_template running now"
+      puts "managed_inventory_template running now"
       user = User.find(user_id)
       <<~HEREDOC
         ---
@@ -282,18 +282,22 @@ module Pfaffmanager
     end
 
     def connection_validator
+      puts "connection_validator..."
       unless hostname.present?
         errors.add(:hostname, "Hostname must be present")
       end
 
         puts "discourse: #{discourse_api_key}"
         discourse_api_key.present? && !discourse_api_key_validator
-        puts "MG: #{mg_api_key}"
+        puts "mg"
         mg_api_key.present? && !mg_api_key_validator
-        puts "DO: #{do_api_key}"
+        puts "do"
         do_api_key.present? && !do_api_key_validator
+        puts "mm"
         maxmind_license_key.present? && !maxmind_license_key_validator
+        puts "req"
         request.present? && server_request_validator
+        puts "done with validations!"
     end
   end
 end

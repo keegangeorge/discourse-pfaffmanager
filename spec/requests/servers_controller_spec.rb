@@ -167,22 +167,31 @@ it 'server manager group can initiate upgrades' do
     expect(discourse_server.last_action).to eq 'Process rebuild'
 end
 
-it 'can update smtp parameters if user' do
+it 'can update smtp parameters' do
+  group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
   sign_in(user)
-  puts "can update status created server id: #{discourse_server.id}"
-  params = { server: { smtp_host: 'smtp.invalid',
-    smtp_password: 'smtp-password' } }
-  put "/pfaffmanager/servers/#{discourse_server.id}", params: params
-
-  # expect {
-  #   put "/pfaffmanager/servers/#{discourse_server.id}", params: params
-  # }.to change(discourse_server, :smtp_host).to 'smtp.invalid'
-  puts "smtp: #{discourse_server.smtp_host}"
+  smtp_user = 'theuser'
+  smtp_password = "smtp-pw"
+  smtp_host = 'smtphost.com'
+  smtp_port = '1234'
+  smtp_notification_email = 'nobody@nowhere.com'
+  params = { server: { smtp_host: smtp_host,
+                       smtp_password: smtp_password,
+                       smtp_port: smtp_port,
+                       smtp_user: smtp_user,
+                       smtp_notification_email: smtp_notification_email
+                      }
+            }
+put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
   discourse_server.reload
-  puts "smtp2: #{discourse_server.smtp_host}"
-  #expect(s.git_branch).to eq('new status')
   expect(response.status).to eq(200)
-  #assigns(:request_status).should eq(request_status)
+  expect(response.parsed_body['success']).to eq "OK"
+  expect(discourse_server.smtp_host).to eq(smtp_host)
+  expect(discourse_server.smtp_password).to eq(smtp_password)
+  expect(discourse_server.smtp_user).to eq(smtp_user)
+  expect(discourse_server.smtp_port).to eq(smtp_port.to_i)
+  expect(discourse_server.smtp_notification_email).to eq(smtp_notification_email)
+
 end
 
   # it 'allows updates of non-request fields for all users'
@@ -192,9 +201,9 @@ end
   #   expect(true).to eq false
   # end
 
-  it 'enforces update to server owner or admin' do
-    expect('spec').to eq 'something'
-  end
+  # it 'enforces update to server owner or admin' do
+  #   expect('spec').to eq 'something'
+  # end
 
   # it 'does not initiate a new request if one is running'
   #   expect(true).to eq false
