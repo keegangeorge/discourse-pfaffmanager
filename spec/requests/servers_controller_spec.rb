@@ -148,9 +148,7 @@ it 'can update status' do
   expect {
     put "/pfaffmanager/servers/#{s.id}", params: params
   }.not_to change { s.request_status }
-  #expect(s.git_branch).to eq('new status')
   expect(response.status).to eq(200)
-  #assigns(:request_status).should eq(request_status)
 end
 
 it 'server manager group can initiate upgrades' do
@@ -165,6 +163,36 @@ it 'server manager group can initiate upgrades' do
     discourse_server.reload
     expect(discourse_server.request).to eq -1
     expect(discourse_server.last_action).to eq 'Process rebuild'
+end
+
+it 'server manager cannot start upgrade if one is running' do
+  group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
+    group.add(user)
+    sign_in(user)
+    params = {}
+    params['server'] = { id: discourse_server.id, user_id: user.id, request: 1 }
+    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(response.status).to eq(200)
+    expect(response.parsed_body['success']).to eq "OK"
+    discourse_server.reload
+    expect(discourse_server.request).to eq -1
+    expect(discourse_server.last_action).to eq 'Process rebuild'
+    rebuild_status = 'spec testing'
+    discourse_server.last_action = rebuild_status
+    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(discourse_server.last_action).to eq rebuild_status
+end
+
+it 'non server managers cannot initiate upgrades' do
+  sign_in(user)
+    params = {}
+    params['server'] = { id: discourse_server.id, user_id: user.id, request: 1 }
+    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(response.status).to eq(200)
+    expect(response.parsed_body['success']).to eq "OK"
+    discourse_server.reload
+    expect(discourse_server.request).to be nil
+    expect(discourse_server.last_action).to be nil
 end
 
 it 'can update smtp parameters' do
@@ -191,19 +219,7 @@ put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
   expect(discourse_server.smtp_user).to eq(smtp_user)
   expect(discourse_server.smtp_port).to eq(smtp_port.to_i)
   expect(discourse_server.smtp_notification_email).to eq(smtp_notification_email)
-
 end
-
-  # it 'allows updates of non-request fields for all users'
-  #   expect(true).to eq false
-  # end
-  # it 'does not allow updates of request field for non-managerse'
-  #   expect(true).to eq false
-  # end
-
-  # it 'enforces update to server owner or admin' do
-  #   expect('spec').to eq 'something'
-  # end
 
   # it 'does not initiate a new request if one is running'
   #   expect(true).to eq false
