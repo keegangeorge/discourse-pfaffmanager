@@ -61,10 +61,15 @@ module Pfaffmanager
         request = params[:server][:request].present? ? params[:server][:request].to_i : nil
         puts "got the request"
       else
+        # TODO: raise an error? (Or stop on the front end and dno't worry here)
         puts "You are not allowed to manage"
       end
-           field = params[:server][:field] unless params[:server].nil?
-           value = params[:server][:value] unless params[:server].nil?
+      # # TODO: Why not just past the fields rather than a name of a field?
+      # # but it requires changing this and Ansible, so I'll leave it 2020-11-12
+      # EDIT: maybe I wized up before I used this crazy idea. . .
+      # leaving the comment just in case because I'm bad at git
+      #      field = params[:server][:field] unless params[:server].nil?
+      #      value = params[:server][:value] unless params[:server].nil?
       puts "gonna look"
       server = ::Pfaffmanager::Server.find_by(id: params[:id])
       puts "Server? Got '#{server.hostname}'"
@@ -73,20 +78,21 @@ module Pfaffmanager
       if server
         data = server_params
         puts "\nProcessing server! Data: #{data}"
-        puts "dst: #{data[:request_status].nil?}"
+        puts "request status nil: #{data[:request_status].nil?}"
         puts "current admin: #{current_user.admin}"
 
         if !data[:request_status].nil? && current_user.admin
+          # THIS IS A REQUEST STATUS Update--initiating build/install
           puts "update..."
           # ansible updates server status via API
           server.request_status = data[:request_status]
           server.request_status_updated_at = Time.now
           puts "\n\REQUEST STATUS UPDATE with #{data[:request_status]} at #{server.request_status_updated_at}\n\n"
-        elsif field && value && current_user.admin
-          puts 'got a field'
-          # updates a single field via API
-          server[field] = value
-        elsif !request.nil?
+          # elsif field && value && current_user.admin
+          #   puts 'got a field'
+          #   # updates a single field via API
+          #   server[field] = value
+          # elsif !request.nil?
           puts "Request exists: #{request}"
           if request >= 0
             server.request = request
@@ -101,6 +107,7 @@ module Pfaffmanager
           # server.user_id = data[:user_id] if data[:user_id]
           # server.hostname = data[:hostname] if data[:hostname]
           server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
+          server.hostname = data[:hostname] if data[:hostname]
           server.do_api_key = data[:do_api_key] unless data[:do_api_key].nil?
           server.mg_api_key = data[:mg_api_key] unless data[:mg_api_key].nil?
           server.maxmind_license_key = data[:maxmind_license_key] unless data[:maxmind_license_key].nil?
@@ -135,6 +142,7 @@ module Pfaffmanager
         :maxmind_license_key,
         :discourse_api_key,
         :request,
+        :request_status,
         :smtp_host,
         :smtp_password,
         :smtp_notification_email,

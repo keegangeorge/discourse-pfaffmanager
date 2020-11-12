@@ -221,15 +221,18 @@ put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
   expect(discourse_server.smtp_notification_email).to eq(smtp_notification_email)
 end
 
-  # it 'does not initiate a new request if one is running'
-  #   expect(true).to eq false
-  # end
-  # it 'does initiate a new request is not running'
-  #   expect(true).to eq false
+  # it 'allows status to be updated via API' do
+  #   sign_in(admin)
+  #     new_status = 'new status'
+  #     params = {}
+  #     params['server'] = { request_status: new_status }
+  #     put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+  #     expect(response.status).to eq(200)
+  #     expect(response.parsed_body['success']).to eq "OK"
+  #     expect { discourse_server.reload }
+  #       .to change { discourse_server.request_status }
   # end
 
-  # it 'allows a single field to be updated via API'
-  # end
   # it 'does not allow a single field to be updated via API if not admin'
   # end
 

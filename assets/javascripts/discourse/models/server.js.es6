@@ -30,7 +30,6 @@ Server.reopenClass({
       do_api_key: model.do_api_key,
       mg_api_key: model.mg_api_key,
       maxmind_license_key: model.maxmind_license_key,
-      inventory: model.inventory,
       request: model.request,
       rebuild: model.rebuild,
       discourse_api_key: model.discourse_api_key
