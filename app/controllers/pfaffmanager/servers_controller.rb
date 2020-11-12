@@ -82,7 +82,7 @@ module Pfaffmanager
         puts "current admin: #{current_user.admin}"
 
         if !data[:request_status].nil? && current_user.admin
-          # THIS IS A REQUEST STATUS Update--initiating build/install
+          # THIS IS A REQUEST STATUS Update--ansible status update
           puts "update..."
           # ansible updates server status via API
           server.request_status = data[:request_status]
@@ -92,16 +92,17 @@ module Pfaffmanager
           #   puts 'got a field'
           #   # updates a single field via API
           #   server[field] = value
-          # elsif !request.nil?
+        elsif !request.nil?
+          # a request to do an ansible task like install or rebuild
           puts "Request exists: #{request}"
-          if request >= 0
-            server.request = request
-          else
-            puts "\n\nprocess running skip rebuild!!\n\n"
-          end
-          if request > 0
-            server.request_status = "Processing"
-          end
+           if request >= 0
+             server.request = request
+           else
+             puts "\n\nprocess running skip rebuild!!\n\n"
+           end
+           if request > 0
+             server.request_status = "Processing"
+           end
         else
           puts "\n\nNORMAL server controller update!"
           # server.user_id = data[:user_id] if data[:user_id]
