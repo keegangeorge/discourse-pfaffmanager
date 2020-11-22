@@ -155,8 +155,7 @@ it 'server manager group can initiate upgrades' do
   group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
     group.add(user)
     sign_in(user)
-    params = {}
-    params['server'] = { id: discourse_server.id, user_id: user.id, request: 1 }
+    params = { server: { request: '1' } }
     put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
     expect(response.status).to eq(200)
     expect(response.parsed_body['success']).to eq "OK"
@@ -221,34 +220,27 @@ put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
   expect(discourse_server.smtp_notification_email).to eq(smtp_notification_email)
 end
 
-  # it 'allows status to be updated via API' do
-  #   sign_in(admin)
-  #     new_status = 'new status'
-  #     params = {}
-  #     params['server'] = { request_status: new_status }
-  #     put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
-  #     expect(response.status).to eq(200)
-  #     expect(response.parsed_body['success']).to eq "OK"
-  #     expect { discourse_server.reload }
-  #       .to change { discourse_server.request_status }
-  # end
-
-  # it 'does not allow a single field to be updated via API if not admin'
-  # end
-
-  # it 'can update status' do
-  #   request_status = 'new status'
-  #   s=Pfaffmanager::Server.createServerFromParams(user_id: user.id,
-  #                                                 hostname: 'bogus.invalid' , request_status: 'not updated')
-  #   puts "can update status created server id: #{s.id}"
-  #   params = {server: {git_branch: 'not'}}
-
-  #   expect {
-  #     puts "/pfaffmanager/servers/#{s.id}", params: params
-  #   }.not_to change { s.request_status }
-  #   #expect(s.git_branch).to eq('new status')
-  #   expect(response.status).to eq(200)
-  #   #assigns(:request_status).should eq(request_status)
-  # end
+it 'allows status to be updated via API' do
+  sign_in(admin)
+    new_status = 'new status'
+    params = {}
+    params['server'] = { request_status: new_status }
+    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(response.status).to eq(200)
+    expect(response.parsed_body['success']).to eq "OK"
+    expect { discourse_server.reload }
+      .to change { discourse_server.request_status }
+end
+it 'users cannot update status' do
+  sign_in(user)
+    new_status = 'new status'
+    params = {}
+    params['server'] = { request_status: new_status }
+    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(response.status).to eq(200)
+    expect(response.parsed_body['success']).to eq "OK"
+    expect { discourse_server.reload }
+      .not_to change { discourse_server.request_status }
+end
 
 end
