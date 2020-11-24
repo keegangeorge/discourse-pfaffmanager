@@ -27,17 +27,17 @@ plugins:
     client: true
     hidden: false
   pfaffmanager_create_server_group:
-    default: ""
+    default: "CreateServer"
     client: true
     hidden: false
     type: group
   pfaffmanager_unlimited_server_group:
-    default: ""
+    default: "UnlimitedServers"
     client: true
     hidden: false
     type: group
   pfaffmanager_server_manager_group:
-    default: ""
+    default: "ServerManager"
     client: true
     hidden: false
     type: group
