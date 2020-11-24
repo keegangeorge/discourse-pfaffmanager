@@ -170,6 +170,9 @@ module Pfaffmanager
       # consider Discourse::Utils.execute_command('ls')
       if SiteSetting.pfaffmanager_skip_actions
         puts "SKIP actions is set. Not running upgrade"
+        self.request = 0
+        self.discourse_api_key ||= ApiKey.create(description: 'pfaffmanager localhost key')
+        self.update_server_status
       else
         puts "Going to fork: #{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}"
         fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
@@ -215,18 +218,46 @@ module Pfaffmanager
 
     def update_server_status
       begin
-        if discourse_api_key.present? && !discourse_api_key.blank?
-          headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
-          result = Excon.get("https://#{hostname}/admin/dashboard.json", headers: headers)
+        # TODO: REMOVE OR enforce admin only
+        if self.hostname.match(/localhost/)
+          puts "using bogus host info"
+          body = '{
+            "updated_at": "2020-11-24T21:25:56.643Z",
+            "version_check": {
+            "installed_version": "2.6.0.beta6",
+            "installed_sha": "1157ff8116ba5e5d11db589e1b6cb930d2c86c4d",
+            "installed_describe": "v2.6.0.beta6 +1",
+            "git_branch": "master",
+            "updated_at": null,
+            "version_check_pending": true,
+            "stale_data": true
+            }
+            }'
+            puts "GOING THE VERSION DCHECK"
+            version_check = JSON.parse(body)['version_check']
+            self.installed_version = version_check['installed_version']
+            self.installed_sha = version_check['installed_sha']
+            self.git_branch = version_check['git_branch']
+          else
+            if discourse_api_key.present? && !discourse_api_key.blank?
+              headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
+          protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
+          puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
+          result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
+          puts "got it!"
           self.server_status_json = result.body
           self.server_status_updated_at = Time.now
+          puts "going to version check: #{result.body[0..300]}"
           version_check = JSON.parse(result.body)['version_check']
+          puts "got the version check"
           self.installed_version = version_check['installed_version']
           self.installed_sha = version_check['installed_sha']
           self.git_branch = version_check['git_branch']
+          puts "did the stuff"
+            end
         end
       rescue => e
-        puts "cannot update server status: #{e}"
+        puts "cannot update server status: #{e[0..200]}"
       end
     end
 

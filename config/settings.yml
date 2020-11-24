@@ -28,7 +28,7 @@ plugins:
     client: true
     hidden: false            
   pfaffmanager_api_key:
-    default: 2943ebacaaace1ac38535c68714cda3d109f6ffaba3efec5579d84b845a70b77
+    default: ""
     client: true
     hidden: false
   pfaffmanager_create_server_group:

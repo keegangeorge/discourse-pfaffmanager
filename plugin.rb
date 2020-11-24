@@ -20,6 +20,6 @@ load File.expand_path('lib/pfaffmanager/pfaffmanager_requests.rb', __dir__)
 after_initialize do
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
   Pfaffmanager::Server.ensure_pfaffmanager_groups
-
+  SiteSetting.pfaffmanager_api_key ||= ApiKey.create(description: 'pfaffmanager key').key_hash
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
 end
