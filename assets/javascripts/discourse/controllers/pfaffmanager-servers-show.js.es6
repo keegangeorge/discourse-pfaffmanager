@@ -1,10 +1,16 @@
 import Controller from "@ember/controller";
-import { popupAjaxError } from "discourse/lib/ajax-error";
+import Server from "../models/server";
+
 export default Controller.extend({
   actions: {
     updateServer() {
-      thisIsNotaFuction();
-      console.log("update!");
-    }
+      Server.updateServer(this.server).then((result) => {
+        if (result.errors) {
+          console.log("Errors: ", errors);
+        } else if (result.success) {
+          this.set('server', result.server);
+        }
+      });
+    },
   }
 });

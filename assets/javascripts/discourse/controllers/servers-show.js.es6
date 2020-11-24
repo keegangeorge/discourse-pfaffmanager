@@ -32,19 +32,6 @@ export default Controller.extend({
           server
         }
       }).catch(popupAjaxError);
-    },
-      createServer() {
-      Server.createServer(this.model).then((result) => {
-        console.log("createServer");
-        console.log(this.model);
-        console.log(result);
-        
-        if (result.errors) {
-          console.log("Errors: ", errors);
-        } else {
-          console.log("Success");
-        }
-      });
     }
   }
 });

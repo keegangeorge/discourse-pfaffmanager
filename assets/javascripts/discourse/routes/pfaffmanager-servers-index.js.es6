@@ -1,13 +1,13 @@
-import DiscourseRoute from 'discourse/routes/discourse'
+import DiscourseRoute from 'discourse/routes/discourse';
+import Server from '../models/server';
+import { A } from "@ember/array";
 
 export default DiscourseRoute.extend({
-  controllerName: "servers-index",
-
   model(params) {
-    return this.store.findAll("server");
+    return Server.listServers();
   },
-
-  renderTemplate() {
-    this.render("servers-index");
+  
+  setupController(controller, model) {
+    controller.set('servers', A(model.servers));
   }
 });
