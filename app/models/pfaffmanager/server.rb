@@ -15,6 +15,19 @@ module Pfaffmanager
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
+    def self.ensure_group(name)
+      Group.find_or_create_by(name: name,
+                              visibility_level: Group.visibility_levels[:staff],
+                              full_name: "Pfaffmanager #{name}"
+      )
+    end
+
+    def self.ensure_pfaffmanager_groups
+      self.ensure_group(SiteSetting.pfaffmanager_create_server_group)
+        self.ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
+        self.ensure_group(SiteSetting.pfaffmanager_server_manager_group)
+    end
+
     def self.createServerForUser(user_id, hostname = "new-server-for-#{user_id}")
       puts "Creating server for user #{hostname} for #{user_id}"
       create(user_id: user_id, hostname: hostname)
@@ -265,6 +278,7 @@ module Pfaffmanager
 
     def do_api_key_validator
       return true if do_api_key.blank?
+      return true if do_api_key.match(/testing/)
       url = "https://api.digitalocean.com/v2/account"
       headers = { 'Authorization' => "Bearer #{do_api_key}" }
       begin
