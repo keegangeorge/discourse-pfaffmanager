@@ -1,9 +1,17 @@
 <form>
 {{server-item server=model}}
+ANGUS: this update button should show only if installed_version is not empty
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.update" action="updateServer" icon="check" class="btn btn-primary"}}
   </div>
+  <hr />
+  <br />  ANGUS: This create button should show only if installed_version is empty
+  <br />ANGUS: And better still only if do_api_key, mailgun_api_key are defined
+  <br />ANGUS: And maybe do the field validation when they enter the field rather than when they submit the form
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
   </div>
+  <hr />
 </form>
+ANGUS: Where is this create-server button coming from? Should be on index page, not show page
+(And once that's solved, it should show only for pfaffmanager_create_server_group and pfaffmanager_unlimited_server_group)

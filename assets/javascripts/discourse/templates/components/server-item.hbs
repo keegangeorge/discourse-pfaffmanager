@@ -20,13 +20,16 @@
 <div class="pfaffmanager-group server-action"><hr>
   <label class="control-label">{{i18n 'pfaffmanager.server.rebuild'}}</label>
   <div class="pfaffmanager">
+ANGUS: This should be a pull-down with 0,1 (or better defined elsewhere)
+
    <br />{{i18n 'pfaffmanager.server.request' }}&nbsp; {{input type="text" value=server.request}}
   </div>
 </div>
 {{/if }}
 
 {{# unless false}}
- 
+ANGUS: these fields should display only if installed_version is empty
+<br />
 <div class="pfaffmanager-group server-edit">
 <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
 
@@ -48,16 +51,20 @@
     {{input type="password" value=server.mg_api_key class="input-large"}}
   </div>
 </div>
-<div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
-  <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
-  <div class="maxmind-license-key">
-    {{input type="password" value=server.maxmind_license_key class="input-large"}}
-  </div>
-</div>
+<br />
+ANGUS: this field can/should be used to verify that they own a server before
+they can start making changes. I probably need to add logic for that.
 <div class="pfaffmanager-group pref-manager-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.api_key'}}</label>
   <div class="manager" >
     {{input type="password" value=server.discourse_api_key class="input-large" title='For existing sites only' data-tip='something-else'}}
+  </div>
+</div>
+<br>ANGUS: maybe maxmind can display all the time or when they can update the server
+<div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
+  <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
+  <div class="maxmind-license-key">
+    {{input type="password" value=server.maxmind_license_key class="input-large"}}
   </div>
 </div>
 

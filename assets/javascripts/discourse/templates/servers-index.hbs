@@ -1,11 +1,11 @@
 servers controller-index.hbs
-<br />Have {{model.length}} server!
+<br />Have {{model.length}} server! (ANGUS: pluralize if it takes 1 minute)
 <br />
 {{#each model as |server|}}
 <hr />
      EDIT: {{#link-to "pfaffmanager.servers.show" server.id}} 
         {{server.hostname}} 
-      {{/link-to}}
+      {{/link-to}} ANGUS: this link works in new tab, but not in ember
       <br />Created at: {{~format-date server.created_at format="medium" }}
       <br />Updated at: {{~format-date server.updated_at format="medium" }}
       <br />
