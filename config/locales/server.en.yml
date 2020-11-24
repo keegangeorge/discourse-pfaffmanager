@@ -2,3 +2,11 @@ en:
   site_settings:
     pfaffmanager_enabled: "Enable Pfaffmanager plugin"
     pfaffmanager_inventory_dir: "Directory for inventories"
+    pfaffmanager_vault_file: 'Ansible vault password file'
+    pfaffmanager_playbook_dir: 'Ansible Playbook directory'
+    pfaffmanager_upgrade_playbook: "Ansible upgrade playbook"
+    pfaffmanager_do_install: 'Installation Script'
+    pfaffmanager_api_key: "Discourse API key for Ansible to update statuses"
+    pfaffmanager_create_server_group: "Name of Group that can create a server"
+    pfaffmanager_unlimited_server_group: "Name of group that can create unlimited servers"
+    pfaffmanager_server_manager_group: "Name of group that can perform actions on a server"
