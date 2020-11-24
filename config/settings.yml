@@ -2,6 +2,11 @@ plugins:
   pfaffmanager_enabled:
     default: true
     client: true
+  pfaffmanager_skip_actions:
+    default: true
+    client: true
+    type: boolean
+    default: true
   pfaffmanager_inventory_dir:
     default: /data/pfaffmanager/inventories
     client: true

@@ -168,18 +168,25 @@ module Pfaffmanager
       #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
       # consider https://github.com/pgeraghty/ansible-wrapper-ruby
       # consider Discourse::Utils.execute_command('ls')
-
-      puts "Going to fork: #{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}"
-      fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
-      #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
+      if SiteSetting.pfaffmanager_skip_actions
+        puts "SKIP actions is set. Not running upgrade"
+      else
+        puts "Going to fork: #{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}"
+        fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
+        #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
+      end
     end
 
     def do_install
       install_script = build_install_script
       puts "Wrote #{install_script}"
       # TODO: consider Discourse::Utils.execute_command
-      puts "GOING TO RUN #{install_script}"
-      fork { exec("#{install_script}") }
+      if SiteSetting.pfaffmanager_skip_actions
+        puts "SKIP actions is set. Not running upgrade"
+      else
+        puts "GOING TO RUN #{install_script}"
+        fork { exec("#{install_script}") }
+      end
     end
 
     def build_server_inventory
