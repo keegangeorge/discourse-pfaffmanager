@@ -1,7 +1,7 @@
  <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
 
 
-{{# if true }}
+{{# if server.installed_version }}
 <div class="pfaffmanager-group server-status">
 <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
    <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
@@ -26,8 +26,15 @@ ANGUS: This should be a pull-down with 0,1 (or better defined elsewhere)
   </div>
 </div>
 {{/if }}
+<hr />
+this button is broken
+  <div class="pull-right">
+      {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
+  </div>
 
-{{# unless false}}
+  <hr />
+
+{{# unless server.installed_version}}
 ANGUS: these fields should display only if installed_version is empty
 <br />
 <div class="pfaffmanager-group server-edit">
@@ -39,19 +46,32 @@ ANGUS: these fields should display only if installed_version is empty
     {{input type="text" value=server.hostname class="input-large"}}
   </div>
 </div>
+{{# unless server.do_api_key}}
+<div class='pfaffmanager-group warning'>Digital Ocean API Key is required for droplet creation</div>
+{{/unless}}
 <div class="pfaffmanager-group pfaffmanager-do-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.do_api_key'}}</label>
   <div class="do-api-key">
     {{input type="password" value=server.do_api_key class="input-large"}}
   </div>
 </div>
+{{# unless server.mg_api_key}}
+<div class='pfaffmanager-group warning'>Mailgun API Key is required for droplet creation</div>
+{{/unless}}
 <div class="pfaffmanager-group pfaffmanager-mg-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.mg_api_key'}}</label>
   <div class="mg-api-key">
     {{input type="password" value=server.mg_api_key class="input-large"}}
   </div>
 </div>
-<br />
+<div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
+  <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
+  <div class="maxmind-license-key">
+    {{input type="password" value=server.maxmind_license_key class="input-large"}}
+  </div>
+</div>
+
+<hr />
 ANGUS: this field can/should be used to verify that they own a server before
 they can start making changes. I probably need to add logic for that.
 <div class="pfaffmanager-group pref-manager-api-key">
@@ -61,12 +81,6 @@ they can start making changes. I probably need to add logic for that.
   </div>
 </div>
 <br>ANGUS: maybe maxmind can display all the time or when they can update the server
-<div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
-  <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
-  <div class="maxmind-license-key">
-    {{input type="password" value=server.maxmind_license_key class="input-large"}}
-  </div>
-</div>
 
 {{!-- <div class="pfaffmanager-group pref-manager-inventory">
   <label class="control-label">{{i18n 'pfaffmanager.server.inventory'}}</label>

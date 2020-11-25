@@ -8,8 +8,8 @@ Server.reopenClass({
   server_status(model) { return JSON.parse(model)},
   
   dropletCreate(model) {
-    console.log("dropletCreate in j/d/models/");
-    console.log('model');
+    console.log("dropletCreate in j/d/models/server.js.es6");
+    console.log(model);
     console.log(model)
     let server = {
       request: 2

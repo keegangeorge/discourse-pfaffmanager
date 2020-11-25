@@ -3,7 +3,20 @@ import Server from "../models/server";
 
 export default Controller.extend({
   actions: {
-    updateServer() {
+    dropletCreate() {
+      Server.dropletCreate(this.server).then((result) => {
+        console.log("createServer in controllers/pfaffmanager-servers-show.js.es6");
+        console.log(this.model);
+        console.log(result);
+        
+        if (result.errors) {
+          console.log("Errors: ", errors);
+        } else {
+          console.log("Success");
+        }
+      });
+    },
+  updateServer() {
       Server.updateServer(this.server).then((result) => {
         if (result.errors) {
           console.log("Errors: ", errors);

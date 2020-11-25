@@ -4,7 +4,7 @@ import Server from "../models/server";
 
 export default Controller.extend({
     actions: {
-      createServerForUser() {
+      dropletCreate() {
         Server.createServerForUser(this.model).then((result) => {
           console.log("createServer");
           console.log(this.model);
