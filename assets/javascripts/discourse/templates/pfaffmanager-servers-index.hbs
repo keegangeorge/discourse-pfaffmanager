@@ -1,5 +1,6 @@
-servers pfaffmanager-controller-index.hbs
-{{i18n 'pfaffmanager.server.server_count_x' count=model.length}}
+servers pfaffmanager-controller-index.hbs<br />
+{{i18n "pfaffmanager.server.x_servers" count=servers.length}}
+
 <br />
 {{d-button label="pfaffmanager.server.create" action="createServer" icon="plus" class="btn btn-primary"}}
 <h2>Server List</h2>
@@ -14,6 +15,4 @@ servers pfaffmanager-controller-index.hbs
     Open: <a href="https://{{server.hostname}}">{{server.hostname}}</a> 
 {{/each}}
 
-<br /><br />ANGUS: fix -- must reload this page after clicking create button.
-<br />This should really just show the server list owned by the user or have a new server template
 {{outlet}}
