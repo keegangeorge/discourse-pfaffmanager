@@ -1,18 +1,12 @@
-import DiscourseRoute from 'discourse/routes/discourse'
+import DiscourseRoute from 'discourse/routes/discourse';
+import Server from '../models/server';
 
 export default DiscourseRoute.extend({
-  controllerName: "servers-show",
   model(params) {
-    console.log('pfaffmanager-server-show.js.es6')
-    return this.store.find("server", params.id);
+    return Server.findServer(params.id);
   },
-  updateServer() {
-    console.log("showing in the map");
-  },
-  createServer() {
-    console.log("createServer showing in the map");
-  },
-  renderTemplate() {
-    this.render("servers-show");
+  
+  setupController(controller, model) {
+    controller.set('server', model.server);
   }
 });

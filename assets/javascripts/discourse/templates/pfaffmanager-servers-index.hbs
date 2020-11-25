@@ -1,11 +1,13 @@
-servers controller-index.hbs
-<br />Have {{model.length}} server! (ANGUS: pluralize if it takes 1 minute)
+servers pfaffmanager-controller-index.hbs
+{{i18n 'pfaffmanager.server.server_count_x' count=model.length}}
 <br />
-{{#each model as |server|}}
+{{d-button label="pfaffmanager.server.create" action="createServer" icon="plus" class="btn btn-primary"}}
+<h2>Server List</h2>
+{{#each servers as |server|}}
 <hr />
-     EDIT: {{#link-to "pfaffmanager.servers.show" server.id}} 
+     {{#link-to "pfaffmanager.servers.show" server.id}} 
         {{server.hostname}} 
-      {{/link-to}} ANGUS: this link works in new tab, but not in ember
+      {{/link-to}}
       <br />Created at: {{~format-date server.created_at format="medium" }}
       <br />Updated at: {{~format-date server.updated_at format="medium" }}
       <br />

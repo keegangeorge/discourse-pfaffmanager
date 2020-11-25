@@ -126,7 +126,7 @@ module Pfaffmanager
         if server.errors.present?
           return render_json_error(server.errors.full_messages)
         else
-          return render json: success_json
+          return render json: success_json.merge(server: server.as_json)
         end
       end
 
