@@ -79,6 +79,9 @@ module Pfaffmanager
           puts "Set request_result failed"
           self.request_status_updated_at = Time.now
       end
+      # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
+      # to allow real-time access to all servers on the site
+      MessageBus.publish('/pfaffmanager-server-status/#{self.id}', self.as_json, user_ids: [self.user_id, 1])
     end
 
     def process_server_request
