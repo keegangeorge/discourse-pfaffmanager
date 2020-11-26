@@ -17,23 +17,16 @@
         ({{format-date server.request_status_updated_at format="medium" }})
    <br />{{i18n 'pfaffmanager.server.request_result' }}:&nbsp; {{server.request_result }}  
 </div>
-<div class="pfaffmanager-group server-action"><hr>
-  <label class="control-label">{{i18n 'pfaffmanager.server.rebuild'}}</label>
-  <div class="pfaffmanager">
-ANGUS: This should be a pull-down with 0,1 (or better defined elsewhere)
-
-   <br />{{i18n 'pfaffmanager.server.request' }}&nbsp; {{input type="text" value=server.request}}
-  </div>
-</div>
 {{/if }}
 <hr />
-this button is broken
+{{#unless server.installed_version}}
+  {{#if server.do_api_key}}
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
   </div>
-
+  {{/if}}
   <hr />
-
+{{/unless}}
 {{# unless server.installed_version}}
 ANGUS: these fields should display only if installed_version is empty
 <br />

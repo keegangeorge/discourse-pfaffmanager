@@ -1,12 +1,10 @@
 <form>
 {{server-item server=server}}
 {{# if server.installed_version}}
-ANGUS: this update button should show only if installed_version is not empty
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.update" action="updateServer" icon="check" class="btn btn-primary"}}
   </div>
   {{/if}}
-  <hr />
   {{#if server.do_api_key}}
     {{#if server.mg_api_key}}
   This button works.
@@ -16,7 +14,4 @@ ANGUS: this update button should show only if installed_version is not empty
    {{/if}}
    
   {{/if}}
-  <hr />
 </form>
-ANGUS: Where is this create-server button coming from? Should be on index page, not show page
-(And once that's solved, it should show only for pfaffmanager_create_server_group and pfaffmanager_unlimited_server_group)
