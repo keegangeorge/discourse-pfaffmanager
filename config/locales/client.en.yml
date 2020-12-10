@@ -12,6 +12,7 @@ en:
       server:
         create: "Create server"
         update: "Update server"
+        run_upgrade: "Rebuild/Upgrade server"
         do_create: "Install on new droplet"
         status_header: "Current Server Status"
         installed_version: 'Installed Version'
