@@ -121,7 +121,7 @@ module Pfaffmanager
       export PFAFFMANAGER_BASE_URL="#{Discourse.base_url}"
       export PFAFFMANAGER_SERVER_ID="#{id}"
       export DISCOURSE_SSH_USER=root
-      #{playbook_dir}/#{SiteSetting.pfaffmanager_do_install} pro
+      #{SiteSetting.pfaffmanager_do_install} pro
       HEREDOC
     end
 
@@ -177,8 +177,8 @@ module Pfaffmanager
         self.discourse_api_key ||= ApiKey.create(description: 'pfaffmanager localhost key')
         self.update_server_status
       else
-        puts "Going to fork: #{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}"
-        fork { exec("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
+        puts "Going to fork: #{playbook} --vault-password-file #{vault} -i #{inventory}"
+        fork { exec("#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
         #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
       end
     end
