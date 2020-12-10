@@ -32,7 +32,7 @@ Server.reopenClass({
       do_api_key: data.do_api_key,
       mg_api_key: data.mg_api_key,
       maxmind_license_key: data.maxmind_license_key,
-      request: data.request,
+      request: 1, // angus how to fix--perhaps set in pfaffmanager-servers-show.hbs?
       rebuild: data.rebuild,
       discourse_api_key: data.discourse_api_key
     };

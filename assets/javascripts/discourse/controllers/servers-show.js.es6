@@ -6,6 +6,11 @@ import Server from "../models/server";
 export default Controller.extend({
   actions: {
     updateServer() {
+      console.log(this.model.installed_version);
+      if (this.model.installed_version) {
+        console.log("changing to 1");
+        this.model.request=1;
+      }
       Server.update(this.model).then((result) => {
         console.log("updateServer");
         console.log(this.model);

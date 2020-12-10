@@ -91,7 +91,7 @@ module Pfaffmanager
         puts "Processing request 1 -- rebuild -- run_ansible_upgrade"
         self.request = -1
         self.request_status_updated_at = Time.now
-        self.last_action = "Process rebuild"
+        self.last_action = "Process rebuild/upgrade"
         inventory = build_server_inventory
         self.inventory = inventory
         run_ansible_upgrade(inventory)
@@ -176,6 +176,7 @@ module Pfaffmanager
         self.request = 0
         self.discourse_api_key ||= ApiKey.create(description: 'pfaffmanager localhost key')
         self.update_server_status
+        Jobs.enqueue(:fake_upgrade, server_id: self.id)
       else
         puts "Going to fork: #{playbook} --vault-password-file #{vault} -i #{inventory}"
         fork { exec("#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
@@ -188,7 +189,9 @@ module Pfaffmanager
       puts "Wrote #{install_script}"
       # TODO: consider Discourse::Utils.execute_command
       if SiteSetting.pfaffmanager_skip_actions
-        puts "SKIP actions is set. Not running upgrade"
+        puts "SKIP actions is set. Doing fake install"
+        update_server_status
+        Jobs.enqueue(:fake_upgrade, server_id: self.id)
       else
         puts "GOING TO RUN #{install_script}"
         fork { exec("#{install_script}") }
@@ -222,7 +225,7 @@ module Pfaffmanager
     def update_server_status
       begin
         # TODO: REMOVE OR enforce admin only
-        if self.hostname.match(/localhost/)
+        if self.hostname.match(/localhost/) || SiteSetting.pfaffmanager_skip_actions
           puts "using bogus host info"
           body = '{
             "updated_at": "2020-11-24T21:25:56.643Z",
