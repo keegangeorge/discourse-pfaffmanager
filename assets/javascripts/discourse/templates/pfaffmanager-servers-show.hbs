@@ -1,10 +1,8 @@
 <form>
 {{server-item server=server}}
-{{# if server.installed_version}}
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.update" action="updateServer" icon="check" class="btn btn-primary"}}
   </div>
-  {{/if}}
   {{#if server.do_api_key}}
     {{#if server.mg_api_key}}
   This button works.
