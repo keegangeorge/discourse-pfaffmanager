@@ -12,6 +12,7 @@ module Pfaffmanager
     before_save :process_server_request
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
+    after_save :publish_status_update if :saved_change_to_request_status?
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
@@ -58,6 +59,52 @@ module Pfaffmanager
                   )
       SiteSetting.pfaffmanager_server_manager_group = manager_group_name
     end
+    
+    def update_server_status
+      begin
+        # TODO: REMOVE OR enforce admin only
+        if self.hostname.match(/localhost/) || SiteSetting.pfaffmanager_skip_actions
+          puts "using bogus host info"
+          body = '{
+            "updated_at": "2020-11-24T21:25:56.643Z",
+            "version_check": {
+            "installed_version": "2.6.0.beta6",
+            "installed_sha": "1157ff8116ba5e5d11db589e1b6cb930d2c86c4d",
+            "installed_describe": "v2.6.0.beta6 +1",
+            "git_branch": "master",
+            "updated_at": null,
+            "version_check_pending": true,
+            "stale_data": true
+            }
+            }'
+            puts "GOING THE VERSION DCHECK"
+            version_check = JSON.parse(body)['version_check']
+            self.installed_version = version_check['installed_version']
+            self.installed_sha = version_check['installed_sha']
+            self.git_branch = version_check['git_branch']
+          else
+            if discourse_api_key.present? && !discourse_api_key.blank?
+              headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
+          protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
+          puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
+          result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
+          puts "got it!"
+          self.server_status_json = result.body
+          self.server_status_updated_at = Time.now
+          puts "going to version check: #{result.body[0..300]}"
+          version_check = JSON.parse(result.body)['version_check']
+          puts "got the version check"
+          self.installed_version = version_check['installed_version']
+          self.installed_sha = version_check['installed_sha']
+          self.git_branch = version_check['git_branch']
+          puts "did the stuff"
+            end
+        end
+      rescue => e
+        puts "cannot update server status: #{e[0..200]}"
+      end
+    end
+    
     private
 
     def reset_request # update server model that process is finished
@@ -79,9 +126,16 @@ module Pfaffmanager
           puts "Set request_result failed"
           self.request_status_updated_at = Time.now
       end
+    end
+    
+    def publish_status_update      
+      data = {
+        request_status: self.request_status,
+        request_status_updated_at: self.request_status_updated_at
+      }
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
       # to allow real-time access to all servers on the site
-      MessageBus.publish('/pfaffmanager-server-status/#{self.id}', self.as_json, user_ids: [self.user_id, 1])
+      MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
     end
 
     def process_server_request
@@ -220,51 +274,6 @@ module Pfaffmanager
       File.chmod(0777, "#{filename}")
       puts "Wrote #{filename} with \n#{installation_script_template}"
       filename
-    end
-
-    def update_server_status
-      begin
-        # TODO: REMOVE OR enforce admin only
-        if self.hostname.match(/localhost/) || SiteSetting.pfaffmanager_skip_actions
-          puts "using bogus host info"
-          body = '{
-            "updated_at": "2020-11-24T21:25:56.643Z",
-            "version_check": {
-            "installed_version": "2.6.0.beta6",
-            "installed_sha": "1157ff8116ba5e5d11db589e1b6cb930d2c86c4d",
-            "installed_describe": "v2.6.0.beta6 +1",
-            "git_branch": "master",
-            "updated_at": null,
-            "version_check_pending": true,
-            "stale_data": true
-            }
-            }'
-            puts "GOING THE VERSION DCHECK"
-            version_check = JSON.parse(body)['version_check']
-            self.installed_version = version_check['installed_version']
-            self.installed_sha = version_check['installed_sha']
-            self.git_branch = version_check['git_branch']
-          else
-            if discourse_api_key.present? && !discourse_api_key.blank?
-              headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
-          protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
-          puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
-          result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
-          puts "got it!"
-          self.server_status_json = result.body
-          self.server_status_updated_at = Time.now
-          puts "going to version check: #{result.body[0..300]}"
-          version_check = JSON.parse(result.body)['version_check']
-          puts "got the version check"
-          self.installed_version = version_check['installed_version']
-          self.installed_sha = version_check['installed_sha']
-          self.git_branch = version_check['git_branch']
-          puts "did the stuff"
-            end
-        end
-      rescue => e
-        puts "cannot update server status: #{e[0..200]}"
-      end
     end
 
     # todo: update only if changed?

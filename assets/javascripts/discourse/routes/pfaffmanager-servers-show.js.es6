@@ -7,6 +7,7 @@ export default DiscourseRoute.extend({
   },
   
   setupController(controller, model) {
-    controller.set('server', model.server);
+    controller.set('server', Server.create(model.server));
+    controller.subscribe();
   }
 });
