@@ -58,12 +58,14 @@ Use "testing-xxx" for testing
     {{input type="password" value=server.mg_api_key class="input-large"}}
   </div>
 </div>
+{{# if false}}
 <div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
   <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
   <div class="maxmind-license-key">
     {{input type="password" value=server.maxmind_license_key class="input-large"}}
   </div>
 </div>
+{{/if}}
 
 <hr />
 ANGUS: this field can/should be used to verify that they own a server before
