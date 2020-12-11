@@ -59,11 +59,11 @@ module Pfaffmanager
                   )
       SiteSetting.pfaffmanager_server_manager_group = manager_group_name
     end
-    
+
     def update_server_status
       begin
         # TODO: REMOVE OR enforce admin only
-        if self.hostname.match(/localhost/) || SiteSetting.pfaffmanager_skip_actions
+        if self.hostname.match(/localhost/)
           puts "using bogus host info"
           body = '{
             "updated_at": "2020-11-24T21:25:56.643Z",
@@ -104,7 +104,7 @@ module Pfaffmanager
         puts "cannot update server status: #{e[0..200]}"
       end
     end
-    
+
     private
 
     def reset_request # update server model that process is finished
@@ -127,8 +127,8 @@ module Pfaffmanager
           self.request_status_updated_at = Time.now
       end
     end
-    
-    def publish_status_update      
+
+    def publish_status_update
       data = {
         request_status: self.request_status,
         request_status_updated_at: self.request_status_updated_at
@@ -205,7 +205,7 @@ module Pfaffmanager
                 #{hostname}:
                   pfaffmanager_server_id: #{id}
                   skip_bootstrap: yes
-                  discourse_name: #{user.name}
+                  discourse_name: #{user.name || 'pfaffmanager user'}
                   discourse_email: #{user.email}
                   discourse_url: #{discourse_url}
                   discourse_smtp_host: ""
@@ -368,26 +368,3 @@ module Pfaffmanager
     end
   end
 end
-# == schema informaion
-# class CreatePfaffmanagerServer < ActiveRecord::Migration[6.0]
-# def change
-#   create_table :pfaffmanager_servers do |t|
-#     t.string :hostname, null: false, index: true
-#     t.text :server_status_json
-#     t.timestamp :server_status_updated_at
-#     t.string :ssh_key_private
-#     t.string :ssh_key_public
-#     t.string :discourse_api_key
-#     t.string :do_api_key
-#     t.string :mg_api_key
-#     t.string :maxmind_license_key
-#     t.string :discourse_url
-#     t.text   :inventory
-#     t.text   :discourse_env
-#     t.text   :discourse_templates
-#     t.text   :discourse_plugins
-#     t.references :user
-#     t.timestamps
-#   end
-# end
-# end

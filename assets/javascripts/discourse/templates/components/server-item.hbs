@@ -1,7 +1,7 @@
  <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
 
 
-{{# if server.installed_version }}
+{{# if server.request_status }}
 <div class="pfaffmanager-group server-status">
 <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
    <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
