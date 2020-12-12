@@ -30,7 +30,7 @@ module Pfaffmanager
     end
 
     def self.createServerForUser(user_id, hostname = "new-server-for-#{user_id}")
-      puts "Creating server for user #{hostname} for #{user_id}"
+      Rails.logger.warn "Creating server for user #{hostname} for #{user_id}"
       create(user_id: user_id, hostname: hostname)
     end
 
@@ -38,7 +38,7 @@ module Pfaffmanager
       current_user_id = params[:user_id]
       return nil unless current_user_id
       params[:hostname] ||= "new-server-for-#{current_user_id}"
-      puts "Creating server #{params[:hostname]} for #{current_user_id}"
+      Rails.logger.warn "Creating server #{params[:hostname]} for #{current_user_id}"
       create(params)
     end
 
@@ -64,7 +64,7 @@ module Pfaffmanager
       begin
         # TODO: REMOVE OR enforce admin only
         if self.hostname.match(/localhost/)
-          puts "using bogus host info"
+          Rails.logger.warn "using bogus host info"
           body = '{
             "updated_at": "2020-11-24T21:25:56.643Z",
             "version_check": {
@@ -77,7 +77,7 @@ module Pfaffmanager
             "stale_data": true
             }
             }'
-            puts "GOING THE VERSION DCHECK"
+            Rails.logger.warn "GOING THE VERSION DCHECK"
             version_check = JSON.parse(body)['version_check']
             self.installed_version = version_check['installed_version']
             self.installed_sha = version_check['installed_sha']
@@ -86,44 +86,44 @@ module Pfaffmanager
             if discourse_api_key.present? && !discourse_api_key.blank?
               headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
-          puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
+          Rails.logger.warn "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
           result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
-          puts "got it!"
+          Rails.logger.warn "got it!"
           self.server_status_json = result.body
           self.server_status_updated_at = Time.now
-          puts "going to version check: #{result.body[0..300]}"
+          Rails.logger.warn "going to version check: #{result.body[0..300]}"
           version_check = JSON.parse(result.body)['version_check']
-          puts "got the version check"
+          Rails.logger.warn "got the version check"
           self.installed_version = version_check['installed_version']
           self.installed_sha = version_check['installed_sha']
           self.git_branch = version_check['git_branch']
-          puts "did the stuff"
+          Rails.logger.warn "did the stuff"
             end
         end
       rescue => e
-        puts "cannot update server status: #{e[0..200]}"
+        Rails.logger.warn "cannot update server status: #{e[0..200]}"
       end
     end
 
     private
 
     def reset_request # update server model that process is finished
-      puts " -=--------------------- RESET #{request_status}\n" unless false
+      Rails.logger.warn " -=--------------------- RESET #{request_status}\n" unless false
       case request_status
       when "Success"
-        puts "Set request_result OK"
+        Rails.logger.warn "Set request_result OK"
           self.request_result = 'ok'
           update_server_status
           self.request = 0
           self.request_status_updated_at = Time.now
       when "Processing rebuild"
         self.request_result = 'running'
-          puts "Set request_result running"
+          Rails.logger.warn "Set request_result running"
           self.request_status_updated_at = Time.now
       when "Failed"
         self.request_result = 'failed'
           self.request = 0
-          puts "Set request_result failed"
+          Rails.logger.warn "Set request_result failed"
           self.request_status_updated_at = Time.now
       end
     end
@@ -139,10 +139,10 @@ module Pfaffmanager
     end
 
     def process_server_request
-      puts "\n\nPROCESS SERVER REQUEST: '#{request}'\n\n"
+      Rails.logger.warn "This really is A real rails log!! PROCESS SERVER REQUEST: '#{request}'"
       case request
       when 1
-        puts "Processing request 1 -- rebuild -- run_ansible_upgrade"
+        Rails.logger.warn "Processing request 1 -- rebuild -- run_ansible_upgrade"
         self.request = -1
         self.request_status_updated_at = Time.now
         self.last_action = "Process rebuild/upgrade"
@@ -150,7 +150,7 @@ module Pfaffmanager
         self.inventory = inventory
         run_ansible_upgrade(inventory)
       when 2
-        puts "Processing request 2 -- createDroplet -- do_install"
+        Rails.logger.warn "Processing request 2 -- createDroplet -- do_install"
         self.request = -1
         self.request_status_updated_at = Time.now
         self.last_action = "Create droplet"
@@ -159,7 +159,7 @@ module Pfaffmanager
     end
 
     def installation_script_template
-      puts "installation_script_template running now"
+      Rails.logger.warn "installation_script_template running now"
       user = User.find(user_id)
       playbook_dir = SiteSetting.pfaffmanager_playbook_dir
       <<~HEREDOC
@@ -180,7 +180,7 @@ module Pfaffmanager
     end
 
     def managed_inventory_template
-      puts "managed_inventory_template running now"
+      Rails.logger.warn "managed_inventory_template running now"
       user = User.find(user_id)
       <<~HEREDOC
         ---
@@ -226,13 +226,13 @@ module Pfaffmanager
       # consider https://github.com/pgeraghty/ansible-wrapper-ruby
       # consider Discourse::Utils.execute_command('ls')
       if SiteSetting.pfaffmanager_skip_actions
-        puts "SKIP actions is set. Not running upgrade"
+        Rails.logger.warn "SKIP actions is set. Not running upgrade"
         self.request = 0
         self.discourse_api_key ||= ApiKey.create(description: 'pfaffmanager localhost key')
         self.update_server_status
         Jobs.enqueue(:fake_upgrade, server_id: self.id)
       else
-        puts "Going to fork: #{playbook} --vault-password-file #{vault} -i #{inventory}"
+        Rails.logger.warn "Going to fork: #{playbook} --vault-password-file #{vault} -i #{inventory}"
         fork { exec("#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
         #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
       end
@@ -240,14 +240,14 @@ module Pfaffmanager
 
     def do_install
       install_script = build_install_script
-      puts "Wrote #{install_script}"
+      Rails.logger.warn "Wrote #{install_script}"
       # TODO: consider Discourse::Utils.execute_command
       if SiteSetting.pfaffmanager_skip_actions
-        puts "SKIP actions is set. Doing fake install"
+        Rails.logger.warn "SKIP actions is set. Doing fake install"
         update_server_status
         Jobs.enqueue(:fake_upgrade, server_id: self.id)
       else
-        puts "GOING TO RUN #{install_script}"
+        Rails.logger.warn "GOING TO RUN #{install_script}"
         fork { exec("#{install_script}") }
       end
     end
@@ -259,7 +259,7 @@ module Pfaffmanager
       File.open(filename, "w") do |f|
         f.write(managed_inventory_template)
       end
-      puts "Writing #{filename}"
+      Rails.logger.warn "Writing #{filename}"
       managed_inventory_template
     end
 
@@ -272,7 +272,7 @@ module Pfaffmanager
         f.write(installation_script_template)
       end
       File.chmod(0777, "#{filename}")
-      puts "Wrote #{filename} with \n#{installation_script_template}"
+      Rails.logger.warn "Wrote #{filename} with \n#{installation_script_template}"
       filename
     end
 
@@ -293,7 +293,7 @@ module Pfaffmanager
           errors.add(:discourse_api_key, "invalid")
         end
       rescue => e
-        puts "Error #{e}"
+        Rails.logger.warn "Error #{e}"
         errors.add(:discourse_api_key, "-- #{e}")
         false
       end
@@ -324,7 +324,7 @@ module Pfaffmanager
 
     def server_request_validator
       if !request.in? [-1, 0, 1, 2]
-        puts "Request bad: #{request}"
+        Rails.logger.warn "Request bad: #{request}"
         errors.add(:request, "Valid values: 0..2")
       end
     end
@@ -349,22 +349,22 @@ module Pfaffmanager
     end
 
     def connection_validator
-      puts "connection_validator..."
+      Rails.logger.warn "connection_validator..."
       unless hostname.present?
         errors.add(:hostname, "Hostname must be present")
       end
 
-        puts "discourse: #{discourse_api_key}"
+        Rails.logger.warn "discourse: #{discourse_api_key}"
         discourse_api_key.present? && !discourse_api_key_validator
-        puts "mg"
+        Rails.logger.warn "mg"
         mg_api_key.present? && !mg_api_key_validator
-        puts "do"
+        Rails.logger.warn "do"
         do_api_key.present? && !do_api_key_validator
-        puts "mm"
+        Rails.logger.warn "mm"
         maxmind_license_key.present? && !maxmind_license_key_validator
-        puts "req"
+        Rails.logger.warn "req"
         request.present? && server_request_validator
-        puts "done with validations!"
+        Rails.logger.warn "done with validations!"
     end
   end
 end
