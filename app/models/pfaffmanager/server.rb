@@ -173,6 +173,7 @@ module Pfaffmanager
       export DO_REGION="nyc3"
       export DO_SIZE=""
       export PFAFFMANAGER_BASE_URL="#{Discourse.base_url}"
+      export PFAFFMANAGER_API_KEY="#{SiteSetting.pfaffmanager_api_key}"
       export PFAFFMANAGER_SERVER_ID="#{id}"
       export DISCOURSE_SSH_USER=root
       #{SiteSetting.pfaffmanager_do_install} pro
