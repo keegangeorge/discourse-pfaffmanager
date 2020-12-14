@@ -12,6 +12,7 @@ module Pfaffmanager
     before_save :process_server_request
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
+    before_create :assert_has_ssh_keys
     after_save :publish_status_update if :saved_change_to_request_status?
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
@@ -27,6 +28,14 @@ module Pfaffmanager
       self.ensure_group(SiteSetting.pfaffmanager_create_server_group)
         self.ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
         self.ensure_group(SiteSetting.pfaffmanager_server_manager_group)
+    end
+
+    def assert_has_ssh_keys
+      return true if self.ssh_key_private
+      Rails.logger.warn "creating ssh keys for server #{id}"
+      k = SSHKey.generate(comment: "#{id}@manager.pfaffmanager.com", bits: 2048)
+      self.ssh_key_public = k.public_key
+      self.ssh_key_private = k.private_key
     end
 
     def self.createServerForUser(user_id, hostname = "new-server-for-#{user_id}")
