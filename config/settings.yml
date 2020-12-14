@@ -20,11 +20,11 @@ plugins:
     client: true
     hidden: false        
   pfaffmanager_upgrade_playbook:
-    default: upgrade.yml
+    default: /bin/true
     client: true
     hidden: false            
   pfaffmanager_do_install:
-    default: bin/pfaffmanager_do_install
+    default: /bin/true
     client: true
     hidden: false            
   pfaffmanager_api_key:
