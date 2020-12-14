@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 MAXMIND_PRODUCT ||= 'GeoLite2-City'
 
+require 'sshkey'
+
 module Pfaffmanager
   class Server < ActiveRecord::Base
     #include ActiveModel::Dirty
+    include Encryptable
+    attr_encrypted :do_api_key, :ssh_key_private, :mg_api_key
     belongs_to :user
     self.table_name = "pfaffmanager_servers"
 
