@@ -73,6 +73,17 @@ module Pfaffmanager
       SiteSetting.pfaffmanager_server_manager_group = manager_group_name
     end
 
+    def write_private_key
+      file = Tempfile.new('id_rsa_')
+      path = file.path
+      file.write(self.ssh_key_private)
+      file.close
+      file = File.new(path + ".pub")
+      file.write(self.ssh_key_private)
+      file.close
+      path
+    end
+
     def update_server_status
       begin
         # TODO: REMOVE OR enforce admin only
