@@ -118,6 +118,18 @@ module Pfaffmanager
       end
     end
 
+    def build_do_install_inventory # TODO: move to private
+      Rails.logger.warn "installation_script_template running now"
+      user = User.find(user_id)
+      install_inventory_file = File.open("plugins/discourse-pfaffmanager/lib/ansible/create_droplet_inventory.yml.erb")
+      inventory_template = install_inventory_file.read
+      inventory_file = Tempfile.new(['inventory-', '.yml'])
+      inventory = ERB.new(inventory_template)
+      inventory_file.write(inventory.result(binding))
+      inventory_file.close
+      inventory_file.path
+    end
+
     private
 
     def reset_request # update server model that process is finished
