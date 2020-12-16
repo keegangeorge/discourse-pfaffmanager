@@ -1,0 +1,20 @@
+all:                                                                                                                                                                                                                                     
+  vars:                                                                                                                                                                                                                                  
+    ansible_user: root                                                                                                                                                                                                                   
+    become_user: root                                                                                                                                                                                                                    
+    discourse_name: "<%= user.name%>"                                                                                                                                                                                                          
+    discourse_email: "<%= user.email%>"                                                                                                                                                                                         
+    discourse_developer_email: "{{discourse_email}}"                                                                                                                                                                                     
+    discourse_install_type: "pro" # TODO select                                                                                                                                                                                          
+    #discourse_smtp_host: smtp-is-broken                                                                                                                                                                                                 
+    #discourse_smtp_user: missing                                                                                                                                                                                                        
+    #discourse_smtp_password: broken                                                                                
+    #discourse_smtp_port: 2525                                                                                                                                                                                                           
+    droplet_size: s-1vcpu-2gb # TODO select                                                                                                                                                                                              
+    droplet_region: nyc3 # TODO select                                                                                                                                                                                                   
+    droplet_hostname: "<%= hostname %>"                                                                                                                                                                                                      
+    discourse_ssh_user: root # TODO: adjust                                                                         
+    pfaffmanager_base_url: "Discourse.base_url"                                                                                                                                                                                       
+    pfaffmanager_server_id: "<%= id%>"                                                                                    
+    pfaffmanager_api_key: "{{ lookup('env','PFAFFMANAGER_API_KEY') | default('') }}"                                
+    ssh_pub_key: "<%= ssh_key_public.gsub(/-----.+?-----/,"").gsub(/\n/,"") %>"   
