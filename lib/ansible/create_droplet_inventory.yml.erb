@@ -12,9 +12,9 @@ all:
     #discourse_smtp_port: 2525                                                                                                                                                                                                           
     droplet_size: s-1vcpu-2gb # TODO select                                                                                                                                                                                              
     droplet_region: nyc3 # TODO select                                                                                                                                                                                                   
-    droplet_hostname: "<%= hostname %>"                                                                                                                                                                                                      
+    discourse_hostname: "<%= hostname %>"                                                                                                                                                                                                      
     discourse_ssh_user: root # TODO: adjust                                                                         
-    pfaffmanager_base_url: "Discourse.base_url"                                                                                                                                                                                       
+    pfaffmanager_base_url: "<%= Discourse.base_url %>"
     pfaffmanager_server_id: "<%= id%>"                                                                                    
     pfaffmanager_api_key: "{{ lookup('env','PFAFFMANAGER_API_KEY') | default('') }}"                                
     ssh_pub_key: "<%= ssh_key_public.gsub(/-----.+?-----/,"").gsub(/\n/,"") %>"   

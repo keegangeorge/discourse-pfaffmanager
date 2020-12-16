@@ -22,6 +22,13 @@ module Pfaffmanager
       render_json_dump({ server: server })
     end
 
+    def create_droplet
+      server_id = params[:id]
+      Rails.logger.warn "servers_controller.create_droplet"
+      server = ::Pfaffmanager::Server.find(arams[:server][:user_id])
+      server.queue_create_droplet
+    end
+
     def create
       puts "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
       create_groups = Group.where(name: SiteSetting.pfaffmanager_create_server_group).or(Group.where(name: SiteSetting.pfaffmanager_unlimited_server_group))
@@ -148,8 +155,7 @@ module Pfaffmanager
         :smtp_password,
         :smtp_notification_email,
         :smtp_user,
-        :smtp_port,
-        :request_status
+        :smtp_port
       )
     end
   end

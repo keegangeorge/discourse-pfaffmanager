@@ -1,6 +1,7 @@
 class EncryptionService
   # from https://pawelurbanek.com/rails-secure-encrypt-decrypt
-  # TODO: warn if production has no key
+  # TODO: warn if production has no key--- like this: if Rails.env == "development"
+
   KEY = ActiveSupport::KeyGenerator.new(
     ENV["SECRET_KEY_BASE"] || 'development-key-base'
   ).generate_key(
