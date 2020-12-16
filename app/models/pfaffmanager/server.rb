@@ -143,7 +143,7 @@ module Pfaffmanager
 
     def queue_create_droplet()
       puts "server.queue_create_droplet for #{id}"
-      Jobs::CreateDroplet.new.execute(server_id: id)
+      Jobs.enqueue(:create_droplet, server_id: id)
       puts "job created for #{id}"
     end
 
