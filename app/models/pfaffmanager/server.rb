@@ -35,10 +35,13 @@ module Pfaffmanager
     end
 
     def assert_has_ssh_keys
-      return true if self.ssh_key_private
-      puts "creating ssh keys for server #{id}"
-      k = SSHKey.generate(comment: "#{id}@manager.pfaffmanager.com", bits: 2048)
-      self.ssh_key_public = k.public_key
+      return self.ssh_key_private if self.ssh_key_private
+      puts "creating ssh keys for server #{self.id}"
+      user = User.find(user_id)
+      puts "got user #{user.username}"
+
+      k = SSHKey.generate(comment: "#{user.username}@manager.pfaffmanager.com", bits: 2048)
+      self.ssh_key_public = k.ssh_public_key
       self.ssh_key_private = k.private_key
     end
 
@@ -78,10 +81,15 @@ module Pfaffmanager
 
     def write_ssh_key
       puts "server.write_ssh_key--#{caller[0]}"
-      file = File.open("/tmp/id_rsa_server#{id}", "w")
+      file = File.open("/tmp/id_rsa_server#{id}", File::CREAT | File::TRUNC | File::RDWR, 0600)
       path = file.path
       puts "writing #{self.ssh_key_private} to #{path}"
       file.write(self.ssh_key_private)
+      file.close
+      file = File.open("/tmp/id_rsa_server#{id}.pub", File::CREAT | File::TRUNC | File::RDWR, 0600)
+      path = file.path
+      puts "writing #{self.ssh_key_public} to #{path}"
+      file.write(self.ssh_key_public)
       file.close
       puts "done Writing "
       path
@@ -135,7 +143,7 @@ module Pfaffmanager
 
     def queue_create_droplet()
       puts "server.queue_create_droplet for #{id}"
-      Jobs::CreateDroplet.new.execute_onceoff(server_id: id)
+      Jobs::CreateDroplet.new.execute(server_id: id)
       puts "job created for #{id}"
     end
 
@@ -148,16 +156,19 @@ module Pfaffmanager
       instructions = SiteSetting.pfaffmanager_do_install,
        "-i",
        inventory_path,
+       "--vault-password-file",
+       SiteSetting.pfaffmanager_vault_file,
        "--extra-vars",
-       "'discourse_do_api_key=#{self.do_api_key} discourse_mg_api_key=#{self.mg_api_key}'"
-       puts "going to run with: #{instructions}"
-       begin
-         Discourse::Utils.execute_command(*instructions)
-        rescue => e
-          error = +"Failed to create droplet"
-         error << e.message
-         puts "HERe's the problem: #{error}"
-       end
+       "discourse_do_api_key=#{self.do_api_key} discourse_mg_api_key=#{self.mg_api_key}"
+       puts "going to run with: #{instructions.join(' ')}"
+      #  begin
+      #    Discourse::Utils.execute_command(*instructions)
+      #   rescue => e
+      #     error = +"Failed to create droplet"
+      #    error << e.message
+      #    puts "HERe's the problem: #{error}"
+      #  end
+      Discourse::Utils.execute_command(*instructions)
     end
 
     private
@@ -174,7 +185,6 @@ module Pfaffmanager
       inventory_file.write(inventory.result(binding))
       inventory_file.close
       puts "Wrote #{inventory_file.path}"
-      sleep 5
       inventory_file.path
     end
 
@@ -227,6 +237,7 @@ module Pfaffmanager
         self.request_status_updated_at = Time.now
         self.last_action = "Create droplet"
         queue_create_droplet
+        #create_droplet
       end
     end
 
@@ -393,14 +404,11 @@ module Pfaffmanager
 
         puts "discourse: #{discourse_api_key}"
         discourse_api_key.present? && !discourse_api_key_validator
-        puts "mg"
         mg_api_key.present? && !mg_api_key_validator
-        puts "do"
         do_api_key.present? && !do_api_key_validator
-        puts "mm"
         maxmind_license_key.present? && !maxmind_license_key_validator
-        puts "req"
         request.present? && server_request_validator
+        puts "do: #{do_api_key}"
         puts "done with validations!"
     end
   end
