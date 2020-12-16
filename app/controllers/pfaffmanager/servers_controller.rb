@@ -19,7 +19,10 @@ module Pfaffmanager
 
       # TODO: Allow admin to see server of other users
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
-      render_json_dump({ server: server })
+      clean_server = server.attributes.except('ssh_key_public')
+
+      #render_json_dump({ server: server, except: [:ssh_key_private ] })
+      render_json_dump({ server: clean_server })
     end
 
     def create_droplet
