@@ -2,7 +2,7 @@ all:
   vars:                                                                                                                                                                                                                                  
     ansible_user: root                                                                                                                                                                                                                   
     become_user: root  
-    ansible_ssh_private_key_file: #{ssh_key_path}
+    ansible_ssh_private_key_file:  <%= ssh_key_path%>
     discourse_name: "<%= user_name%>"
     discourse_email: "<%= user.email%>"
     discourse_developer_email: "{{discourse_email}}"
