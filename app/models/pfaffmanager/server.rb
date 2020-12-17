@@ -153,6 +153,8 @@ module Pfaffmanager
       Rails.logger.warn "inventory: #{inventory_path}"
       ssh_key_path = write_ssh_key
       Rails.logger.warn "sshkey: #{ssh_key_path}"
+      user_name = user.name || user.username
+      Rails.logger.warn "name: #{user_name}"
       instructions = SiteSetting.pfaffmanager_do_install,
        "-i",
        inventory_path,
