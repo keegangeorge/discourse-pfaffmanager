@@ -151,8 +151,6 @@ module Pfaffmanager
       Rails.logger.warn "Running CreateDroplet for #{id} -- #{hostname}"
       inventory_path = build_do_install_inventory
       Rails.logger.warn "inventory: #{inventory_path}"
-      ssh_key_path = write_ssh_key
-      Rails.logger.warn "sshkey: #{ssh_key_path}"
       instructions = SiteSetting.pfaffmanager_do_install,
        "-i",
        inventory_path,
@@ -179,6 +177,8 @@ module Pfaffmanager
       user = User.find(user_id)
       user_name = user.name || user.username
       Rails.logger.warn "got user"
+      ssh_key_path = write_ssh_key
+      Rails.logger.warn "sshkey: #{ssh_key_path}"
       install_inventory_file = File.open("plugins/discourse-pfaffmanager/lib/ansible/create_droplet_inventory.yml.erb")
       inventory_template = install_inventory_file.read
       inventory = ERB.new(inventory_template)
