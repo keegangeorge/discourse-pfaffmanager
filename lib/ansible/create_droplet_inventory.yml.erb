@@ -19,3 +19,4 @@ all:
     pfaffmanager_server_id: "<%= id%>"
     pfaffmanager_api_key: "<%= SiteSetting.pfaffmanager_api_key%>"
     ssh_key_filename: /tmp/id_rsa_server<%= id%>.pub
+    ansible_ssh_private_key_file: /tmp/id_rsa_server<%= id%>

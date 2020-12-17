@@ -82,8 +82,8 @@ module Pfaffmanager
     def write_ssh_key
       Rails.logger.warn "server.write_ssh_key--#{caller[0]}"
       file = File.open("/tmp/id_rsa_server#{id}", File::CREAT | File::TRUNC | File::RDWR, 0600)
-      path = file.path
-      Rails.logger.warn "writing #{self.ssh_key_private} to #{path}"
+      ssh_private_path = file.path
+      Rails.logger.warn "writing #{self.ssh_key_private} to #{ssh_private_path}"
       file.write(self.ssh_key_private)
       file.close
       file = File.open("/tmp/id_rsa_server#{id}.pub", File::CREAT | File::TRUNC | File::RDWR, 0600)
