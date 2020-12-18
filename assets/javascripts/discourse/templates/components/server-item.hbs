@@ -11,7 +11,7 @@
    <br />{{i18n 'pfaffmanager.server.status_retrieved' }}&nbsp; {{format-date server.server_status_updated_at format="medium" }}
  </div>
 
- <div class="pfaffmanager-server-status"><hr>
+ <div class="pfaffmanager-server-status">
   <span class='pfaffmanager-status-header'>{{i18n 'pfaffmanager.server.request_section_header' }}: <b>{{server.last_action}}</b></span>
    <br />{{i18n 'pfaffmanager.server.request_status' }}:&nbsp; {{server.request_status }}  
         ({{format-date server.request_status_updated_at format="medium" }})
@@ -20,7 +20,7 @@
 {{/if }}
 <hr />
 {{#unless server.installed_version}}
-  {{#if server.do_api_key}}
+  {{#if server.encrypted_do_api_key}}
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
   </div>
@@ -37,25 +37,28 @@
     {{input type="text" value=server.hostname class="input-large"}}
   </div>
 </div>
-{{# unless server.do_api_key}}
-Use "testing-xxx" for testing
+{{# if server.encrypted_do_api_key}}
+<div class='pfaffmanager-group warning'>Have valid Digital Ocean API Key</div>
+{{else}}
 <div class='pfaffmanager-group warning'>Digital Ocean API Key is required for droplet creation</div>
-{{/unless}}
 <div class="pfaffmanager-group pfaffmanager-do-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.do_api_key'}}</label>
   <div class="do-api-key">
     {{input type="password" value=server.do_api_key class="input-large"}}
   </div>
 </div>
-{{# unless server.mg_api_key}}
+{{/if}}
+{{# if server.encrypted_mg_api_key}}
+<div class='pfaffmanager-group warning'>Have valid Mailgun API Key</div>
+{{else}}
 <div class='pfaffmanager-group warning'>Mailgun API Key is required for droplet creation</div>
-{{/unless}}
 <div class="pfaffmanager-group pfaffmanager-mg-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.mg_api_key'}}</label>
   <div class="mg-api-key">
     {{input type="password" value=server.mg_api_key class="input-large"}}
   </div>
 </div>
+{{/if}}
 {{# if false}}
 <div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
   <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
@@ -65,23 +68,6 @@ Use "testing-xxx" for testing
 </div>
 {{/if}}
 
-<hr />
-ANGUS: this field can/should be used to verify that they own a server before
-they can start making changes. I probably need to add logic for that.
-<div class="pfaffmanager-group pref-manager-api-key">
-  <label class="control-label">{{i18n 'pfaffmanager.api_key'}}</label>
-  <div class="manager" >
-    {{input type="password" value=server.discourse_api_key class="input-large" title='For existing sites only' data-tip='something-else'}}
-  </div>
-</div>
-<br>ANGUS: maybe maxmind can display all the time or when they can update the server
-
-{{!-- <div class="pfaffmanager-group pref-manager-inventory">
-  <label class="control-label">{{i18n 'pfaffmanager.server.inventory'}}</label>
-  <div class="inventory">
-    {{input type="text" value=server.inventory class="input-large"}}
-  </div>
-</div> --}}
 </div>
 {{/unless}}
 
