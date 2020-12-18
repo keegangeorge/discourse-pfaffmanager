@@ -63,6 +63,8 @@ module Pfaffmanager
     def update
       Rails.logger.warn "\n\nParams: #{params}\n--> qserver UPDATE controller id: #{params[:id]}\n"
       Rails.logger.warn "\nrequest_status: #{params[:request_status]}"
+      server = ::Pfaffmanager::Server.find_by(id: params[:id])
+      Rails.logger.warn "Server? Got '#{server.hostname}'"
       manage_group = Group.where(name: SiteSetting.pfaffmanager_server_manager_group)
       # TODO: make 6.months.ago a setting
       can_manage = !Group.member_of(manage_group, current_user).empty? || current_user.admin || server.created_at < 6.months.ago
