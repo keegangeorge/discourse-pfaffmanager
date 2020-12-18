@@ -9,10 +9,10 @@
 
       {{/if}}
   </div>
-  {{#if server.do_api_key}}
-    {{#if server.mg_api_key}}
+  {{#if server.encrypted_do_api_key}}
+    {{#if server.encrypted_mg_api_key}}
       {{#unless server.installed_version}}
-  ANGUS: This button works. IS this where it should be?
+  
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
   </div>
