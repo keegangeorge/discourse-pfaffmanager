@@ -83,9 +83,6 @@ module Pfaffmanager
       # leaving the comment just in case because I'm bad at git
       #      field = params[:server][:field] unless params[:server].nil?
       #      value = params[:server][:value] unless params[:server].nil?
-      Rails.logger.warn "gonna look"
-      server = ::Pfaffmanager::Server.find_by(id: params[:id])
-      Rails.logger.warn "Server? Got '#{server.hostname}'"
 
       Rails.logger.warn "------------------> GOT REQUEST: #{request}" if request
       if server
