@@ -64,7 +64,8 @@ module Pfaffmanager
       puts "\n\nParams: #{params}\n--> qserver UPDATE controller id: #{params[:id]}\n"
       puts "\nrequest_status: #{params[:request_status]}"
       manage_group = Group.where(name: SiteSetting.pfaffmanager_server_manager_group)
-      can_manage = !Group.member_of(manage_group, current_user).empty? || current_user.admin
+      # TODO: make 6.months.ago a setting
+      can_manage = !Group.member_of(manage_group, current_user).empty? || current_user.admin || server.created_at < 6.months.ago
 
       if can_manage
         puts "you can manage"
