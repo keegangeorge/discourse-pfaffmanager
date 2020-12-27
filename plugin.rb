@@ -27,7 +27,20 @@ after_initialize do
   add_model_callback(GroupUser, :after_save) do
     Rails.logger.warn('GroupUser callback!')
     Rails.logger.warn("GroupUser callback! for group #{self.group_id} user #{self.user_id}")
-    # TODO: create server and remove from group
-    # TODO: and redirect somewhere else?
+    # is it the createserver group?
+    create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
+    if create_group.id == self.group_id
+      # TODO: create server
+      Rails.logger.warn "Creating a server for #{self.id}"
+      server = ::Pfaffmanager::Server.createServerForUser(self.user_id)
+      Rails.logger.warn "Added #{server.id} for #{self.user_id}"
+      gu = GroupUser.find_by(user_id: self.user_id, group_id: create_group.id)
+      if gu
+        Rails.logger.warn "Removing #{self.user_id} from #{gu.group_id}"
+        gu.destroy
+      end
+      # remove from group
+      # TODO: and redirect somewhere else?
+    end
   end
 end
