@@ -23,4 +23,11 @@ after_initialize do
   Pfaffmanager::Server.ensure_pfaffmanager_groups
   SiteSetting.pfaffmanager_api_key ||= ApiKey.create(description: 'pfaffmanager key').key_hash
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
+
+  add_model_callback(GroupUser, :after_save) do
+    Rails.logger.warn('GroupUser callback!')
+    Rails.logger.warn("GroupUser callback! for group #{self.group_id} user #{self.user_id}")
+    # TODO: create server and remove from group
+    # TODO: and redirect somewhere else?
+  end
 end
