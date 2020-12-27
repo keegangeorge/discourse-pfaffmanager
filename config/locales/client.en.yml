@@ -24,6 +24,7 @@ en:
         rebuild: "Rebuild Server"
         request_status: "Request Activity"
         request_result: "Request Status"
+        navigation_link: "Manage Servers"
         request_section_header: "Remote Activity Status"
         x_servers: 
           one: 'Just the one server...'
