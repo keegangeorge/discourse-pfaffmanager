@@ -67,6 +67,11 @@ module Pfaffmanager
                    visibility_level: Group.visibility_levels[:owners],
                   )
       SiteSetting.pfaffmanager_create_server_group = create_group_name
+      pro_server_group_name = 'ProServer'
+      Group.create(name: pro_server_group_name,
+                   visibility_level: Group.visibility_levels[:owners],
+                  )
+      SiteSetting.pfaffmanager_create_server_group = create_group_name
       unlimited_group_name = 'UnlimitedServers'
       Group.create(name: unlimited_group_name,
                    visibility_level: Group.visibility_levels[:owners],

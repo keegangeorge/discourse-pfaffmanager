@@ -36,6 +36,11 @@ plugins:
     client: true
     hidden: false
     type: group
+  pfaffmanager_pro_server_group:
+    default: "ProServer"
+    client: true
+    hidden: false
+    type: group
   pfaffmanager_unlimited_server_group:
     default: "UnlimitedServers"
     client: true
