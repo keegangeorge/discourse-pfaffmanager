@@ -13,6 +13,7 @@ enabled_site_setting :pfaffmanager_enabled
 
 PLUGIN_NAME ||= 'Pfaffmanager'
 
+# See discourse-assign for good examples of serializer, callback, adding method
 load File.expand_path('lib/pfaffmanager/engine.rb', __dir__)
 load File.expand_path('lib/pfaffmanager/pfaffmanager_requests.rb', __dir__)
 load File.expand_path('lib/encryption_service.rb', __dir__)
@@ -29,10 +30,16 @@ after_initialize do
     Rails.logger.warn("GroupUser callback! for group #{self.group_id} user #{self.user_id}")
     # is it the createserver group?
     create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
-    if create_group.id == self.group_id
+    pro_server_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
+    if [create_group.id, pro_server_group.id].include?(self.group_id)
       # TODO: create server
       Rails.logger.warn "Creating a server for #{self.id}"
-      server = ::Pfaffmanager::Server.createServerForUser(self.user_id)
+      install_type = nil
+      if self.group_id == pro_server_group
+        install_type = "pro"
+      end
+
+      server = ::Pfaffmanager::Server.createServerFromParams(user_id: self.user_id, install_type: install_type)
       Rails.logger.warn "Added #{server.id} for #{self.user_id}"
       gu = GroupUser.find_by(user_id: self.user_id, group_id: create_group.id)
       if gu
