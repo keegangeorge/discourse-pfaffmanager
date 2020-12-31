@@ -32,6 +32,7 @@ module Pfaffmanager
       self.ensure_group(SiteSetting.pfaffmanager_create_server_group)
         self.ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
         self.ensure_group(SiteSetting.pfaffmanager_server_manager_group)
+        self.ensure_group(SiteSetting.pfaffmanager_pro_server_group)
     end
 
     def assert_has_ssh_keys
