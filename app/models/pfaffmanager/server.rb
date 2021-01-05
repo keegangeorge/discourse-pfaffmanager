@@ -12,8 +12,8 @@ module Pfaffmanager
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
+    before_save :process_server_request if !:request.nil?
     before_save :update_server_status if !:id.nil?
-    before_save :process_server_request
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
     before_create :assert_has_ssh_keys
@@ -28,12 +28,13 @@ module Pfaffmanager
       )
     end
 
-    def self.ensure_pfaffmanager_groups
-      self.ensure_group(SiteSetting.pfaffmanager_create_server_group)
-        self.ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
-        self.ensure_group(SiteSetting.pfaffmanager_server_manager_group)
-        self.ensure_group(SiteSetting.pfaffmanager_pro_server_group)
-    end
+    # def self.ensure_pfaffmanager_groups
+    #   self.ensure_group(SiteSetting.pfaffmanager_create_server_group)
+    #   self.ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
+    #   puts "Going to create #{SiteSetting.pfaffmanager_server_manager_group}"
+    #   self.ensure_group(SiteSetting.pfaffmanager_server_manager_group)
+    #   self.ensure_group(SiteSetting.pfaffmanager_pro_server_group)
+    # end
 
     def assert_has_ssh_keys
       return self.ssh_key_private if self.ssh_key_private
@@ -60,29 +61,6 @@ module Pfaffmanager
       params[:hostname] = Time.now.strftime "#{user.username}.%Y-%m-%d-%H%M%S.unconfigured" unless params[:hostname]
       Rails.logger.warn "Creating server #{params[:hostname]} for #{current_user_id}"
       create(params)
-    end
-
-    def self.create_default_groups
-      create_group_name = 'CreateServer'
-      Group.create(name: create_group_name,
-                   visibility_level: Group.visibility_levels[:owners],
-                  )
-      SiteSetting.pfaffmanager_create_server_group = create_group_name
-      pro_server_group_name = 'ProServer'
-      Group.create(name: pro_server_group_name,
-                   visibility_level: Group.visibility_levels[:owners],
-                  )
-      SiteSetting.pfaffmanager_create_server_group = create_group_name
-      unlimited_group_name = 'UnlimitedServers'
-      Group.create(name: unlimited_group_name,
-                   visibility_level: Group.visibility_levels[:owners],
-                  )
-      SiteSetting.pfaffmanager_unlimited_server_group = unlimited_group_name
-      manager_group_name = 'ServerManager'
-      Group.create(name: manager_group_name,
-                   visibility_level: Group.visibility_levels[:owners],
-                  )
-      SiteSetting.pfaffmanager_server_manager_group = manager_group_name
     end
 
     def write_ssh_key
@@ -207,6 +185,7 @@ module Pfaffmanager
       when "Processing rebuild"
         self.request_result = 'running'
           Rails.logger.warn "Set request_result running"
+          self.request = -1
           self.request_status_updated_at = Time.now
       when "Failed"
         self.request_result = 'failed'
@@ -237,12 +216,14 @@ module Pfaffmanager
         self.last_action = "Process rebuild/upgrade"
         inventory = build_server_inventory
         self.inventory = inventory
+        update_server_status
         run_ansible_upgrade(inventory)
-      when 2
+      when 2 # no longer used?
         Rails.logger.warn "Processing request 2 -- createDroplet -- do_install"
         self.request = -1
         self.request_status_updated_at = Time.now
         self.last_action = "Create droplet"
+        update_server_status
         queue_create_droplet
         #create_droplet
       end
@@ -294,14 +275,15 @@ module Pfaffmanager
       #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
       # consider https://github.com/pgeraghty/ansible-wrapper-ruby
       # consider Discourse::Utils.execute_command('ls')
+      self.request = -1
       if SiteSetting.pfaffmanager_skip_actions
         Rails.logger.warn "SKIP actions is set. Not running upgrade"
-        self.request = 0
         self.discourse_api_key ||= ApiKey.create(description: 'pfaffmanager localhost key')
         self.update_server_status
         Jobs.enqueue(:fake_upgrade, server_id: self.id)
       else
         Rails.logger.warn "Going to fork: #{playbook} --vault-password-file #{vault} -i #{inventory}"
+        # TODO: make this a job like install
         fork { exec("#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
         #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
       end
