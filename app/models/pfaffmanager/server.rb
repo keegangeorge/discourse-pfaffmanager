@@ -28,14 +28,6 @@ module Pfaffmanager
       )
     end
 
-    # def self.ensure_pfaffmanager_groups
-    #   self.ensure_group(SiteSetting.pfaffmanager_create_server_group)
-    #   self.ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
-    #   puts "Going to create #{SiteSetting.pfaffmanager_server_manager_group}"
-    #   self.ensure_group(SiteSetting.pfaffmanager_server_manager_group)
-    #   self.ensure_group(SiteSetting.pfaffmanager_pro_server_group)
-    # end
-
     def assert_has_ssh_keys
       return self.ssh_key_private if self.ssh_key_private
       Rails.logger.warn "creating ssh keys for server #{self.id}"
@@ -60,8 +52,21 @@ module Pfaffmanager
       user = User.find(current_user_id)
       params[:hostname] = Time.now.strftime "#{user.username}.%Y-%m-%d-%H%M%S.unconfigured" unless params[:hostname]
       Rails.logger.warn "Creating server #{params[:hostname]} for #{current_user_id}"
+      Rails.logger.warn "Server has DO #{params[:do_api_key]}, mgr #{params[:mg_api_key]}"
+
       create(params)
     end
+
+    def self.ensure_pfaffmanager_groups
+      ensure_group(SiteSetting.pfaffmanager_create_server_group)
+      ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
+      ensure_group(SiteSetting.pfaffmanager_server_manager_group)
+      ensure_group(SiteSetting.pfaffmanager_pro_server_group)
+      ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
+      ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
+      ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
+    end
+    # end
 
     def write_ssh_key
       Rails.logger.warn "server.write_ssh_key--#{caller[0]}"
@@ -154,6 +159,13 @@ module Pfaffmanager
     end
 
     private
+
+    def ensure_group(name)
+      Group.find_or_create_by(name: name,
+                              visibility_level: Group.visibility_levels[:staff],
+                              full_name: "Pfaffmanager #{name}"
+      )
+    end
 
     def build_do_install_inventory # TODO: move to private
       Rails.logger.warn "installation_script_template running now"
@@ -337,6 +349,7 @@ module Pfaffmanager
     end
 
     def mg_api_key_validator
+      return true if mg_api_key == SiteSetting.pfaffmanager_mg_api_key
       url = "https://api:#{mg_api_key}@api.mailgun.net/v3/domains"
       result = Excon.get(url, headers: {})
       #accounts = result.body
@@ -367,6 +380,7 @@ module Pfaffmanager
     end
 
     def do_api_key_validator
+      return true if do_api_key == SiteSetting.pfaffmanager_do_api_key
       return true if do_api_key.blank?
       return true if do_api_key.match(/testing/)
       url = "https://api.digitalocean.com/v2/account"

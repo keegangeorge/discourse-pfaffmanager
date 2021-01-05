@@ -22,3 +22,7 @@ Group.seed do |g|
   g.name = SiteSetting.pfaffmanager_ec2_pro_server_group
   g.visibility_level = Group.visibility_levels[:owners]
 end
+Group.seed do |g|
+  g.name = SiteSetting.pfaffmanager_hosted_server_group
+  g.visibility_level = Group.visibility_levels[:owners]
+end

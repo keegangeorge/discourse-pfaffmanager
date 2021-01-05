@@ -12,11 +12,29 @@ module Pfaffmanager
       pro_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
       ec2_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_server_group)
       ec2_pro_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_pro_server_group)
+      pfaffmanager_hosted_server_group = Group.find_by_name(SiteSetting.pfaffmanager_hosted_server_group)
 
 before do
   SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
   SiteSetting.pfaffmanager_do_install = '/bin/true'
   SiteSetting.pfaffmanager_skip_actions = true
+  SiteSetting.pfaffmanager_do_api_key = 'fake-do-api-key'
+  SiteSetting.pfaffmanager_mg_api_key = 'fake-mg-api-key'
+  stub_request(:get, "https://api.mailgun.net/v3/domains").
+    with(
+    headers: {
+   'Authorization' => 'Basic YXBpOmZha2UtbWctYXBpLWtleQ==',
+   'Host' => 'api.mailgun.net'
+    }).
+    to_return(status: 200, body: "", headers: {})
+  stub_request(:get, "https://api.digitalocean.com/v2/account").
+    with(
+      headers: {
+     'Authorization' => 'Bearer fake-do-api-key',
+     'Host' => 'api.digitalocean.com'
+      }).
+    to_return(status: 200, body: "", headers: {})
+
   stub_request(:get, "https://api.digitalocean.com/v2/account").
     with(
     headers: {
@@ -173,12 +191,14 @@ end
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'std'
+      expect(GroupUser.find_by(user_id: user.id, group_id: create_group.id)).to eq nil
     end
     it 'creates a pro server if user is added to proServer group' do
       expect { GroupUser.create(group_id: pro_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'pro'
+      expect(GroupUser.find_by(user_id: user.id, group_id: pro_group.id)).to eq nil
     end
 
     it 'creates a ec2 server if user is added to ec2Server group' do
@@ -186,12 +206,24 @@ end
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'ec2'
+      expect(GroupUser.find_by(user_id: user.id, group_id: ec2_group.id)).to eq nil
     end
     it 'creates a ec2 pro server if user is added to ec2Server group' do
       expect { GroupUser.create(group_id: ec2_pro_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'ec2_pro'
+      expect(GroupUser.find_by(user_id: user.id, group_id: ec2_pro_group.id)).to eq nil
+    end
+
+    it 'creates a LC pro server if user is added to LCProServer group' do
+      expect { GroupUser.create(group_id: pfaffmanager_hosted_server_group.id, user_id: user.id) }
+        .to change { Pfaffmanager::Server.count }.by(1)
+      server = Pfaffmanager::Server.where(user_id: user.id).last
+      expect(server.install_type).to eq 'lc_pro'
+      expect(server.mg_api_key).to eq SiteSetting.pfaffmanager_mg_api_key
+      expect(server.do_api_key).to eq SiteSetting.pfaffmanager_do_api_key
+      expect(GroupUser.find_by(user_id: user.id, group_id: pfaffmanager_hosted_server_group.id)).to eq nil
     end
   end
 end

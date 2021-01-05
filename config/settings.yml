@@ -31,6 +31,14 @@ plugins:
     default: ""
     client: true
     hidden: false
+  pfaffmanager_do_api_key:
+    default: ""
+    client: false
+    hidden: false
+  pfaffmanager_mg_api_key:
+    default: ""
+    client: false
+    hidden: false
   pfaffmanager_create_server_group:
     default: "CreateServer"
     client: true
@@ -38,6 +46,21 @@ plugins:
     type: group
   pfaffmanager_pro_server_group:
     default: "ProServer"
+    client: true
+    hidden: false
+    type: group
+  pfaffmanager_ec2_server_group:
+    default: "Ec2Server"
+    client: true
+    hidden: false
+    type: group
+  pfaffmanager_ec2_pro_server_group:
+    default: "EC2ProServer"
+    client: true
+    hidden: false
+    type: group
+  pfaffmanager_hosted_server_group:
+    default: "LCProServer"
     client: true
     hidden: false
     type: group
