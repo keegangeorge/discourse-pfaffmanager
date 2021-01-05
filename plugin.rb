@@ -20,8 +20,9 @@ load File.expand_path('lib/encryption_service.rb', __dir__)
 load File.expand_path('lib/encryptable.rb', __dir__)
 after_initialize do
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
+  SeedFu.fixture_paths << Rails.root.join("plugins", "discourse-pfaffmanager", "db", "fixtures").to_s
   # load File.expand_path('app/jobs/regular/fake_upgrade.rb', __dir__)
-  Pfaffmanager::Server.ensure_pfaffmanager_groups
+  #Pfaffmanager::Server.ensure_pfaffmanager_groups
   SiteSetting.pfaffmanager_api_key ||= ApiKey.create(description: 'pfaffmanager key').key_hash
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
 
@@ -29,14 +30,27 @@ after_initialize do
     Rails.logger.warn('GroupUser callback!')
     Rails.logger.warn("GroupUser callback! for group #{self.group_id} user #{self.user_id}")
     # is it the createserver group?
+    create_groups = []
     create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
+    create_groups << create_group.try(:id)
     pro_server_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
-    if [create_group.id, pro_server_group.id].include?(self.group_id)
+    create_groups << pro_server_group.try(:id)
+    ec2_server_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_server_group)
+    create_groups << ec2_server_group.try(:id)
+    ec2_pro_server_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_pro_server_group)
+    create_groups << ec2_pro_server_group.try(:id)
+    if create_groups.include?(self.group_id)
       # TODO: create server
       Rails.logger.warn "Creating a server for #{self.id}"
-      install_type = nil
-      if self.group_id == pro_server_group
-        install_type = "pro"
+      case self.group_id
+      when create_group.id
+        install_type = 'std'
+      when pro_server_group.id
+        install_type = 'pro'
+      when ec2_server_group.id
+        install_type = 'ec2'
+      when ec2_pro_server_group.id
+        install_type = 'ec2_pro'
       end
 
       server = ::Pfaffmanager::Server.createServerFromParams(user_id: self.user_id, install_type: install_type)
