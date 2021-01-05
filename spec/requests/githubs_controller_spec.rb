@@ -8,7 +8,7 @@ describe Pfaffmanager::GithubsController do
 
   it 'can list' do
     sign_in(Fabricate(:user))
-    get "/pfaffmanager/list.json"
+    get "/pfaffmanager/githubs/list.json"
     expect(response.status).to eq(200)
   end
 end
