@@ -10,6 +10,8 @@ module Pfaffmanager
       discourse_api_key: 'working-discourse-key')}
       create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
       pro_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
+      ec2_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_server_group)
+      ec2_pro_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_pro_server_group)
 
 before do
   SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
@@ -177,6 +179,19 @@ end
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'pro'
+    end
+
+    it 'creates a ec2 server if user is added to ec2Server group' do
+      expect { GroupUser.create(group_id: ec2_group.id, user_id: user.id) }
+        .to change { Pfaffmanager::Server.count }.by(1)
+      server = Pfaffmanager::Server.where(user_id: user.id).last
+      expect(server.install_type).to eq 'ec2'
+    end
+    it 'creates a ec2 pro server if user is added to ec2Server group' do
+      expect { GroupUser.create(group_id: ec2_pro_group.id, user_id: user.id) }
+        .to change { Pfaffmanager::Server.count }.by(1)
+      server = Pfaffmanager::Server.where(user_id: user.id).last
+      expect(server.install_type).to eq 'ec2_pro'
     end
   end
 end
