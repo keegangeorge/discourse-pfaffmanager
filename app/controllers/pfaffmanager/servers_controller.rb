@@ -122,11 +122,11 @@ module Pfaffmanager
           server.do_api_key = data[:do_api_key] unless data[:do_api_key].nil?
           server.mg_api_key = data[:mg_api_key] unless data[:mg_api_key].nil?
           server.maxmind_license_key = data[:maxmind_license_key] unless data[:maxmind_license_key].nil?
-          server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
-          server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?
-          server.smtp_port = data[:smtp_port] unless data[:smtp_port].nil?
-          server.smtp_password = data[:smtp_password] unless data[:smtp_password].nil?
-          server.smtp_user = data[:smtp_user] unless data[:smtp_user].nil?
+          # server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
+          # server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?
+          # server.smtp_port = data[:smtp_port] unless data[:smtp_port].nil?
+          # server.smtp_password = data[:smtp_password] unless data[:smtp_password].nil?
+          # server.smtp_user = data[:smtp_user] unless data[:smtp_user].nil?
           # don't try to start a build if one is running
         end
 

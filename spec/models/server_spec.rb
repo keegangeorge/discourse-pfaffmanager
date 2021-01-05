@@ -8,10 +8,13 @@ module Pfaffmanager
     let(:discourse_server) { Fabricate(:server,
       hostname: 'working.discourse.invalid',
       discourse_api_key: 'working-discourse-key')}
+      create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
+      pro_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
 
 before do
   SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
   SiteSetting.pfaffmanager_do_install = '/bin/true'
+  SiteSetting.pfaffmanager_skip_actions = true
   stub_request(:get, "https://api.digitalocean.com/v2/account").
     with(
     headers: {
@@ -124,12 +127,13 @@ end
     end
 
     it 'updates last_action and others on rebuild request' do
+      # when request is 1 do a rebuild
       discourse_server.request = 1
       expect { discourse_server.save }
         .to change(discourse_server, :inventory)
         .and change(discourse_server, :request_status_updated_at)
       expect(discourse_server.request).to eq -1
-      expect(discourse_server.last_action).to eq 'Process rebuild'
+      expect(discourse_server.last_action).to eq 'Process rebuild/upgrade'
     end
 
     it 'updates last_action and others on create request' do
@@ -162,5 +166,17 @@ end
         .and change(discourse_server, :request).to(0)
     end
 
+    it 'creates a server if user is added to createServer group' do
+      expect { GroupUser.create(group_id: create_group.id, user_id: user.id) }
+        .to change { Pfaffmanager::Server.count }.by(1)
+      server = Pfaffmanager::Server.where(user_id: user.id).last
+      expect(server.install_type).to eq 'std'
+    end
+    it 'creates a pro server if user is added to proServer group' do
+      expect { GroupUser.create(group_id: pro_group.id, user_id: user.id) }
+        .to change { Pfaffmanager::Server.count }.by(1)
+      server = Pfaffmanager::Server.where(user_id: user.id).last
+      expect(server.install_type).to eq 'pro'
+    end
   end
 end
