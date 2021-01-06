@@ -20,13 +20,6 @@ before do
   SiteSetting.pfaffmanager_skip_actions = true
   SiteSetting.pfaffmanager_do_api_key = 'fake-do-api-key'
   SiteSetting.pfaffmanager_mg_api_key = 'fake-mg-api-key'
-  stub_request(:get, "https://api.mailgun.net/v3/domains").
-    with(
-    headers: {
-   'Authorization' => 'Basic YXBpOmZha2UtbWctYXBpLWtleQ==',
-   'Host' => 'api.mailgun.net'
-    }).
-    to_return(status: 200, body: "", headers: {})
   stub_request(:get, "https://api.digitalocean.com/v2/account").
     with(
       headers: {
