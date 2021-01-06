@@ -1,5 +1,9 @@
 en:
   js:
+    discourse_subscriptions:
+      subscribe:
+        title: "Pay Now"
+         
     pfaffmanager:
       title: "Disourse Manager"
       show: "Show server"
