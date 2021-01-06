@@ -57,6 +57,8 @@ after_initialize do
         install_type = 'ec2_pro'
       when pfaffmanager_hosted_server_group.id
         install_type = 'lc_pro'
+        Rails.logger.error "Creating hosted server with no DO API KEY!" unless SiteSetting.pfaffmanager_do_api_key != ''
+        Rails.logger.error "Creating hosted server with no MG API KEY!" unless SiteSetting.pfaffmanager_mg_api_key != ''
         do_api_key = SiteSetting.pfaffmanager_do_api_key
         mg_api_key = SiteSetting.pfaffmanager_mg_api_key
         Rails.logger.warn "Creating a server with #{do_api_key} and #{mg_api_key}"
