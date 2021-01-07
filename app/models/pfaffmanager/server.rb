@@ -137,7 +137,7 @@ module Pfaffmanager
     end
 
     def create_droplet()
-      Rails.logger.warn "Running CreateDroplet for #{id} -- #{hostname}"
+      Rails.logger.warn "Running CreateDroplet for #{id} -- #{hostname}-DO: #{self.do_api_key}"
       inventory_path = build_do_install_inventory
       Rails.logger.warn "inventory: #{inventory_path}"
       instructions = SiteSetting.pfaffmanager_do_install,
@@ -146,8 +146,9 @@ module Pfaffmanager
        "--vault-password-file",
        SiteSetting.pfaffmanager_vault_file,
        "--extra-vars",
-       "discourse_do_api_key=#{self.do_api_key} discourse_mg_api_key=#{self.mg_api_key}"
+       "discourse_do_api_key=#{do_api_key} discourse_mg_api_key=#{ mg_api_key}"
        Rails.logger.warn "going to run with: #{instructions.join(' ')}"
+       Rails.logger.error "NOT creating!! #{instructions.join(' ')}" if SiteSetting.pfaffmanager_do_install == '/bin/true'
       #  begin
       #    Discourse::Utils.execute_command(*instructions)
       #   rescue => e

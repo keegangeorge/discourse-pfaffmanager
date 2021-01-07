@@ -119,8 +119,8 @@ module Pfaffmanager
           # server.hostname = data[:hostname] if data[:hostname]
           server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
           server.hostname = data[:hostname] if data[:hostname]
-          server.do_api_key = data[:do_api_key] unless data[:do_api_key].nil?
-          server.mg_api_key = data[:mg_api_key] unless data[:mg_api_key].nil?
+          server.do_api_key = data[:do_api_key] if data[:do_api_key].try(:length) > 0
+          server.mg_api_key = data[:mg_api_key] if data[:mg_api_key].try(:length) > 0
           server.maxmind_license_key = data[:maxmind_license_key] unless data[:maxmind_license_key].nil?
           # server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
           # server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?

@@ -3,6 +3,12 @@ en:
     discourse_subscriptions:
       subscribe:
         title: "Pay Now"
+      plans: 
+        success: "Thank you! Your subscription or server has been created."
+        payment_button: "Pay Now"
+      navigation:
+        subscribe: "Purchase"
+      
          
     pfaffmanager:
       title: "Disourse Manager"

@@ -209,7 +209,7 @@ end
       expect(GroupUser.find_by(user_id: user.id, group_id: ec2_pro_group.id)).to eq nil
     end
 
-    it 'creates a LC pro server if user is added to LCProServer group' do
+    it 'creates a LC pro server with LC keys if user is added to LCProServer group' do
       expect { GroupUser.create(group_id: pfaffmanager_hosted_server_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
