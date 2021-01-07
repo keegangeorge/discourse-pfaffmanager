@@ -11,4 +11,8 @@ Pfaffmanager::Engine.routes.draw do
   post "/servers" => "servers#create", constraints: PfaffmanagerConstraint.new
   get "/githubs" => "githubs#index", constraints: PfaffmanagerConstraint.new
   get "/githubs/:id" => "githubs#show", constraints: PfaffmanagerConstraint.new
+  namespace :user do
+    resources :servers
+  end
+
 end

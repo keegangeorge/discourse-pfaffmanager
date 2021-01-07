@@ -10,6 +10,8 @@ module Pfaffmanager
     config.after_initialize do
       Discourse::Application.routes.append do
         mount ::Pfaffmanager::Engine, at: "/pfaffmanager"
+        get "u/:username/servers" => "users#show", constraints: PfaffmanagerConstraint.new
+        get "u/:username/servers/:id" => "users#show", constraints: PfaffmanagerConstraint.new
       end
     end
   end

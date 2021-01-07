@@ -1,0 +1,23 @@
+<form>
+{{server-item server=server}}
+  <div class="pull-right">
+      {{#if server.installed_version}}
+      ANGUS: Maybe here is where to set request to 1 to do the upgrade instead of server.js.es6
+      {{d-button label="pfaffmanager.server.run_upgrade" action="updateServer" icon="check" class="btn btn-primary"}}
+      {{ else }}
+      {{d-button label="pfaffmanager.server.update" action="updateServer" icon="check" class="btn btn-primary"}}
+
+      {{/if}}
+  </div>
+  {{#if server.encrypted_do_api_key}}
+    {{#if server.encrypted_mg_api_key}}
+      {{#unless server.installed_version}}
+  
+  <div class="pull-right">
+      {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
+  </div>
+    {{/unless}}
+   {{/if}}
+   
+  {{/if}}
+</form>
