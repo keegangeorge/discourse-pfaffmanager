@@ -1,0 +1,6 @@
+<h3>Adding ssh key to your server</h3>
+Log in to {{model.server.hostname}} via SSH and copy/paste this command:
+
+<pre>
+echo {{model.server.ssh_key_public}} >> ~/.ssh/authorized_keys
+</pre>

@@ -9,5 +9,8 @@ export default function() {
     this.route("githubs", function() {
       this.route("show", { path: "/:id" });
     });
+    this.route("ssh_key", function() {
+      this.route("show", { path: "/:id" });
+    });
   });
 };
