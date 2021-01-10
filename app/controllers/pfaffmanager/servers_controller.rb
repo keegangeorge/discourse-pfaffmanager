@@ -18,8 +18,7 @@ module Pfaffmanager
       Rails.logger.warn "\n\n\n\nServer controller SHOW for user #{current_user.username} in the house.\n\n\n\n"
 
       # TODO: Allow admin to see server of other users
-      server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
-      clean_server = server.attributes.except('encrypted_ssh_key_private')
+      server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id      clean_server = server.attributes.except('encrypted_ssh_key_private')
 
       #render_json_dump({ server: server, except: [:ssh_key_private ] })
       render_json_dump({ server: clean_server })
