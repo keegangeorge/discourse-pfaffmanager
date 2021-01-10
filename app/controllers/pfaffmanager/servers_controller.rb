@@ -18,18 +18,22 @@ module Pfaffmanager
       Rails.logger.warn "\n\n\n\nServer controller SHOW for user #{current_user.username} in the house.\n\n\n\n"
 
       # TODO: Allow admin to see server of other users
-      server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id      clean_server = server.attributes.except('encrypted_ssh_key_private')
+      server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
+      clean_server = server.attributes.except('discourse_api_key')
 
       #render_json_dump({ server: server, except: [:ssh_key_private ] })
-      render_json_dump({ server: clean_server })
+      render_json_dump({ server: server })
     end
 
     def set_api_key
-      server_id = params[:id]
-      Rails.logger.warn "servers_controller.create_droplet"
-      server = ::Pfaffmanager::Server.find(params[:server][:user_id])
+      server = ::Pfaffmanager::Server.find(params[:id])
       server.discourse_api_key = params[:discourse_api_key]
-      server.save
+      status = server.save
+      if status
+        render plain: "ok"
+      else
+        render plain: "updating API key failed"
+      end
     end
 
     def get_pub_key

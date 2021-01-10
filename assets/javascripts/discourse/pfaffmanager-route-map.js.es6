@@ -12,5 +12,8 @@ export default function() {
     this.route("ssh_key", function() {
       this.route("show", { path: "/:id" });
     });
+    this.route("api_key", function() {
+      this.route("show", { path: "/:id" });
+    });
   });
 };

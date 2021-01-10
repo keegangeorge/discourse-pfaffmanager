@@ -1,16 +1,9 @@
-servers pfaffmanager-controller-index.hbs<br />
+<!-- servers pfaffmanager-controller-index.hbs -->
 
-<div class="pfaffmanager-group server-index">
-{{i18n "pfaffmanager.server.x_servers" count=servers.length}}
-</div>
-<div class="pfaffmanager-group server-index">
-  TODO: hide this if not admin or in servercreate group
-<span class='pfaffmanager-group server-create-button'>
-{{d-button label="pfaffmanager.server.create" action="createServer" icon="plus" class="btn btn-primary"}}
-</span>
-</div>
+<h2>Server List for {{i18n "pfaffmanager.server.x_servers" count=servers.length}}
+</h2>
+<p><a href="/s">Purchase more Servers</a></p>
 
-<h2>Server List</h2>
 {{#each servers as |server|}}
 <hr />
      {{#link-to "pfaffmanager.servers.show" server.id}} 

@@ -85,7 +85,7 @@ module Pfaffmanager
     end
 
     def update_server_status
-      Rails.logger.warn "server.update_server_status"
+      puts "server.update_server_status"
       begin
         # TODO: REMOVE OR enforce admin only
         if self.hostname.match(/localhost/)
@@ -108,26 +108,28 @@ module Pfaffmanager
             self.installed_sha = version_check['installed_sha']
             self.git_branch = version_check['git_branch']
           else
+            puts "it's else time"
             if discourse_api_key.present? && !discourse_api_key.blank?
               headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
-          Rails.logger.warn "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
+          puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
           result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
-          Rails.logger.warn "got it!"
+          puts "got it!"
           self.server_status_json = result.body
           self.server_status_updated_at = Time.now
-          Rails.logger.warn "going to version check: #{result.body[0..300]}"
+          puts "going to version check: #{result.body[0..300]}"
           version_check = JSON.parse(result.body)['version_check']
-          Rails.logger.warn "got the version check"
+          puts "got the version check"
           self.installed_version = version_check['installed_version']
           self.installed_sha = version_check['installed_sha']
           self.git_branch = version_check['git_branch']
-          Rails.logger.warn "did the stuff"
+          puts "did the stuff"
             end
         end
       rescue => e
         Rails.logger.warn "cannot update server status: #{e[0..200]}"
       end
+      publish_status_update
     end
 
     def queue_create_droplet()
@@ -157,6 +159,7 @@ module Pfaffmanager
       #    Rails.logger.warn "HERe's the problem: #{error}"
       #  end
       Discourse::Utils.execute_command(*instructions)
+      update_server_status
     end
 
     private
