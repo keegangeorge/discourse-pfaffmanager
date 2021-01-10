@@ -19,16 +19,31 @@ module Pfaffmanager
 
       # TODO: Allow admin to see server of other users
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
-      clean_server = server.attributes.except('ssh_key_public')
+      clean_server = server.attributes.except('encrypted_ssh_key_private')
 
       #render_json_dump({ server: server, except: [:ssh_key_private ] })
       render_json_dump({ server: clean_server })
     end
 
+    def set_api_key
+      server_id = params[:id]
+      Rails.logger.warn "servers_controller.create_droplet"
+      server = ::Pfaffmanager::Server.find(params[:server][:user_id])
+      server.discourse_api_key = params[:discourse_api_key]
+      server.save
+    end
+
+    def get_pub_key
+      Rails.logger.warn "\n#{'-' * 40}\nServer controller get_pub_key\n"
+      puts "get_pub_key"
+      server = ::Pfaffmanager::Server.find_by(params[:id])
+      render plain: server.ssh_key_public
+    end
+
     def create_droplet
       server_id = params[:id]
       Rails.logger.warn "servers_controller.create_droplet"
-      server = ::Pfaffmanager::Server.find(arams[:server][:user_id])
+      server = ::Pfaffmanager::Server.find(params[:server][:user_id])
       server.queue_create_droplet
     end
 
