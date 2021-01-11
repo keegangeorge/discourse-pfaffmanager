@@ -111,19 +111,27 @@ module Pfaffmanager
             puts "it's else time"
             if discourse_api_key.present? && !discourse_api_key.blank?
               headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
-          protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
-          puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
-          result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
-          puts "got it!"
-          self.server_status_json = result.body
-          self.server_status_updated_at = Time.now
-          puts "going to version check: #{result.body[0..300]}"
-          version_check = JSON.parse(result.body)['version_check']
-          puts "got the version check"
-          self.installed_version = version_check['installed_version']
-          self.installed_sha = version_check['installed_sha']
-          self.git_branch = version_check['git_branch']
-          puts "did the stuff"
+              protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
+              puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
+              result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
+              puts "got it!"
+              self.server_status_json = result.body
+              self.server_status_updated_at = Time.now
+              puts "going to version check: #{result.body[0..300]}"
+              version_check = JSON.parse(result.body)['version_check']
+              puts "got the version check"
+              self.installed_version = version_check['installed_version']
+              self.installed_sha = version_check['installed_sha']
+              self.git_branch = version_check['git_branch']
+              puts "did the stuff"
+              data = {
+                installed_version: self.installed_version,
+                installed_sha: self.installed_sha,
+                server_status_json: self.server_status_json,
+                server_status_updated_at: self.server_status_updated_at,
+                git_branch: self.git_branch
+              }
+              publish_update(data)
             end
         end
       rescue => e
@@ -219,6 +227,12 @@ module Pfaffmanager
       }
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
       # to allow real-time access to all servers on the site
+      MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
+    end
+
+    def publish_update(data)
+      Rails.logger.warn "server.publish_update"
+      puts "server.publish_update #{data}"
       MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
     end
 
