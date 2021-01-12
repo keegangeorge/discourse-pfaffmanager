@@ -5,7 +5,7 @@ all:
     ansible_ssh_private_key_file:  <%= ssh_key_path%>
     discourse_name: "<%= user_name%>"
     discourse_email: "<%= user.email%>"
-    discourse_developer_email: "{{discourse_email}}"
+    discourse_developer_email: "<%= user.email%>"
     discourse_install_type: "<%= install_type %>" # TODO select
     #discourse_smtp_host: smtp-is-broken
     #discourse_smtp_user: missing
