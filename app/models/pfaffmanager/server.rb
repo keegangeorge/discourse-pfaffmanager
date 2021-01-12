@@ -7,7 +7,7 @@ module Pfaffmanager
   class Server < ActiveRecord::Base
     #include ActiveModel::Dirty
     include Encryptable
-    attr_encrypted :do_api_key, :ssh_key_private, :mg_api_key
+    attr_encrypted :do_api_key, :ssh_key_private, :mg_api_key, :discourse_api_key
     belongs_to :user
     self.table_name = "pfaffmanager_servers"
 
