@@ -2,7 +2,7 @@
 
 module Jobs
   class ServerUpgrade < ::Jobs::Base
-    sidekiq_options queue: 'critical'
+    sidekiq_options retry: false
     def execute(args)
       s = Pfaffmanager::Server.find(args[:server_id])
       s.run_upgrade

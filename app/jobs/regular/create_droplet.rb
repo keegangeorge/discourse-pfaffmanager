@@ -3,6 +3,7 @@
 module Jobs
 
   class CreateDroplet < ::Jobs::Base
+    sidekiq_options retry: false
 
     def execute(args)
       puts "createDroplet.execute_onceoff starting..."
