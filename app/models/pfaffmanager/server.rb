@@ -205,9 +205,13 @@ module Pfaffmanager
         Rails.logger.error "NOT running upgrade: #{instructions.join(' ')}" if SiteSetting.pfaffmanager_upgrade_playbook == '/bin/true'
       begin
         output = Discourse::Utils.execute_command(*instructions)
+        self.last_output = output
+        self.save
         true
       rescue => e
         Rails.logger.warn "upgrade failed with #{e.message}--#{output}"
+        self.last_output = output
+        self.save
         false
       end
     end
