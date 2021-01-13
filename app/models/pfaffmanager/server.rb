@@ -193,10 +193,14 @@ module Pfaffmanager
 
     def run_upgrade()
       Rails.logger.warn "Running upgrade for #{id} -- #{hostname}"
+      self.last_output = "run_upgrade starting"
+      Rails.logger.error "starting upgrade"
+      self.save
       update_server_status
       inventory_path = build_upgrade_inventory
       Rails.logger.warn "inventory: #{inventory_path}"
       instructions = SiteSetting.pfaffmanager_upgrade_playbook,
+        "-vvvv",
         "-i",
         inventory_path,
         "--vault-password-file",
@@ -205,6 +209,7 @@ module Pfaffmanager
         Rails.logger.error "NOT running upgrade: #{instructions.join(' ')}" if SiteSetting.pfaffmanager_upgrade_playbook == '/bin/true'
       begin
         output = Discourse::Utils.execute_command(*instructions)
+        Rails.logger.error "upgrade success: #{output}"
         self.last_output = output
         self.save
         true
