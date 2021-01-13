@@ -15,5 +15,8 @@ export default function() {
     this.route("api_key", function() {
       this.route("show", { path: "/:id" });
     });
+    this.route("upgrade", function() {
+      this.route("show", { path: "/:id" });
+    });
   });
 };

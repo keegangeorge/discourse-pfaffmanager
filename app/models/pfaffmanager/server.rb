@@ -12,11 +12,12 @@ module Pfaffmanager
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
-    before_save :process_server_request if !:request.nil?
+    #before_save :process_server_request if !:request.nil?
     before_save :update_server_status if !:id.nil?
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
     before_create :assert_has_ssh_keys
+    before_save :assert_discourse_url
     after_save :publish_status_update if :saved_change_to_request_status?
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
@@ -37,6 +38,11 @@ module Pfaffmanager
       k = SSHKey.generate(comment: "#{user.username}@manager.pfaffmanager.com", bits: 2048)
       self.ssh_key_public = k.ssh_public_key
       self.ssh_key_private = k.private_key
+    end
+
+    def assert_discourse_url
+      return self.discourse_url if self.discourse_url
+      self.discourse_url = "https://#{hostname}"
     end
 
     def self.createServerForUser(user_id, hostname = nil)
@@ -69,18 +75,14 @@ module Pfaffmanager
     # end
 
     def write_ssh_key
-      Rails.logger.warn "server.write_ssh_key--#{caller[0]}"
       file = File.open("/tmp/id_rsa_server#{id}", File::CREAT | File::TRUNC | File::RDWR, 0600)
       ssh_private_path = file.path
-      Rails.logger.warn "writing #{self.ssh_key_private} to #{ssh_private_path}"
       file.write(self.ssh_key_private)
       file.close
       file = File.open("/tmp/id_rsa_server#{id}.pub", File::CREAT | File::TRUNC | File::RDWR, 0600)
       path = file.path
-      Rails.logger.warn "writing #{self.ssh_key_public} to #{path}"
       file.write(self.ssh_key_public)
       file.close
-      Rails.logger.warn "done Writing "
       path
     end
 
@@ -166,11 +168,51 @@ module Pfaffmanager
       #    error << e.message
       #    Rails.logger.warn "HERe's the problem: #{error}"
       #  end
-      Discourse::Utils.execute_command(*instructions)
-      update_server_status
+      begin
+        Discourse::Utils.execute_command(*instructions)
+        update_server_status
+      rescue => e
+        Discourse.warn(error, location: to, error_message: e.message)
+        false
+      end
+
     end
 
-    private
+    def queue_upgrade()
+      Rails.logger.warn "server.run_upgrade for #{id}"
+      self.request = -1
+      self.request_status_updated_at = Time.now
+      self.last_action = "Process rebuild/upgrade"
+      self.save
+      run_ansible_upgrade(inventory)
+      #
+      Jobs.enqueue(:server_upgrade, server_id: id)
+      Rails.logger.warn "upgrade job created for #{id}"
+      Rails.logger.error "upgrade job created for #{id}" if SiteSetting.pfaffmanager_debug_to_log
+    end
+
+    def run_upgrade()
+      Rails.logger.warn "Running upgrade for #{id} -- #{hostname}"
+      update_server_status
+      inventory_path = build_upgrade_inventory
+      Rails.logger.warn "inventory: #{inventory_path}"
+      instructions = SiteSetting.pfaffmanager_upgrade_playbook,
+        "-i",
+        inventory_path,
+        "--vault-password-file",
+        SiteSetting.pfaffmanager_vault_file
+        Rails.logger.warn "running upgrade: #{instructions.join(' ')}"
+        Rails.logger.error "NOT running upgrade: #{instructions.join(' ')}" if SiteSetting.pfaffmanager_upgrade_playbook == '/bin/true'
+      begin
+        output = Discourse::Utils.execute_command(*instructions)
+        true
+      rescue => e
+        Rails.logger.warn "upgrade failed with #{e.message}--#{output}"
+        false
+      end
+    end
+
+    # private
 
     def ensure_group(name)
       Group.find_or_create_by(name: name,
@@ -191,6 +233,23 @@ module Pfaffmanager
       inventory_template = install_inventory_file.read
       inventory = ERB.new(inventory_template)
       Rails.logger.warn "erb inventory"
+      inventory_file.write(inventory.result(binding))
+      inventory_file.close
+      Rails.logger.warn "Wrote #{inventory_file.path}"
+      inventory_file.path
+    end
+
+    def build_upgrade_inventory # TODO: move to private
+      Rails.logger.warn "upgrade_script_template running now"
+      inventory_file = File.open("/tmp/#{hostname}.yml", "w")
+      user = User.find(user_id)
+      user_name = user.name || user.username
+      Rails.logger.warn "got user"
+      ssh_key_path = write_ssh_key
+      Rails.logger.warn "sshkey: #{ssh_key_path}"
+      upgrade_inventory_file = File.open("plugins/discourse-pfaffmanager/lib/ansible/upgrade_inventory.yml.erb")
+      inventory_template = upgrade_inventory_file.read
+      inventory = ERB.new(inventory_template)
       inventory_file.write(inventory.result(binding))
       inventory_file.close
       Rails.logger.warn "Wrote #{inventory_file.path}"
@@ -284,21 +343,18 @@ module Pfaffmanager
               hosts:
                 #{hostname}:
                   pfaffmanager_server_id: #{id}
-                  skip_bootstrap: yes
+                  skip_bootstrap: #{SiteSetting.pfaffmanager_debug_to_log ? 'yes' : 'no'}
                   discourse_name: #{user.name || 'pfaffmanager user'}
                   discourse_email: #{user.email}
-                  discourse_url: #{discourse_url}
-                  discourse_smtp_host: ""
-                  discourse_smtp_password: ""
-                  discourse_smtp_user: ""
-                  discourse_extra_envs:
-                    - "CURRENTLY_IGNORED: true"
-                  discourse_custom_plugins:
-                    - https://github.com/discourse/discourse-subscriptions.git
+                  #discourse_url: #{discourse_url}
+                  discourse_install_type: #{install_type}
+                  #discourse_custom_plugins:
+                  #  - https://github.com/discourse/discourse-subscriptions.git
           HEREDOC
     end
 
     def run_ansible_upgrade(inventory, log = "/tmp/upgrade.log")
+      ## DEPRECATED
       dir = SiteSetting.pfaffmanager_playbook_dir
       playbook = SiteSetting.pfaffmanager_upgrade_playbook
       vault = SiteSetting.pfaffmanager_vault_file
@@ -321,13 +377,44 @@ module Pfaffmanager
 
     def build_server_inventory
       #user = User.find(user_id)
-      now = Time.now.strftime('%Y-%m%d-%H%M')
-      filename = "#{SiteSetting.pfaffmanager_inventory_dir}/#{id}-#{hostname}-#{now}-inventory.yml"
+      filename = "#{SiteSetting.pfaffmanager_inventory_dir}/#{hostname}-inventory.yml"
       File.open(filename, "w") do |f|
         f.write(managed_inventory_template)
       end
       Rails.logger.warn "Writing #{filename}"
-      managed_inventory_template
+      filename
+    end
+
+    def managed_inventory_template
+      Rails.logger.warn "managed_inventory_template running now"
+      user = User.find(user_id)
+      <<~HEREDOC
+        ---
+        all:
+          vars:
+            ansible_user: root
+            ansible_python_interpreter: /usr/bin/python3
+            pfaffmanager_base_url: #{Discourse.base_url}
+            lc_smtp_password: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              30643766333939393233396330353461303431633262306661633332376262323661616639373232
+              3966626533373938373637363132386464323337346537380a333361613663633034383663323539
+              36626661663739313036363761313665353236646238376163316430656634343530646666303465
+              3563323532633330350a616662386233343534653762653762336466633863646332383735616463
+              30346533323635313663383030666532383664353465343165343265386639663662613463376432
+              35626335323165343636336261646461396666653966306365383037616130663939306135303230
+              613430336166663466373032343238353933
+            discourse_yml: 'app'
+          children:
+            discourse:
+              hosts:
+                #{hostname}:
+                  pfaffmanager_server_id: #{id}
+                  skip_bootstrap: yes
+                  discourse_name: #{user.name || 'pfaffmanager user'}
+                  discourse_email: #{user.email}
+                  discourse_url: #{discourse_url}
+          HEREDOC
     end
 
     def build_install_script

@@ -22,10 +22,16 @@ Server.reopenClass({
     }).catch(popupAjaxError);
   },
   
-  updateServer(data) {
+  upgradeServer(model) {
+    console.log("upgrade in j/d/models/");
+    console.log(model);
+    return ajax(`/pfaffmanager/upgrade/${model.id}`, {
+      type: "POST"
+    }).catch(popupAjaxError);
+  },  
+  updateServer(model) {
     console.log("update in j/d/models/");
-    console.log("do:" + data.do_api_key);
-    console.log(data);
+    console.log(model);
     let server = {
       user_id: data.user_id,
       hostname: data.hostname,
@@ -44,7 +50,7 @@ Server.reopenClass({
       }
     }).catch(popupAjaxError);
   },
-  
+
   listServers() {
     return ajax(`/pfaffmanager/servers`, {
       type: "GET"

@@ -50,6 +50,18 @@ module Pfaffmanager
       server.queue_create_droplet
     end
 
+    def queue_upgrade
+      server_id = params[:id]
+      Rails.logger.warn "servers_controller.run_upgrade for #{server_id}"
+      server = ::Pfaffmanager::Server.find(server_id)
+      status = server.queue_upgrade
+      if status
+        render plain: "ok"
+      else
+        render plain: "queueing upgrade failed"
+      end
+    end
+
     def create
       Rails.logger.warn "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
       create_groups = Group.where(name: SiteSetting.pfaffmanager_create_server_group).or(Group.where(name: SiteSetting.pfaffmanager_unlimited_server_group))

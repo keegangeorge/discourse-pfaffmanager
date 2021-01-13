@@ -34,6 +34,19 @@ export default Controller.extend({
         }
       });
     },
+    upgradeServer() {
+      Server.upgradeServer(this.server).then((result) => {
+        console.log("upgradeServer in controllers/pfaffmanager-servers-show.js.es6");
+        console.log(this.model);
+        console.log(result);
+        
+        if (result.errors) {
+          console.log("Errors: ", errors);
+        } else {
+          console.log("Success");
+        }
+      });
+    },
   updateServer() {
       Server.updateServer(this.server).then((result) => {
         if (result.errors) {

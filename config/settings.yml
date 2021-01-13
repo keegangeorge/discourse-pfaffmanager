@@ -74,4 +74,9 @@ plugins:
     client: true
     hidden: false
     type: group
+  pfaffmanager_debug_to_log:
+    default: false
+    client: true
+    hidden: false
+    type: boolean
     
