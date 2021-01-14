@@ -12,7 +12,6 @@ module Pfaffmanager
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
-    #before_save :process_server_request if !:request.nil?
     before_save :update_server_status if !:id.nil?
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
@@ -110,22 +109,17 @@ module Pfaffmanager
             self.installed_sha = version_check['installed_sha']
             self.git_branch = version_check['git_branch']
           else
-            puts "it's else time"
             if discourse_api_key.present? && !discourse_api_key.blank?
               headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
               protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
               puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
               result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
-              puts "got it!"
               self.server_status_json = result.body
               self.server_status_updated_at = Time.now
-              puts "going to version check: #{result.body[0..300]}"
               version_check = JSON.parse(result.body)['version_check']
-              puts "got the version check"
               self.installed_version = version_check['installed_version']
               self.installed_sha = version_check['installed_sha']
               self.git_branch = version_check['git_branch']
-              puts "did the stuff"
               data = {
                 installed_version: self.installed_version,
                 installed_sha: self.installed_sha,
@@ -179,13 +173,12 @@ module Pfaffmanager
     end
 
     def queue_upgrade()
-      Rails.logger.warn "server.run_upgrade for #{id}"
+      Rails.logger.warn "server.run_upgrade for #{id} "
+      puts "server.run_upgrade for #{id} "
       self.request = -1
       self.request_status_updated_at = Time.now
       self.last_action = "Process rebuild/upgrade"
       self.save
-      run_ansible_upgrade(inventory)
-      #
       Jobs.enqueue(:server_upgrade, server_id: id)
       Rails.logger.warn "upgrade job created for #{id}"
       Rails.logger.error "upgrade job created for #{id}" if SiteSetting.pfaffmanager_debug_to_log
@@ -302,29 +295,6 @@ module Pfaffmanager
       Rails.logger.warn "server.publish_update"
       puts "server.publish_update #{data}"
       MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
-    end
-
-    def process_server_request
-      Rails.logger.warn "server.PROCESS SERVER REQUEST: '#{request}'"
-      case request
-      when 1
-        Rails.logger.warn "Processing request 1 -- rebuild -- run_ansible_upgrade"
-        self.request = -1
-        self.request_status_updated_at = Time.now
-        self.last_action = "Process rebuild/upgrade"
-        inventory = build_server_inventory
-        self.inventory = inventory
-        update_server_status
-        run_ansible_upgrade(inventory)
-      when 2 # no longer used?
-        Rails.logger.warn "Processing request 2 -- createDroplet -- do_install"
-        self.request = -1
-        self.request_status_updated_at = Time.now
-        self.last_action = "Create droplet"
-        update_server_status
-        queue_create_droplet
-        #create_droplet
-      end
     end
 
     def managed_inventory_template

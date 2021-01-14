@@ -19,10 +19,10 @@ module Pfaffmanager
 
       # TODO: Allow admin to see server of other users
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
-      clean_server = server.attributes.except('discourse_api_key')
+      clean_server = server.attributes.except('discourse_api_key', 'last_output', 'encrypted_ssh_key_private', 'ssh_key_private', 'do_api_key', 'mg_api_key')
 
       #render_json_dump({ server: server, except: [:ssh_key_private ] })
-      render_json_dump({ server: server })
+      render_json_dump({ server: clean_server })
     end
 
     def set_api_key
@@ -53,14 +53,21 @@ module Pfaffmanager
     def queue_upgrade
       server_id = params[:id]
       Rails.logger.warn "servers_controller.run_upgrade for #{server_id}"
+      puts "servers_controller.run_upgrade for #{server_id}`"
       server = ::Pfaffmanager::Server.find(server_id)
-      status = server.queue_upgrade
-      if status
-        render plain: "ok"
+      puts "server user_id: #{server.user_id} -- current: #{current_user.id}"
+      if server.user_id == current_user.id
+        status = server.queue_upgrade
+        if status
+          render plain: "ok"
+        else
+          render plain: "upgrade failed"
+        end
       else
-        render plain: "queueing upgrade failed"
+        raise Discourse::NotFound
+        render plain: "server not found"
       end
-    end
+  end
 
     def create
       Rails.logger.warn "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
@@ -149,8 +156,8 @@ module Pfaffmanager
           # server.hostname = data[:hostname] if data[:hostname]
           server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
           server.hostname = data[:hostname] if data[:hostname]
-          server.do_api_key = data[:do_api_key] if data[:do_api_key].try(:length) > 0
-          server.mg_api_key = data[:mg_api_key] if data[:mg_api_key].try(:length) > 0
+          server.do_api_key = data[:do_api_key] if data[:do_api_key] && data[:do_api_key].length > 0
+          server.mg_api_key = data[:mg_api_key] if data[:mg_api_key] && data[:mg_api_key].length > 0
           server.maxmind_license_key = data[:maxmind_license_key] unless data[:maxmind_license_key].nil?
           # server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
           # server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?

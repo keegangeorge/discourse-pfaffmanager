@@ -146,18 +146,24 @@ it 'can update status' do
   expect(response.status).to eq(200)
 end
 
-# it 'server manager group can initiate upgrades' do
-#   group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
-#     group.add(user)
-#     sign_in(user)
-#     params = { server: { request: '1' } }
-#     put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
-#     expect(response.status).to eq(200)
-#     expect(response.parsed_body['success']).to eq "OK"
-#     discourse_server.reload
-#     expect(discourse_server.request).to eq -1
-#     expect(discourse_server.last_action).to eq 'Process rebuild/upgrade'
-# end
+it 'refuses to upgrade for user who does not own server' do
+  group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
+  group.add(user)
+  sign_in(another_user)
+  post "/pfaffmanager/upgrade/#{discourse_server.id}"
+  expect(another_user.id).not_to eq(discourse_server.user_id)
+  expect(response.status).to eq(404)
+  expect(response.body[0..20]).to eq('')
+end
+
+it 'will upgrade for server owner' do
+  server_owner = User.find(discourse_server.user_id)
+  sign_in(server_owner)
+  path = "/pfaffmanager/upgrade/#{discourse_server.id}"
+  post path
+  expect(server_owner.id).to eq(discourse_server.user_id)
+  expect(response.status).to eq(200)
+end
 
 # it 'server manager cannot start upgrade if one is running' do
 #   group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
@@ -177,7 +183,7 @@ end
 #     expect(discourse_server.last_action).to eq rebuild_status
 # end
 
-it 'non server managers cannot initiate upgrades' do
+it 'non server managers cannot initiate upgrades the old way' do
   sign_in(user)
     params = {}
     params['server'] = { id: discourse_server.id, user_id: user.id, request: 1 }
