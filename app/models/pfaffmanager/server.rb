@@ -29,6 +29,11 @@ module Pfaffmanager
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
+    def custom_fields_fk
+      #@custom_fields_fk ||= "server_id" -- https://meta.discourse.org/t/using-hascustomfields-in-a-plugin/176469/4?u=pfaffman
+      "server_id"
+    end
+
     def self.ensure_group(name)
       Group.find_or_create_by(name: name,
                               visibility_level: Group.visibility_levels[:staff],
