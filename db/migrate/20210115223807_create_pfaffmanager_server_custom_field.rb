@@ -6,6 +6,8 @@ class CreatePfaffmanagerServerCustomField < ActiveRecord::Migration[6.0]
       t.text :value
       t.timestamps null: false
     end
-    add_index :pfaffmanager_server_custom_fields, [:server_id, :name]
+    add_index :pfaffmanager_server_custom_fields,
+    [:server_id, :name],
+      name: 'index_server_custom_fields_on_server_id_and_name'
   end
 end

@@ -9,6 +9,7 @@ module Pfaffmanager
     include Encryptable
     attr_encrypted :do_api_key, :ssh_key_private, :mg_api_key, :discourse_api_key
     belongs_to :user
+    include HasCustomFields
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
@@ -18,6 +19,13 @@ module Pfaffmanager
     before_create :assert_has_ssh_keys
     before_save :assert_discourse_url
     after_save :publish_status_update if :saved_change_to_request_status?
+
+    SMTP_CREDENTIALS = 'smtp_credentials'
+    LATEST_INVENTORY = 'latest_inventory'
+    CUSTOM_PLUGINS = 'custom_plugins'
+    register_custom_field_type(SMTP_CREDENTIALS, :text)
+    register_custom_field_type(LATEST_INVENTORY, :text)
+    register_custom_field_type(CUSTOM_PLUGINS, :text)
 
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
@@ -37,6 +45,13 @@ module Pfaffmanager
       k = SSHKey.generate(comment: "#{user.username}@manager.pfaffmanager.com", bits: 2048)
       self.ssh_key_public = k.ssh_public_key
       self.ssh_key_private = k.private_key
+    end
+
+    def latest_inventory=(inventory)
+      custom_fields[LATEST_INVENTORY] = inventory
+    end
+    def latest_inventory
+      custom_fields[LATEST_INVENTORY]
     end
 
     def assert_discourse_url
