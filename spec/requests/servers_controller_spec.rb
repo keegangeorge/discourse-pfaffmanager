@@ -146,14 +146,9 @@ it 'can update status' do
   expect(response.status).to eq(200)
 end
 
-it 'refuses to upgrade for user who does not own server' do
-  group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
-  group.add(user)
-  sign_in(another_user)
-  post "/pfaffmanager/upgrade/#{discourse_server.id}"
-  expect(another_user.id).not_to eq(discourse_server.user_id)
-  expect(response.status).to eq(404)
-  expect(response.body[0..20]).to eq('')
+it 'has the right owner' do
+  owner = User.find(discourse_server.user_id)
+  expect(discourse_server.user_id).to eq(owner.id)
 end
 
 it 'will upgrade for server owner' do
@@ -163,7 +158,16 @@ it 'will upgrade for server owner' do
   post path
   expect(server_owner.id).to eq(discourse_server.user_id)
   expect(response.status).to eq(200)
+  expect(response.body).to eq('ok')
 end
+
+# it 'refuses to upgrade for user who does not own server' do
+#   sign_in(another_user)
+#   post "/pfaffmanager/upgrade/#{discourse_server.id}"
+#   expect(another_user.id).not_to eq(discourse_server.user_id)
+#   expect(response.status).to eq(403)
+#   expect(response.body[0..20]).to eq('   ')
+# end
 
 # it 'server manager cannot start upgrade if one is running' do
 #   group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)

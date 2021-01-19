@@ -193,15 +193,19 @@ module Pfaffmanager
     end
 
     def queue_upgrade()
-      Rails.logger.warn "server.run_upgrade for #{id} "
-      puts "server.run_upgrade for #{id} "
+      Rails.logger.warn "server.queue_upgrade for #{id} "
       self.request = -1
       self.request_status_updated_at = Time.now
       self.last_action = "Process rebuild/upgrade"
-      self.save
-      Jobs.enqueue(:server_upgrade, server_id: id)
-      Rails.logger.warn "upgrade job created for #{id}"
-      Rails.logger.error "upgrade job created for #{id}" if SiteSetting.pfaffmanager_debug_to_log
+      begin
+        success = self.save
+        Jobs.enqueue(:server_upgrade, server_id: id)
+        Rails.logger.warn "upgrade job created for #{id}"
+        Rails.logger.error "upgrade job created for #{id}" if SiteSetting.pfaffmanager_debug_to_log
+      rescue
+        success = nil
+      end
+      success
     end
 
     def run_upgrade()

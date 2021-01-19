@@ -26,6 +26,7 @@ module Pfaffmanager
     end
 
     def set_api_key
+      # ToDO: require admin for this.
       server = ::Pfaffmanager::Server.find(params[:id])
       server.discourse_api_key = params[:discourse_api_key]
       status = server.save
@@ -53,21 +54,24 @@ module Pfaffmanager
     def queue_upgrade
       server_id = params[:id]
       Rails.logger.warn "servers_controller.run_upgrade for #{server_id}"
-      puts "servers_controller.run_upgrade for #{server_id}`"
-      server = ::Pfaffmanager::Server.find(server_id)
-      puts "server user_id: #{server.user_id} -- current: #{current_user.id}"
-      if server.user_id == current_user.id
-        status = server.queue_upgrade
-        if status
-          render plain: "ok"
+      begin
+        server = ::Pfaffmanager::Server.find(server_id)
+        puts "server user_id: #{server.user_id} -- current: #{current_user.id}"
+        if current_user.id != server.user_id
+          Rails.logger.warn "servers_controller.run_upgrade INVALID ACCESS!!!!!"
+          render plain: "not your server", status: 403
         else
-          render plain: "upgrade failed"
+          status = server.queue_upgrade
+          if status
+            render plain: "ok"
+          else
+            render plain: "upgrade failed"
+          end
         end
-      else
-        raise Discourse::NotFound
-        render plain: "server not found"
+      rescue
+        render plain: "queue_upgrade failed", status: 500
       end
-  end
+    end
 
     def create
       Rails.logger.warn "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
