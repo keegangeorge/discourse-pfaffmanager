@@ -209,6 +209,13 @@ it 'non server managers cannot initiate upgrades the old way' do
     expect(discourse_server.last_action).to be nil
 end
 
+it 'can get a ssh key if not logged in' do
+  sign_in(user)
+  get "/pfaffmanager/ssh-key/#{discourse_server.id}"
+  expect(response.status).to eq(200)
+  expect(response.body).to include('ssh-rsa')
+end
+
 # it 'can update smtp parameters' do
 #   group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
 #   sign_in(user)
