@@ -31,19 +31,20 @@ Server.reopenClass({
   },  
   updateServer(model) {
     console.log("update in j/d/models/");
+    console.log(model)
     console.log(model);
     let server = {
-      user_id: data.user_id,
-      hostname: data.hostname,
-      do_api_key: data.do_api_key,
-      mg_api_key: data.mg_api_key,
-      maxmind_license_key: data.maxmind_license_key,
-      request: data.request, // angus how to fix--perhaps set in pfaffmanager-servers-show.hbs?
-      rebuild: data.rebuild,
-      discourse_api_key: data.discourse_api_key
+      user_id: model.user_id,
+      hostname: model.hostname,
+      do_api_key: model.do_api_key,
+      mg_api_key: model.mg_api_key,
+      maxmind_license_key: model.maxmind_license_key,
+      request: model.request, // angus how to fix--perhaps set in pfaffmanager-servers-show.hbs?
+      rebuild: model.rebuild,
+      discourse_api_key: model.discourse_api_key
     };
     console.log(server);
-    return ajax(`/pfaffmanager/servers/${data.id}`, {
+    return ajax(`/pfaffmanager/servers/${model.id}`, {
       type: "PUT",
       data: {
         server
