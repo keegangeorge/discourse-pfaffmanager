@@ -154,20 +154,30 @@ end
 it 'will upgrade for server owner' do
   server_owner = User.find(discourse_server.user_id)
   sign_in(server_owner)
-  path = "/pfaffmanager/upgrade/#{discourse_server.id}"
+  path = "/pfaffmanager/upgrade/#{discourse_server.id}.json"
   post path
   expect(server_owner.id).to eq(discourse_server.user_id)
   expect(response.status).to eq(200)
-  expect(response.body).to eq('ok')
+  expect(response.parsed_body['success']).to eq "OK"
 end
 
-# it 'refuses to upgrade for user who does not own server' do
-#   sign_in(another_user)
-#   post "/pfaffmanager/upgrade/#{discourse_server.id}"
-#   expect(another_user.id).not_to eq(discourse_server.user_id)
-#   expect(response.status).to eq(403)
-#   expect(response.body[0..20]).to eq('   ')
-# end
+it 'will upgrade for an admin' do
+  server_owner = User.find(discourse_server.user_id)
+  sign_in(admin)
+  path = "/pfaffmanager/upgrade/#{discourse_server.id}.json"
+  post path
+  expect(admin.id).not_to eq(discourse_server.user_id)
+  expect(response.status).to eq(200)
+  expect(response.parsed_body['success']).to eq "OK"
+end
+
+it 'refuses to upgrade for user who does not own server' do
+  sign_in(another_user)
+  post "/pfaffmanager/upgrade/#{discourse_server.id}.json"
+  expect(another_user.id).not_to eq(discourse_server.user_id)
+  expect(response.status).to eq(403)
+  expect(response.parsed_body['failed']).to eq "FAILED"
+end
 
 # it 'server manager cannot start upgrade if one is running' do
 #   group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)

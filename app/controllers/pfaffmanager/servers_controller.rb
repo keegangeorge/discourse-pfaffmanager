@@ -57,19 +57,19 @@ module Pfaffmanager
       begin
         server = ::Pfaffmanager::Server.find(server_id)
         puts "server user_id: #{server.user_id} -- current: #{current_user.id}"
-        if current_user.id != server.user_id
+        if (current_user.id != server.user_id) && !current_user.admin?
           Rails.logger.warn "servers_controller.run_upgrade INVALID ACCESS!!!!!"
-          render plain: "not your server", status: 403
+          render json: failed_json, status: 403
         else
           status = server.queue_upgrade
           if status
-            render plain: "ok"
+            render json: success_json
           else
-            render plain: "upgrade failed"
+            render json: failed_json, status: 500
           end
         end
       rescue
-        render plain: "queue_upgrade failed", status: 500
+        render json: failed_json, status: 500
       end
     end
 

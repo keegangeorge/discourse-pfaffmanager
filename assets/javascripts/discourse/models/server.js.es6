@@ -25,7 +25,7 @@ Server.reopenClass({
   upgradeServer(model) {
     console.log("upgrade in j/d/models/");
     console.log(model);
-    return ajax(`/pfaffmanager/upgrade/${model.id}`, {
+    return ajax(`/pfaffmanager/upgrade/${model.id}.json`, {
       type: "POST"
     }).catch(popupAjaxError);
   },  
