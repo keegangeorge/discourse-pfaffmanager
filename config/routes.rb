@@ -10,6 +10,7 @@ Pfaffmanager::Engine.routes.draw do
   put "/servers/:id" => "servers#update", constraints: PfaffmanagerConstraint.new
   post "/api_key/:id" => "servers#set_api_key", constraints: PfaffmanagerConstraint.new
   post "/upgrade/:id" => "servers#queue_upgrade", constraints: PfaffmanagerConstraint.new
+  put "/install/:id" => "servers#install", constraints: PfaffmanagerConstraint.new
   get "ssh_key/:id" => "serverkeys#get_pub_key"
   get "ssh-key/:id" => "serverkeys#get_pub_key"
   post "/servers" => "servers#create", constraints: PfaffmanagerConstraint.new

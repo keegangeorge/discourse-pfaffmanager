@@ -73,6 +73,28 @@ module Pfaffmanager
       end
     end
 
+    def install
+      server_id = params[:id]
+      Rails.logger.warn "servers_controller.install for #{server_id}"
+      begin
+        server = ::Pfaffmanager::Server.find(server_id)
+        puts "server user_id: #{server.user_id} -- current: #{current_user.id}"
+        if (current_user.id != server.user_id) && !current_user.admin?
+          Rails.logger.warn "servers_controller.install INVALID ACCESS!!!!!"
+          render json: failed_json, status: 403
+        else
+          status = server.install
+          if status
+            render json: success_json
+          else
+            render json: failed_json, status: 500
+          end
+        end
+      rescue
+        render json: failed_json, status: 500
+      end
+    end
+
     def create
       Rails.logger.warn "server controller Creating in Controller!!!!!! user_id: #{params[:server][:user_id]}"
       create_groups = Group.where(name: SiteSetting.pfaffmanager_create_server_group).or(Group.where(name: SiteSetting.pfaffmanager_unlimited_server_group))

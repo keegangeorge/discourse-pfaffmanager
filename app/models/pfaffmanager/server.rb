@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 MAXMIND_PRODUCT ||= 'GeoLite2-City'
-
+DO_INSTALL_TYPES = ['std', 'pro', 'lc_pro']
 require 'sshkey'
 
 module Pfaffmanager
@@ -154,6 +154,19 @@ module Pfaffmanager
         Rails.logger.warn "cannot update server status: #{e[0..200]}"
       end
       publish_status_update
+    end
+
+    def install
+      Rails.logger.warn "server.install for #{id}"
+      server = Pfaffmanager::Server.find_by(id: id)
+      Rails.logger.warn "Got server #{server.hostname}. Type: #{server.install_type} "
+      if server && (DO_INSTALL_TYPES.include? server.install_type)
+        Rails.logger.warn "queueing create for server #{server.hostname}"
+        queue_create_droplet
+      else
+        # we don't know what to do!
+        false
+      end
     end
 
     def queue_create_droplet()

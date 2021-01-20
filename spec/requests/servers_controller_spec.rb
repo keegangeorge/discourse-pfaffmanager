@@ -179,6 +179,51 @@ it 'refuses to upgrade for user who does not own server' do
   expect(response.parsed_body['failed']).to eq "FAILED"
 end
 
+it 'will do digital ocean install for server owner' do
+  server_owner = User.find(discourse_server.user_id)
+  sign_in(server_owner)
+  discourse_server.install_type = 'pro'
+  discourse_server.save
+  path = "/pfaffmanager/install/#{discourse_server.id}.json"
+  put path
+  expect(server_owner.id).to eq(discourse_server.user_id)
+  expect(response.status).to eq(200)
+  expect(response.parsed_body['success']).to eq "OK"
+end
+
+it 'will not do digital ocean install if not a DO install type' do
+  server_owner = User.find(discourse_server.user_id)
+  sign_in(server_owner)
+  discourse_server.install_type = 'none'
+  discourse_server.save
+  path = "/pfaffmanager/install/#{discourse_server.id}.json"
+  put path
+  expect(server_owner.id).to eq(discourse_server.user_id)
+  expect(response.status).to eq(500)
+  expect(response.parsed_body['failed']).to eq "FAILED"
+end
+
+it 'will digital ocean install for an admin' do
+  server_owner = User.find(discourse_server.user_id)
+  discourse_server.install_type = 'pro'
+  discourse_server.save
+  sign_in(admin)
+  path = "/pfaffmanager/install/#{discourse_server.id}.json"
+  put path
+  expect(admin.id).not_to eq(discourse_server.user_id)
+  expect(response.status).to eq(200)
+  expect(response.parsed_body['success']).to eq "OK"
+end
+
+it 'refuses to install for user who does not own server' do
+  discourse_server.install_type = 'pro'
+  discourse_server.save
+  sign_in(another_user)
+  put "/pfaffmanager/install/#{discourse_server.id}.json"
+  expect(another_user.id).not_to eq(discourse_server.user_id)
+  expect(response.status).to eq(403)
+  expect(response.parsed_body['failed']).to eq "FAILED"
+end
 # it 'server manager cannot start upgrade if one is running' do
 #   group = Group.find_by_name(SiteSetting.pfaffmanager_server_manager_group)
 #     group.add(user)
@@ -209,7 +254,7 @@ it 'non server managers cannot initiate upgrades the old way' do
     expect(discourse_server.last_action).to be nil
 end
 
-it 'can get a ssh key if not logged in' do
+it 'can get a ssh key even if logged in as another user' do
   sign_in(user)
   get "/pfaffmanager/ssh-key/#{discourse_server.id}"
   expect(response.status).to eq(200)

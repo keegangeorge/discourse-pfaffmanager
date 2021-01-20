@@ -10,15 +10,11 @@ Server.reopenClass({
   dropletCreate(model) {
     console.log("dropletCreate in j/d/models/server.js.es6");
     console.log(model);
-    console.log(model)
     let server = {
       request: 2
     };
-    return ajax(`/pfaffmanager/servers/${model.id}`, {
+    return ajax(`/pfaffmanager/install/${model.id}`, {
       type: "PUT",
-      data: {
-        server
-      }
     }).catch(popupAjaxError);
   },
   
