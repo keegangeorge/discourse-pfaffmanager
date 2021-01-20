@@ -17,7 +17,6 @@ module Pfaffmanager
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
     before_create :assert_has_ssh_keys
-    before_save :assert_discourse_url
     after_save :publish_status_update if :saved_change_to_request_status?
 
     SMTP_CREDENTIALS = 'smtp_credentials'
@@ -57,11 +56,6 @@ module Pfaffmanager
     end
     def latest_inventory
       custom_fields[LATEST_INVENTORY]
-    end
-
-    def assert_discourse_url
-      return self.discourse_url if self.discourse_url
-      self.discourse_url = "https://#{hostname}"
     end
 
     def self.createServerForUser(user_id, hostname = nil)
@@ -108,47 +102,25 @@ module Pfaffmanager
     def update_server_status
       puts "server.update_server_status"
       begin
-        # TODO: REMOVE OR enforce admin only
-        if self.hostname.match(/localhost/)
-          Rails.logger.warn "using bogus host info"
-          body = '{
-            "updated_at": "2020-11-24T21:25:56.643Z",
-            "version_check": {
-            "installed_version": "2.6.0.beta6",
-            "installed_sha": "1157ff8116ba5e5d11db589e1b6cb930d2c86c4d",
-            "installed_describe": "v2.6.0.beta6 +1",
-            "git_branch": "master",
-            "updated_at": null,
-            "version_check_pending": true,
-            "stale_data": true
-            }
-            }'
-            Rails.logger.warn "GOING THE VERSION DCHECK"
-            version_check = JSON.parse(body)['version_check']
-            self.installed_version = version_check['installed_version']
-            self.installed_sha = version_check['installed_sha']
-            self.git_branch = version_check['git_branch']
-          else
-            if discourse_api_key.present? && !discourse_api_key.blank?
-              headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
-              protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
-              puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
-              result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
-              self.server_status_json = result.body
-              self.server_status_updated_at = Time.now
-              version_check = JSON.parse(result.body)['version_check']
-              self.installed_version = version_check['installed_version']
-              self.installed_sha = version_check['installed_sha']
-              self.git_branch = version_check['git_branch']
-              data = {
-                installed_version: self.installed_version,
-                installed_sha: self.installed_sha,
-                server_status_json: self.server_status_json,
-                server_status_updated_at: self.server_status_updated_at,
-                git_branch: self.git_branch
-              }
-              publish_update(data)
-            end
+        if encrypted_discourse_api_key.present?
+          headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
+          protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
+          puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
+          result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
+          self.server_status_json = result.body
+          self.server_status_updated_at = Time.now
+          version_check = JSON.parse(result.body)['version_check']
+          self.installed_version = version_check['installed_version']
+          self.installed_sha = version_check['installed_sha']
+          self.git_branch = version_check['git_branch']
+          data = {
+            installed_version: self.installed_version,
+            installed_sha: self.installed_sha,
+            server_status_json: self.server_status_json,
+            server_status_updated_at: self.server_status_updated_at,
+            git_branch: self.git_branch
+          }
+          publish_update(data)
         end
       rescue => e
         Rails.logger.warn "cannot update server status: #{e[0..200]}"
@@ -369,28 +341,6 @@ module Pfaffmanager
           HEREDOC
     end
 
-    def run_ansible_upgrade(inventory, log = "/tmp/upgrade.log")
-      ## DEPRECATED
-      dir = SiteSetting.pfaffmanager_playbook_dir
-      playbook = SiteSetting.pfaffmanager_upgrade_playbook
-      vault = SiteSetting.pfaffmanager_vault_file
-      #$DIR/../upgrade.yml --vault-password-file /data/literatecomputing/vault-password.txt -i $inventory $*
-      # consider https://github.com/pgeraghty/ansible-wrapper-ruby
-      # consider Discourse::Utils.execute_command('ls')
-      self.request = -1
-      if SiteSetting.pfaffmanager_skip_actions
-        Rails.logger.warn "SKIP actions is set. Not running upgrade"
-        self.discourse_api_key ||= ApiKey.create(description: 'pfaffmanager localhost key')
-        self.update_server_status
-        Jobs.enqueue(:fake_upgrade, server_id: self.id)
-      else
-        Rails.logger.warn "Going to fork: #{playbook} --vault-password-file #{vault} -i #{inventory}"
-        # TODO: make this a job like install
-        fork { exec("#{playbook} --vault-password-file #{vault} -i #{inventory} 2>&1 >#{log}") }
-        #output, status =Open3.capture2e("#{dir}/#{playbook} --vault-password-file #{vault} -i #{inventory}") }
-      end
-    end
-
     def build_server_inventory
       #user = User.find(user_id)
       filename = "#{SiteSetting.pfaffmanager_inventory_dir}/#{hostname}-inventory.yml"
@@ -429,7 +379,7 @@ module Pfaffmanager
                   skip_bootstrap: yes
                   discourse_name: #{user.name || 'pfaffmanager user'}
                   discourse_email: #{user.email}
-                  discourse_url: #{discourse_url}
+                  #discourse_url: #{discourse_url}
           HEREDOC
     end
 
@@ -493,13 +443,6 @@ module Pfaffmanager
       end
     end
 
-    def server_request_validator
-      if !request.in? [-1, 0, 1, 2]
-        Rails.logger.warn "Request bad: #{request}"
-        errors.add(:request, "Valid values: 0..2")
-      end
-    end
-
     def do_api_key_validator
       return true if do_api_key == SiteSetting.pfaffmanager_do_api_key
       return true if do_api_key.blank?
@@ -531,7 +474,6 @@ module Pfaffmanager
         mg_api_key.present? && !mg_api_key_validator
         do_api_key.present? && !do_api_key_validator
         maxmind_license_key.present? && !maxmind_license_key_validator
-        request.present? && server_request_validator
         Rails.logger.warn "do: #{do_api_key}"
         Rails.logger.warn "done with validations!"
     end
