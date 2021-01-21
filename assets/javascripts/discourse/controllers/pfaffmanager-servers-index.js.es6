@@ -6,14 +6,12 @@ export default Controller.extend({
     actions: {
       dropletCreate() {
         Server.createServerForUser(this.model).then((result) => {
-          console.log("createServer");
-          console.log(this.model);
-          console.log(result);
-          
           if (result.errors) {
-            console.log("Errors: ", errors);
+          // eslint-disable-next-line no-console
+            console.log("Errors: ", result.errors);
           } else {
-            console.log("Success");
+          // eslint-disable-next-line no-console
+          console.log("Success");
           }
         });
       },
