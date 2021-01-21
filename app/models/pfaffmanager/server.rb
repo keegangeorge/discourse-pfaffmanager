@@ -77,7 +77,7 @@ module Pfaffmanager
     end
 
     def self.ensure_pfaffmanager_groups
-      if Rails.env.test?
+      if !Rails.env.test?
         ensure_group(SiteSetting.pfaffmanager_create_server_group)
         ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
         ensure_group(SiteSetting.pfaffmanager_server_manager_group)
