@@ -38,4 +38,4 @@ en:
         request_section_header: "Remote Activity Status"
         x_servers: 
           one: 'Just the one server...'
-          other: 'Have {{count}} servers!'
+          other: 'Have %{count} servers!'
