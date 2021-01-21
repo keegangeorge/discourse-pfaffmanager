@@ -77,13 +77,15 @@ module Pfaffmanager
     end
 
     def self.ensure_pfaffmanager_groups
-      ensure_group(SiteSetting.pfaffmanager_create_server_group)
-      ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
-      ensure_group(SiteSetting.pfaffmanager_server_manager_group)
-      ensure_group(SiteSetting.pfaffmanager_pro_server_group)
-      ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
-      ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
-      ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
+      if Rails.env.test?
+        ensure_group(SiteSetting.pfaffmanager_create_server_group)
+        ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
+        ensure_group(SiteSetting.pfaffmanager_server_manager_group)
+        ensure_group(SiteSetting.pfaffmanager_pro_server_group)
+        ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
+        ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
+        ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
+      end
     end
     # end
 
