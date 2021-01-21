@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class AddEncryptedKeysToPfaffmanagerServers < ActiveRecord::Migration[6.0]
   def change
     add_column :pfaffmanager_servers, :encrypted_ssh_key_private, :string

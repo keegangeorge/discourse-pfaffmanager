@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class EncryptionService
   # from https://pawelurbanek.com/rails-secure-encrypt-decrypt
   # TODO: warn if production has no key--- like this: if Rails.env == "development"

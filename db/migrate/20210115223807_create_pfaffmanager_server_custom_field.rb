@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class CreatePfaffmanagerServerCustomField < ActiveRecord::Migration[6.0]
   def change
     create_table :pfaffmanager_server_custom_fields do |t|

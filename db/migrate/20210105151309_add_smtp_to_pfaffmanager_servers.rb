@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class AddSmtpToPfaffmanagerServers < ActiveRecord::Migration[6.0]
   def change
     add_column :pfaffmanager_servers, :smtp_host, :string
