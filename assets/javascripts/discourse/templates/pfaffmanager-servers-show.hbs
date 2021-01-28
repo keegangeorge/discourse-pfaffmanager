@@ -1,6 +1,83 @@
 <form>
-{{server-item server=server}}
-  <div class="pull-right">
+ <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
+
+
+{{# if server.request_status }}
+<div class="pfaffmanager-group server-status">
+<span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
+   <br />Created&nbsp; {{~format-date server.created_at format="medium" }}
+   <br />Last update&nbsp; {{~format-date server.updated_at format="medium" }}
+   <br />{{i18n 'pfaffmanager.server.installed_version' }}:&nbsp; {{server.installed_version }}
+   <br />{{i18n 'pfaffmanager.server.installed_sha' }}:&nbsp; <a href="https://github.com/discourse/discourse/commit/{{server.installed_sha}}">{{server.installed_sha}}</a>
+   <br />{{i18n 'pfaffmanager.server.status_retrieved' }}&nbsp; {{format-date server.server_status_updated_at format="medium" }}
+ </div>
+
+ <div class="pfaffmanager-server-status">
+  <span class='pfaffmanager-status-header'>{{i18n 'pfaffmanager.server.request_section_header' }}: <b>{{server.last_action}}</b></span>
+   <br />{{i18n 'pfaffmanager.server.request_status' }}:&nbsp; {{server.request_status }}  
+        ({{format-date server.request_status_updated_at format="medium" }})
+   <br />{{i18n 'pfaffmanager.server.request_result' }}:&nbsp; {{server.request_result }}  
+</div>
+{{/if }}
+{{#unless server.installed_version}}
+  {{#if server.encrypted_do_api_key}}
+  {{!-- <div class="pull-right">
+      {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
+  </div> --}}
+  {{/if}}
+  <hr />
+{{/unless}}
+{{# unless server.installed_version}}
+<div class="pfaffmanager-group server-edit">
+<span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
+
+<div class="pfaffmanager-group pref-manager-hostname">
+  <label class="control-label">{{i18n 'pfaffmanager.hostname'}}</label>
+  <div class="pfaffmanager">
+    {{input type="text" value=server.hostname class="input-large"}}
+  </div>
+</div>
+{{# if server.encrypted_do_api_key}}
+<div class='pfaffmanager-group warning'>Have valid Digital Ocean API Key</div>
+{{else}}
+<div class='pfaffmanager-group warning'>Digital Ocean API Key is required for droplet creation</div>
+<div class="pfaffmanager-group pfaffmanager-do-api-key">
+  <label class="control-label">{{i18n 'pfaffmanager.do_api_key'}}</label>
+  <div class="do-api-key">
+    {{input type="password" value=server.do_api_key class="input-large"}}
+  </div>
+</div>
+{{/if}}
+{{# if server.encrypted_mg_api_key}}
+<div class='pfaffmanager-group warning'>Have valid Mailgun API Key</div>
+{{else}}
+<div class='pfaffmanager-group warning'>Mailgun API Key is required for droplet creation</div>
+<div class="pfaffmanager-group pfaffmanager-mg-api-key">
+  <label class="control-label">{{i18n 'pfaffmanager.mg_api_key'}}</label>
+  <div class="mg-api-key">
+    {{input type="password" value=server.mg_api_key class="input-large"}}
+  </div>
+</div>
+{{/if}}
+{{# if false}}
+<div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
+  <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
+  <div class="maxmind-license-key">
+    {{input type="password" value=server.maxmind_license_key class="input-large"}}
+  </div>
+</div>
+{{/if}}
+
+</div>
+{{/unless}}
+
+     {{!-- t.string :ssh_key_private
+     t.string :ssh_key_public
+     t.string :discourse_url
+     t.text   :inventory
+     t.text   :discourse_env
+     t.text   :discourse_templates
+     t.text   :discourse_plugins --}}  <div class="pull-right">
       {{#if server.installed_version}}
       ANGUS: Maybe here is where to set request to 1 to do the upgrade instead of server.js.es6
       {{d-button label="pfaffmanager.server.run_upgrade" action="upgradeServer" icon="check" class="btn btn-primary"}}
@@ -12,10 +89,16 @@
   {{#if server.encrypted_do_api_key}}
     {{#if server.encrypted_mg_api_key}}
       {{#unless server.installed_version}}
-  
+
+{{#if true}}  
+
+server: {{server.canCreateDroplet}}<br>
+pfaffmanager.server: {{pfaffmanager.server.canCreateDroplet}}<br>
+none: {{server.banana}}
   <div class="pull-right">
       {{d-button label="pfaffmanager.server.do_create" action="dropletCreate" icon="plus" class="btn btn-primary"}}
   </div>
+{{/if}}
     {{/unless}}
    {{/if}}
    
