@@ -4,15 +4,24 @@ import Server from "../models/server";
 
 export default Component.extend({
   
-  @discourseComputed('server.do_api_key', 'server.mg_api_key', 'loading')
-  updateDisabled(doApiKey, mgApiKey, loading) {
-    return (!doApiKey || !doApiKey.length) ||
-      (!mgApiKey || !mgApiKey.length) ||
+  @discourseComputed('server.do_api_key', 'server.mg_api_key', 'server.hostname', 'loading')
+  updateDisabled(doApiKey, mgApiKey, hostname, loading) {
+    return ( ( !doApiKey || ( doApiKey != 'testing' && doApiKey.length < 64) ) &&
+      (!mgApiKey || ( mgApiKey != 'testing' && mgApiKey.length < 36)) &&
+      !hostname ) ||
       loading;
   },
-  
+
+  @discourseComputed('server.encrypted_do_api_key', 'server.encrypted_mg_api_key', 'server.installed_version', 'server.hostname', 'loading')
+  createDropletDisabled(doApiKey, mgApiKey, installedVersion, hostname, loading) {
+    console.log('hostname');
+    console.log(hostname);
+    return (!doApiKey || !mgApiKey || installedVersion || hostname.match(/unconfigured/g)) ||
+      loading;
+  },
   actions: {
     dropletCreate() {
+      this.set('loading', true);
       Server.dropletCreate(this.server).then((result) => {
       // eslint-disable-next-line no-console
       console.log("createServer in controllers/pfaffmanager-servers-show.js.es6");
@@ -26,7 +35,7 @@ export default Component.extend({
         } else {
           console.log("Success");
         }
-      });
+      }).finally(() => this.set('loading', false));
     },
     
     upgradeServer() {

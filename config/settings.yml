@@ -4,32 +4,32 @@ plugins:
     client: true
   pfaffmanager_skip_actions:
     default: true
-    client: true
+    client: false
     type: boolean
     default: true
   pfaffmanager_inventory_dir:
     default: /data/pfaffmanager/inventories
-    client: true
+    client: false
     hidden: false
   pfaffmanager_vault_file:
     default: /data/pfaffmanager/vault-password.txt
-    client: true
+    client: false
     hidden: false    
   pfaffmanager_playbook_dir:
     default: /home/pfaffman/src/literatecomputing/lc-manager-playbook
-    client: true
+    client: false
     hidden: false        
   pfaffmanager_upgrade_playbook:
     default: /bin/true
-    client: true
+    client: false
     hidden: false            
   pfaffmanager_do_install:
     default: /bin/true
-    client: true
+    client: false
     hidden: false            
   pfaffmanager_api_key:
     default: ""
-    client: true
+    client: false
     hidden: false
   pfaffmanager_do_api_key:
     default: ""
@@ -41,42 +41,42 @@ plugins:
     hidden: false
   pfaffmanager_create_server_group:
     default: "CreateServer"
-    client: true
+    client: false
     hidden: false
     type: group
   pfaffmanager_pro_server_group:
     default: "ProServer"
-    client: true
+    client: false
     hidden: false
     type: group
   pfaffmanager_ec2_server_group:
     default: "Ec2Server"
-    client: true
+    client: false
     hidden: false
     type: group
   pfaffmanager_ec2_pro_server_group:
     default: "EC2ProServer"
-    client: true
+    client: false
     hidden: false
     type: group
   pfaffmanager_hosted_server_group:
     default: "LCProServer"
-    client: true
+    client: false
     hidden: false
     type: group
   pfaffmanager_unlimited_server_group:
     default: "UnlimitedServers"
-    client: true
+    client: false
     hidden: false
     type: group
   pfaffmanager_server_manager_group:
     default: "ServerManager"
-    client: true
+    client: false
     hidden: false
     type: group
   pfaffmanager_debug_to_log:
     default: false
-    client: true
+    client: false
     hidden: false
     type: boolean
     

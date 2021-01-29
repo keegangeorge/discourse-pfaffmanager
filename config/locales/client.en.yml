@@ -8,7 +8,9 @@ en:
         payment_button: "Pay Now"
       navigation:
         subscribe: "Purchase"
-      
+    filters:
+      servers:
+        help: "Create, modify, or upgrade your servers"
          
     pfaffmanager:
       title: "Disourse Manager"
