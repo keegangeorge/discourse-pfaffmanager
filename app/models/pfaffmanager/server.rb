@@ -13,7 +13,7 @@ module Pfaffmanager
     self.table_name = "pfaffmanager_servers"
 
     validate :connection_validator
-    before_save :update_server_status if !:id.nil?
+    before_save :update_server_status unless :discourse_api_key.nil?
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
     before_create :assert_has_ssh_keys
@@ -77,7 +77,7 @@ module Pfaffmanager
     end
 
     def self.ensure_pfaffmanager_groups
-      if !Rails.env.test?
+      if Rails.env.test?
         ensure_group(SiteSetting.pfaffmanager_create_server_group)
         ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
         ensure_group(SiteSetting.pfaffmanager_server_manager_group)
@@ -104,7 +104,7 @@ module Pfaffmanager
     def update_server_status
       puts "server.update_server_status"
       begin
-        if encrypted_discourse_api_key.present?
+        if encrypted_discourse_api_key.present? && !discourse_api_key.blank?
           headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
           puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
@@ -124,6 +124,7 @@ module Pfaffmanager
           }
           publish_update(data)
         end
+
       rescue => e
         Rails.logger.warn "cannot update server status: #{e[0..200]}"
       end
@@ -145,8 +146,14 @@ module Pfaffmanager
 
     def queue_create_droplet()
       Rails.logger.warn "server.queue_create_droplet for #{id}"
-      Jobs.enqueue(:create_droplet, server_id: id)
-      Rails.logger.warn "job created for #{id}"
+      if SiteSetting.pfaffmanager_do_install == '/bin/true'
+        Rails.logger.error "NOT fake install!! #{server.hostname}"
+        self.request_status = "fake install complete!"
+        self.save
+      else
+        Jobs.enqueue(:create_droplet, server_id: id)
+        Rails.logger.warn "job created for #{id}"
+      end
     end
 
     def create_droplet()
@@ -161,7 +168,9 @@ module Pfaffmanager
        "--extra-vars",
        "discourse_do_api_key=#{do_api_key} discourse_mg_api_key=#{ mg_api_key}"
        Rails.logger.warn "going to run with: #{instructions.join(' ')}"
-       Rails.logger.error "NOT creating!! #{instructions.join(' ')}" if SiteSetting.pfaffmanager_do_install == '/bin/true'
+       if SiteSetting.pfaffmanager_do_install == '/bin/true'
+         Rails.logger.error "NOT creating!! #{instructions.join(' ')}"
+       end
       #  begin
       #    Discourse::Utils.execute_command(*instructions)
       #   rescue => e
