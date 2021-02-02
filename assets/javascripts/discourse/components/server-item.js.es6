@@ -51,7 +51,6 @@ export default Component.extend( {
       
       return (!doApiKey || !mgApiKey 
       || hostname.match(/unconfigured/g)) 
-      || loading
       || (originalHostname && hostname != originalHostname);
   },
   actions: {

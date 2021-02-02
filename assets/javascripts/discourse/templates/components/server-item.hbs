@@ -1,6 +1,7 @@
  <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
 
 <form>
+
 <div class="pfaffmanager-group server-status">
 {{#if server.installed_version }}
 {{!-- maxmind_license_key not implemented --}}
@@ -27,7 +28,7 @@
 <div class="pfaffmanager-group pref-manager-hostname">
   <label class="control-label">{{i18n 'pfaffmanager.hostname'}}</label>
   <div class="pfaffmanager-hostname">
-    {{input type="text" value=server.hostname class="input-large"}}
+    {{input type="text" autocomplete=off value=server.hostname class="input-large"}}
     {{#if hostnameValid}}<span class="hostname-message">Must be valid and saved</span>{{/if}}
   </div>
 </div>
@@ -38,7 +39,7 @@
 <div class="pfaffmanager-group pfaffmanager-do-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.do_api_key'}}</label>
   <div class="do-api-key">
-    {{input type="password" value=server.do_api_key class="input-large"}}
+    {{input type="text" autocomplete=off value=server.do_api_key class="input-large"}}
   </div>
 </div>
 {{/if}}
@@ -49,11 +50,10 @@
 <div class="pfaffmanager-group pfaffmanager-mg-api-key">
   <label class="control-label">{{i18n 'pfaffmanager.mg_api_key'}}</label>
   <div class="mg-api-key">
-    {{input type="password" value=server.mg_api_key class="input-large"}}
+    {{input type="text" value=server.mg_api_key class="input-large"}}
   </div>
 </div>
 {{/if}}
-
 {{#if false}} {{!-- maxmind_license_key not implemented --}}
 <div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
   <label class="control-label">{{i18n 'pfaffmanager.server.maxmind_license_key'}}</label>
