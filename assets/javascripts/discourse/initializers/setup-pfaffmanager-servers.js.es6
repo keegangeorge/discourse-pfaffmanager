@@ -9,7 +9,6 @@ export default {
     withPluginApi("0.8.11", (api) => {
       const siteSettings = container.lookup("site-settings:main");
       const isNavLinkEnabled = true;
-        //siteSettings.discourse_subscriptions_extra_nav_subscribe;
       if (isNavLinkEnabled) {
           console.log("adding navbar!");
         api.addNavigationBarItem({

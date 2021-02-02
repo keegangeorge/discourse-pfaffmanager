@@ -1,9 +1,11 @@
 import Component from "@ember/component";
 import discourseComputed from "discourse-common/utils/decorators";
 import Server from "../models/server";
+//import SiteSetting from "admin/models/site-setting";
 import { getProperties } from "@ember/object";
 // import { bufferedProperty } from "discourse/mixins/buffered-content";
 import { isEmpty } from "@ember/utils";
+import { alias } from "@ember/object/computed";
 
 
 export default Component.extend( {
@@ -13,27 +15,44 @@ export default Component.extend( {
       (!mgApiKey || ( mgApiKey != 'testing' && mgApiKey.length < 36))) ||
       loading;
   },
-
+  @discourseComputed('server.request_status')
+  haveVM(status) {
+    console.log("haveVM");
+    console.log(status && status.length>0);
+    return (status && status.length > 0);
+  },
   @discourseComputed('server.install_type')
   isDropletInstallType(install_type) {
-    return true;
+    return this.siteSettings.pfaffmanager_droplet_install_types.split('|').includes(install_type);
   },
+
   @discourseComputed('loading')
   updateDisabledServer(loading) {
     console.log("updateDisabledServer");
     return ( loading);
   },
+
   @discourseComputed('server.encrypted_do_api_key', 
   'server.encrypted_mg_api_key', 
-  'server.installed_version', 'server.hostname', 'loading')
-   createDropletDisabled(doApiKey, mgApiKey, installedVersion, 
-    hostname, loading) {
-    console.log('hostname');
-    console.log(hostname);
-    return (!doApiKey || !mgApiKey 
-      || installedVersion 
+  'server.hostname', 'originalHostname', 'loading')
+   createDropletDisabled(doApiKey, mgApiKey,  
+    hostname, originalHostname, loading) {
+      this.set('originalHostname', originalHostname ? originalHostname : hostname);
+      // console.log('hostname');
+      // console.log(hostname);
+      // console.log(originalHostname);
+      if (originalHostname && hostname != originalHostname && mgApiKey && doApiKey) {
+        this.set('updateReason', 'Save hostname to continue');
+        } else {
+        this.set('updateReason', 'Required parameters must be saved before installation');
+      }
+      // CONFUSED: this causes hostnameValid to get modified twice on render. Why?
+      //this.set('hostnameValid', ('hostname'.match(/unconfigured/g)) ? false : true );
+      
+      return (!doApiKey || !mgApiKey 
       || hostname.match(/unconfigured/g)) 
-      || loading;
+      || loading
+      || (originalHostname && hostname != originalHostname);
   },
   actions: {
     dropletCreate() {

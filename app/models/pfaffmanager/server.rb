@@ -170,7 +170,9 @@ module Pfaffmanager
        "--extra-vars",
        "discourse_do_api_key=#{do_api_key} discourse_mg_api_key=#{mg_api_key}"
        Rails.logger.warn "going to run with: #{instructions.join(' ')}"
-       if SiteSetting.pfaffmanager_do_install == '/bin/true' || do_api_key == 'testing'
+       if SiteSetting.pfaffmanager_do_install == '/bin/true' ||
+          do_api_key == 'testing' ||
+          mg_api_key == 'testing'
          Rails.logger.warn "NOT creating!! #{instructions.join(' ')}"
          self.request_status = 'fake install'
          self.save

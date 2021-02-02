@@ -79,4 +79,10 @@ plugins:
     client: false
     hidden: false
     type: boolean
+  pfaffmanager_droplet_install_types:
+    default: 'std|lite'
+    client: true
+    hidden: false
+    type: list
+    list_type: simple
     

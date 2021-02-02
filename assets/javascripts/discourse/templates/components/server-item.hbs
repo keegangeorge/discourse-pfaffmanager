@@ -20,16 +20,15 @@
         ({{format-date server.request_status_updated_at format="medium" }})
    <br />{{i18n 'pfaffmanager.server.request_result' }}:&nbsp; {{server.request_result }}  
 </div>
-{{/if }}
-
-{{#unless server.request_status}}
+{{else}}
 <div class="pfaffmanager-group server-edit">
-status? <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
+<span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanager.server.status_header' }}</span>
 
 <div class="pfaffmanager-group pref-manager-hostname">
   <label class="control-label">{{i18n 'pfaffmanager.hostname'}}</label>
   <div class="pfaffmanager-hostname">
     {{input type="text" value=server.hostname class="input-large"}}
+    {{#if hostnameValid}}<span class="hostname-message">Must be valid and saved</span>{{/if}}
   </div>
 </div>
 {{#if server.encrypted_do_api_key}}
@@ -65,7 +64,7 @@ status? <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanag
 {{/if}}
 
 </div>
-{{/unless}}
+{{/if}}
 
      {{!-- t.string :ssh_key_private
      t.string :ssh_key_public
@@ -77,38 +76,38 @@ status? <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanag
      
  <div class="pull-right">
    {{conditional-loading-spinner condition=loading size='small'}}
-     {{#if server.installed_version}}
+     {{#if haveVM}}
       {{d-button
         label="pfaffmanager.server.run_upgrade"
         action="upgradeServer"
         icon="check"
         class="btn btn-primary"}}
-     {{ else }}
-       {{d-button
+     {{ else }} 
+     {{!-- need stuff to create/claim VM --}}
+        {{#if isDropletInstallType}}
+          {{#if createDropletDisabled}}
+          {{updateReason}}
+                 {{d-button
          label="pfaffmanager.server.update"
          action=(action "updateServer")
          icon="check"
          class="btn btn-primary"
-         disabled=updateDisabledServer}}
+         disabled=updateDisabledServer}} 
+          {{else}}
+            <div class="pull-right">
+                {{d-button label="pfaffmanager.server.do_create" 
+                  action=(action "dropletCreate")
+                  icon="plus" 
+                  class="btn btn-primary do-create"
+                  disabled=createDropletDisabled
+                  }}
+            </div>
+          {{/if}}
+        {{else}}
+         Sorry! Custom installation are types not yet supported.
+        {{/if}}
      {{/if}}
  </div>
  
-{{#if server.didUpdate}}
-isDropletInstallType
-{{else}}
-not dirty
-{{/if}}
-{{#if isDropletInstallType}}
-  {{#if createDropletDisabled}}
-  Further configuration needed to install
-  {{else}}
-    <div class="pull-right">
-        {{d-button label="pfaffmanager.server.do_create" 
-          action=(action "dropletCreate")
-          icon="plus" 
-          class="btn btn-primary do-create"
-          disabled=createDropletDisabled}}
-    </div>
-  {{/if}}
-{{/if}}
+
  </form>
