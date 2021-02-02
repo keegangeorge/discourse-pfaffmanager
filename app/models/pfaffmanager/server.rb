@@ -58,9 +58,13 @@ module Pfaffmanager
       custom_fields[LATEST_INVENTORY]
     end
 
+    def default_hostname(id)
+      "hostname required #{id}"
+    end
+
     def self.createServerForUser(user_id, hostname = nil)
       user = User.find(user_id)
-      hostname = Time.now.strftime "#{user.username}.%Y-%m-%d-%H%M%S.unconfigured" unless hostname
+      hostname = default_hostname(user.id) unless hostname
       Rails.logger.warn "Creating server for user #{hostname} for #{user_id}"
       create(user_id: user_id, hostname: hostname)
     end
@@ -69,7 +73,7 @@ module Pfaffmanager
       current_user_id = params[:user_id]
       return nil unless current_user_id
       user = User.find(current_user_id)
-      params[:hostname] = Time.now.strftime "#{user.username}.%Y-%m-%d-%H%M%S.unconfigured" unless params[:hostname]
+      params[:hostname] = default_hostname(user.id) unless params[:hostname]
       Rails.logger.warn "Creating server #{params[:hostname]} for #{current_user_id}"
       Rails.logger.warn "Server has DO #{params[:do_api_key]}, mgr #{params[:mg_api_key]}"
 

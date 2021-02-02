@@ -38,8 +38,8 @@ export default Component.extend( {
    createDropletDisabled(doApiKey, mgApiKey,  
     hostname, originalHostname, loading) {
       this.set('originalHostname', originalHostname ? originalHostname : hostname);
-      // console.log('hostname');
-      // console.log(hostname);
+      console.log('hostname');
+      console.log(!hostname.match(/ /g));
       // console.log(originalHostname);
       if (originalHostname && hostname != originalHostname && mgApiKey && doApiKey) {
         this.set('updateReason', 'Save hostname to continue');
@@ -50,7 +50,7 @@ export default Component.extend( {
       //this.set('hostnameValid', ('hostname'.match(/unconfigured/g)) ? false : true );
       
       return (!doApiKey || !mgApiKey 
-      || hostname.match(/unconfigured/g)) 
+      || hostname.match(/ /g)) 
       || (originalHostname && hostname != originalHostname);
   },
   actions: {
@@ -103,6 +103,7 @@ export default Component.extend( {
           console.log("Errors: ", errors);
         } else if (result.success) {
           this.set('server', Server.create(result.server));
+          this.set('originalHostname', this.server.hostname);
         }
       }).finally(() => this.set('loading', false));
     },
