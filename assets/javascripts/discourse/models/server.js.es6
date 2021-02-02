@@ -18,12 +18,9 @@ Server.reopenClass({
   },
   dropletCreate(model) {
     // eslint-disable-next-line no-console
-    console.log("dropletCreate in j/d/models/server.js.es6");
+    console.log("dropletCreate in the model j/d/models/server.js.es6");
     // eslint-disable-next-line no-console
     console.log(model);
-    let server = {
-      request: 2
-    };
     return ajax(`/pfaffmanager/install/${model.id}`, {
       type: "PUT",
     }).catch(popupAjaxError);

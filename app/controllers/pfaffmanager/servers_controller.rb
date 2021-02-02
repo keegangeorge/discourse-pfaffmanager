@@ -83,7 +83,7 @@ module Pfaffmanager
           Rails.logger.warn "servers_controller.install INVALID ACCESS!!!!!"
           render json: failed_json, status: 403
         else
-          status = server.install
+          status = server.create_droplet
           if status
             render json: success_json
           else

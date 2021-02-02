@@ -2,10 +2,11 @@ import Component from "@ember/component";
 import discourseComputed from "discourse-common/utils/decorators";
 import Server from "../models/server";
 import { getProperties } from "@ember/object";
-import { bufferedProperty } from "discourse/mixins/buffered-content";
+// import { bufferedProperty } from "discourse/mixins/buffered-content";
+import { isEmpty } from "@ember/utils";
 
 
-export default Component.extend({
+export default Component.extend( {
   @discourseComputed('server.do_api_key', 'server.mg_api_key', 'server.hostname', 'loading')
   updateDisabled(doApiKey, mgApiKey, hostname, loading) {
     return ( ( !doApiKey || ( doApiKey != 'testing' && doApiKey.length < 64) ) &&
@@ -24,15 +25,11 @@ export default Component.extend({
   },
   @discourseComputed('server.encrypted_do_api_key', 
   'server.encrypted_mg_api_key', 
-  'server.installed_version', 'server.hostname',
-  'buffered.hostname', 'server','loading')
-  createDropletDisabled(doApiKey, mgApiKey, installedVersion, hostname, bufferedHostname, server, loading) {
+  'server.installed_version', 'server.hostname', 'loading')
+   createDropletDisabled(doApiKey, mgApiKey, installedVersion, 
+    hostname, loading) {
     console.log('hostname');
     console.log(hostname);
-    console.log(bufferedHostname);
-    console.log("properties fields");
-    console.log(getProperties(server));
-  
     return (!doApiKey || !mgApiKey 
       || installedVersion 
       || hostname.match(/unconfigured/g)) 
@@ -41,12 +38,14 @@ export default Component.extend({
   actions: {
     dropletCreate() {
       this.set('loading', true);
+      console.log("dropletCreate action in controllers/pfaffmanager-servers-item.js.es6");
       Server.dropletCreate(this.server).then((result) => {
       // eslint-disable-next-line no-console
-      console.log("createServer in controllers/pfaffmanager-servers-show.js.es6");
+      console.log("did the dropletCreate in controllers/pfaffmanager-servers-item.js.es6");
       // eslint-disable-next-line no-console
       console.log(this.model);
       // eslint-disable-next-line no-console
+      console.log('this is the result');
       console.log(result);
         
         if (result.errors) {

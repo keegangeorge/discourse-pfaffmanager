@@ -93,6 +93,11 @@ status? <span class='pfaffmanager-group server-status-header'>{{i18n 'pfaffmanag
      {{/if}}
  </div>
  
+{{#if server.didUpdate}}
+isDropletInstallType
+{{else}}
+not dirty
+{{/if}}
 {{#if isDropletInstallType}}
   {{#if createDropletDisabled}}
   Further configuration needed to install

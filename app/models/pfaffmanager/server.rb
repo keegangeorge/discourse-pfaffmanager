@@ -140,19 +140,21 @@ module Pfaffmanager
         queue_create_droplet
       else
         # we don't know what to do!
+        Rails.logger.warn "Unknown install type"
         false
       end
     end
 
     def queue_create_droplet()
-      Rails.logger.warn "server.queue_create_droplet for #{id}"
+      Rails.logger.warn "server.queue_create_droplet for #{id} with #{SiteSetting.pfaffmanager_do_install}"
       if SiteSetting.pfaffmanager_do_install == '/bin/true'
-        Rails.logger.error "NOT fake install!! #{server.hostname}"
-        self.request_status = "fake install complete!"
-        self.save
+        Rails.logger.warn "fake install!! #{server.hostname}"
+        #self.request_status = "fake install complete!"
+        #self.save
       else
-        Jobs.enqueue(:create_droplet, server_id: id)
-        Rails.logger.warn "job created for #{id}"
+        Rails.logger.warn "real install!! #{server.hostname}"
+        # Jobs.enqueue(:create_droplet, server_id: id)
+        # Rails.logger.warn "job created for #{id}"
       end
     end
 
@@ -166,25 +168,22 @@ module Pfaffmanager
        "--vault-password-file",
        SiteSetting.pfaffmanager_vault_file,
        "--extra-vars",
-       "discourse_do_api_key=#{do_api_key} discourse_mg_api_key=#{ mg_api_key}"
+       "discourse_do_api_key=#{do_api_key} discourse_mg_api_key=#{mg_api_key}"
        Rails.logger.warn "going to run with: #{instructions.join(' ')}"
-       if SiteSetting.pfaffmanager_do_install == '/bin/true'
-         Rails.logger.error "NOT creating!! #{instructions.join(' ')}"
+       if SiteSetting.pfaffmanager_do_install == '/bin/true' || do_api_key == 'testing'
+         Rails.logger.warn "NOT creating!! #{instructions.join(' ')}"
+         self.request_status = 'fake install'
+         self.save
+       else
+         begin
+           Discourse::Utils.execute_command(*instructions)
+           update_server_status
+         rescue => e
+           puts "got a problem"
+           Discourse.warn('this is an error', location: to, error_message: e.message)
+           false
+         end
        end
-      #  begin
-      #    Discourse::Utils.execute_command(*instructions)
-      #   rescue => e
-      #     error = +"Failed to create droplet"
-      #    error << e.message
-      #    Rails.logger.warn "HERe's the problem: #{error}"
-      #  end
-      begin
-        Discourse::Utils.execute_command(*instructions)
-        update_server_status
-      rescue => e
-        Discourse.warn(error, location: to, error_message: e.message)
-        false
-      end
 
     end
 
