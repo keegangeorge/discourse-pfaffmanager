@@ -1,13 +1,13 @@
 import DiscourseRoute from 'discourse/routes/discourse'
 
 export default DiscourseRoute.extend({
-  controllerName: "actions-index",
+  controllerName: 'actions-index',
 
-  model(params) {
-    return this.store.findAll("action");
+  model (params) {
+    return this.store.findAll('action')
   },
 
-  renderTemplate() {
-    this.render("actions-index");
+  renderTemplate () {
+    this.render('actions-index')
   }
-});
+})
