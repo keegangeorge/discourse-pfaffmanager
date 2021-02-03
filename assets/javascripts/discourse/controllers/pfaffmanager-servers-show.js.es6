@@ -7,9 +7,9 @@ export default Controller.extend({
   },
   
   subscribe() {
-    this.unsubscribe();
+       this.unsubscribe();
     
-    const server = this.server;
+const server = this.server;
 
     this.messageBus.subscribe(
       `/pfaffmanager-server-status/${server.id}`, data => {
