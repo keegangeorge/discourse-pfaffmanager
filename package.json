@@ -8,6 +8,7 @@
     "ember-template-lint": "^2.11.0",
     "ember-template-lint-plugin-discourse": "latest",
     "eslint": "^7.19.0",
+    "eslint-config-discourse": "^1.1.8",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-discourse-ember": "latest",
     "eslint-plugin-ember": "^6.10.0",

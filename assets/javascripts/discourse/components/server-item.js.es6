@@ -4,7 +4,7 @@ import Server from "../models/server";
 //import SiteSetting from "admin/models/site-setting";
 // import { bufferedProperty } from "discourse/mixins/buffered-content";
 
-export default Component.extend( {
+export default Component.extend({
   @discourseComputed("server.do_api_key", "server.mg_api_key", "server.hostname", "loading")
   updateDisabled(doApiKey, mgApiKey, hostname, loading) {
     return ( ( !doApiKey || ( doApiKey != "testing" && doApiKey.length < 64) ) &&
@@ -28,10 +28,10 @@ export default Component.extend( {
     return ( loading);
   },
 
-  @discourseComputed("server.encrypted_do_api_key", 
-  "server.encrypted_mg_api_key", 
+  @discourseComputed("server.encrypted_do_api_key",
+  "server.encrypted_mg_api_key",
   "server.hostname", "originalHostname", "loading")
-   createDropletDisabled(doApiKey, mgApiKey,  
+   createDropletDisabled(doApiKey, mgApiKey,
     hostname, originalHostname, loading) {
       this.set("originalHostname", originalHostname ? originalHostname : hostname);
       console.log("hostname");
@@ -44,9 +44,9 @@ export default Component.extend( {
       }
       // CONFUSED: this causes hostnameValid to get modified twice on render. Why?
       //this.set("hostnameValid", ("hostname".match(/unconfigured/g)) ? false : true );
-      
-      return (!doApiKey || !mgApiKey 
-      || hostname.match(/ /g)) 
+
+      return (!doApiKey || !mgApiKey
+      || hostname.match(/ /g))
       || (originalHostname && hostname != originalHostname);
   },
   actions: {
@@ -61,7 +61,7 @@ export default Component.extend( {
       // eslint-disable-next-line no-console
       console.log("this is the result");
       console.log(result);
-        
+
         if (result.errors) {
           console.log("Errors: ", errors);
         } else {
@@ -69,10 +69,10 @@ export default Component.extend( {
         }
       }).finally(() => this.set("loading", false));
     },
-    
+
     upgradeServer() {
       this.set("loading", true);
-      
+
       Server.upgradeServer(this.server).then((result) => {
       // eslint-disable-next-line no-console
       console.log("upgradeServer in controllers/pfaffmanager-servers-show.js.es6");
@@ -80,7 +80,7 @@ export default Component.extend( {
       console.log(this.model);
       // eslint-disable-next-line no-console
       console.log(result);
-          
+
         if (result.errors) {
           // eslint-disable-next-line no-console
           console.log("Errors: ", errors);
@@ -90,7 +90,7 @@ export default Component.extend( {
         }
       }).finally(() => this.set("loading", false));
     },
-    
+
     updateServer() {
       this.set("loading", true);
       Server.updateServer(this.server).then((result) => {

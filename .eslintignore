@@ -1,0 +1,7 @@
+lib/javascripts/locale/
+lib/javascripts/messageformat.js
+lib/highlight_js/
+public/
+vendor/
+node_modules/
+dist/

@@ -6,12 +6,12 @@
 //   }
 // });
 
-import DiscourseRoute from 'discourse/routes/discourse'
-import Server from '../models/server'
+import DiscourseRoute from 'discourse/routes/discourse';
+import Server from '../models/server';
 
 export default DiscourseRoute.extend({
   model (params) {
-    console.log(params)
-    return Server.findServer(params.id)
+    console.log(params);
+    return Server.findServer(params.id);
   }
-})
+});

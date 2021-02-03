@@ -8,7 +8,7 @@ import { computed } from "@ember/object";
 const Server = EmberObject.extend();
 
 Server.reopenClass({
-  server_status(model) { return JSON.parse(model)},
+  server_status(model) { return JSON.parse(model);},
   @discourseComputed("encrypted_do_api_key")
   canCreateDroplet(do_api_key) {
     return "sdflkjsdflkjsdflksdflksdf";
@@ -25,7 +25,7 @@ Server.reopenClass({
       type: "PUT",
     }).catch(popupAjaxError);
   },
-  
+
   upgradeServer(model) {
     // eslint-disable-next-line no-console
     console.log("upgrade in j/d/models/");
@@ -34,7 +34,7 @@ Server.reopenClass({
     return ajax(`/pfaffmanager/upgrade/${model.id}.json`, {
       type: "POST"
     }).catch(popupAjaxError);
-  },  
+  },
   updateServer(model) {
     // eslint-disable-next-line no-console
     console.log("update in j/d/models/server.js.es6");
@@ -62,7 +62,7 @@ Server.reopenClass({
       type: "GET"
     }).catch(popupAjaxError);
   },
-  
+
   createServer(server) {
     return ajax(`/pfaffmanager/servers`, {
       type: "POST",
@@ -71,7 +71,7 @@ Server.reopenClass({
       }
     }).catch(popupAjaxError);
   },
-  
+
   findServer(serverId) {
     return ajax(`/pfaffmanager/servers/${serverId}`, {
       type: "GET"
