@@ -10,3 +10,4 @@ en:
     pfaffmanager_create_server_group: "Name of Group that can create a server"
     pfaffmanager_unlimited_server_group: "Name of group that can create unlimited servers"
     pfaffmanager_server_manager_group: "Name of group that can perform actions on a server"
+    pfaffmanager_skip_actions: "Currently does nothing"
