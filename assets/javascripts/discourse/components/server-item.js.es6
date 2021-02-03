@@ -2,11 +2,7 @@ import Component from "@ember/component";
 import discourseComputed from "discourse-common/utils/decorators";
 import Server from "../models/server";
 //import SiteSetting from "admin/models/site-setting";
-import { getProperties } from "@ember/object";
 // import { bufferedProperty } from "discourse/mixins/buffered-content";
-import { isEmpty } from "@ember/utils";
-import { alias } from "@ember/object/computed";
-
 
 export default Component.extend( {
   @discourseComputed('server.do_api_key', 'server.mg_api_key', 'server.hostname', 'loading')
