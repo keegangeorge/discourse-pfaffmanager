@@ -58,7 +58,7 @@ module Pfaffmanager
       custom_fields[LATEST_INVENTORY]
     end
 
-    def default_hostname(id)
+    def self.default_hostname(id)
       "hostname required #{id}"
     end
 
