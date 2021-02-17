@@ -1,19 +1,21 @@
-<!-- servers pfaffmanager-controller-index.hbs -->
+servers pfaffmanager-controller-index.hbs
 
-<h2>Server List for {{i18n "pfaffmanager.server.x_servers" count=servers.length}}
-</h2>
-<p><a href="/s">Purchase more Servers</a>&nbsp;<a href="/g/CreateServer">CreateServer</a>
-&nbsp;<a href="/g/Ec2Server">EC2</a></p>
+<h2>Server List for {{i18n "pfaffmanager.server.x_servers" count=servers.length}}</h2>
+
+<p>
+  <a href="/s">Purchase more Servers</a>&nbsp;<a href="/g/CreateServer">CreateServer</a>
+&nbsp;<a href="/g/Ec2Server">EC2</a>
+</p>
 
 {{#each servers as |server|}}
-<hr />
-     {{#link-to "pfaffmanager.servers.show" server.id}} 
-        {{server.hostname}} 
-      {{/link-to}}
-      <br />Created at: {{~format-date server.created_at format="medium" }}
-      <br />Updated at: {{~format-date server.updated_at format="medium" }}
-      <br />
-    Open: <a href="https://{{server.hostname}}">{{server.hostname}}</a> 
+  <hr>
+  {{#link-to "pfaffmanager.servers.show" server.id}}
+    {{server.hostname}}
+  {{/link-to}}
+  <br>Created at: {{~format-date server.created_at format="medium" }}
+  <br>Updated at: {{~format-date server.updated_at format="medium" }}
+  <br>
+  Open: <a href="https://{{server.hostname}}">{{server.hostname}}</a>
 {{/each}}
 
 {{outlet}}
