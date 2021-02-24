@@ -3,7 +3,7 @@ import Server from '../models/server';
 import { A } from '@ember/array';
 
 export default DiscourseRoute.extend({
-  model (params) {
+  model () {
     return Server.listServers();
   },
 

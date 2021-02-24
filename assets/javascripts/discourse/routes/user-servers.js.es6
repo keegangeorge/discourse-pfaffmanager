@@ -4,7 +4,7 @@ export default DiscourseRoute.extend({
   activate () {
     this._super(...arguments);
 
-    this.messageBus.subscribe(`/pfaffmanager-server-status/${self.id}`, (data) =>
+    this.messageBus.subscribe(`/pfaffmanager-server-status/${self.id}`,
       this.server_message
     );
   },
