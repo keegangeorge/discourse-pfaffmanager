@@ -17,7 +17,7 @@ module Pfaffmanager
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_save :reset_request if !:request_status.nil?
     before_create :assert_has_ssh_keys
-    after_save :publish_status_update if :saved_change_to_request_status?
+    after_save :publish_status_update
 
     SMTP_CREDENTIALS = 'smtp_credentials'
     LATEST_INVENTORY = 'latest_inventory'
@@ -95,7 +95,6 @@ module Pfaffmanager
 
     def write_ssh_key
       file = File.open("/tmp/id_rsa_server#{id}", File::CREAT | File::TRUNC | File::RDWR, 0600)
-      ssh_private_path = file.path
       file.write(self.ssh_key_private)
       file.close
       file = File.open("/tmp/id_rsa_server#{id}.pub", File::CREAT | File::TRUNC | File::RDWR, 0600)
@@ -252,7 +251,7 @@ module Pfaffmanager
       Rails.logger.warn "installation_script_template running now"
       inventory_file = File.open("/tmp/#{hostname}.yml", "w")
       user = User.find(user_id)
-      user_name = user.name || user.username
+      user_name = user.name || user.username # eslint-disable-line no-unused-vars
       Rails.logger.warn "got user"
       ssh_key_path = write_ssh_key
       Rails.logger.warn "sshkey: #{ssh_key_path}"
