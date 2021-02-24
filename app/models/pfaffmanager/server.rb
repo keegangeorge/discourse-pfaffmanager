@@ -252,7 +252,7 @@ module Pfaffmanager
       inventory_file = File.open("/tmp/#{hostname}.yml", "w")
       user = User.find(user_id)
       user_name = user.name || user.username # eslint-disable-line no-unused-vars
-      Rails.logger.warn "got user"
+      Rails.logger.warn "got user #{user_name}"
       ssh_key_path = write_ssh_key
       Rails.logger.warn "sshkey: #{ssh_key_path}"
       install_inventory_file = File.open("plugins/discourse-pfaffmanager/lib/ansible/create_droplet_inventory.yml.erb")
@@ -269,8 +269,9 @@ module Pfaffmanager
       Rails.logger.warn "upgrade_script_template running now"
       inventory_file = File.open("/tmp/#{hostname}.yml", "w")
       user = User.find(user_id)
-      user_name = user.name || user.username
-      Rails.logger.warn "got user"
+      # /* eslint-disable-next-line */
+      user_name = user.name || user.username       # eslint-disable-line
+      Rails.logger.warn "got user #{user_name}"
       ssh_key_path = write_ssh_key
       Rails.logger.warn "sshkey: #{ssh_key_path}"
       upgrade_inventory_file = File.open("plugins/discourse-pfaffmanager/lib/ansible/upgrade_inventory.yml.erb")
