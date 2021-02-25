@@ -16,3 +16,9 @@ Not good for much right now!
 
 If you have issues or suggestions for the plugin, please bring them up on
 [Discourse Meta](https://meta.discourse.org).
+
+## Running
+
+```
+DISCOURSE_PFAFFMANAGER_API_KEY=d70221b7dc59c2941761a45157045864af77f6232ae3ede4729a53243c21a624 DISCOURSE_PFAFFMANAGER_DO_INSTALL=/home/pfaffman/src/literatecomputing/lc-manager-playbook/droplet-create-pfaffmanager.yml ./bin/rails s
+```
