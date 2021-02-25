@@ -43,6 +43,23 @@
             </div>
           </div>
         {{/if}}
+        {{#if true}}
+
+          <div>
+            <label for="droplet_size">{{i18n "pfaffmanager.droplet_size"}}</label>
+
+            <div class="pfaffmanager-droplet-size">
+              {{combo-box
+                name="pfaffmanager_droplet_size"
+                value=server.droplet_size
+                content=dropletSizes
+                class="droplet-size"
+                nameProperty="name"
+                onChange=(action (mut server.droplet_size))
+              }}
+              </div>
+          </div>
+        {{/if}}
         {{#if server.encrypted_mg_api_key}}
           <div class="pfaffmanager-group warning">Ready to configure Mailgun</div>
         {{else}}

@@ -11,6 +11,10 @@ export default Component.extend({
       (!mgApiKey || ( mgApiKey != "testing" && mgApiKey.length < 36))) ||
       loading;
   },
+  dropletSizes: [
+    {name: "AMD1CPU1GB" , value: "s-1vcpu-1gb-amd"},
+    {name: "AMD1CPU2GB" , value: "s-1vcpu-2gb-amd"}
+  ],
   @discourseComputed("server.request_status")
   haveVM(status) {
     console.log("haveVM");
