@@ -183,6 +183,7 @@ module Pfaffmanager
           server.do_api_key = data[:do_api_key] if data[:do_api_key] && data[:do_api_key].length > 0
           server.mg_api_key = data[:mg_api_key] if data[:mg_api_key] && data[:mg_api_key].length > 0
           server.maxmind_license_key = data[:maxmind_license_key] unless data[:maxmind_license_key].nil?
+          server.droplet_size = data[:droplet_size] if data[:droplet_size].present?
           # server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
           # server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?
           # server.smtp_port = data[:smtp_port] unless data[:smtp_port].nil?
