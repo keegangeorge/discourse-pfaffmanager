@@ -149,15 +149,27 @@ module Pfaffmanager
     end
 
     def queue_create_droplet()
-      Rails.logger.warn "server.queue_create_droplet for #{id} with #{SiteSetting.pfaffmanager_do_install}"
-      if SiteSetting.pfaffmanager_do_install == '/bin/true'
-        Rails.logger.warn "fake install!! #{server.hostname}"
-        #self.request_status = "fake install complete!"
-        #self.save
-      else
-        Rails.logger.warn "real install!! #{server.hostname}"
-        # Jobs.enqueue(:create_droplet, server_id: id)
-        # Rails.logger.warn "job created for #{id}"
+      results = ""
+      Rails.logger.warn "logger server.queue_create_droplet for #{id} with #{SiteSetting.pfaffmanager_do_install}"
+      puts "puts server.queue_create_droplet for #{id} #{hostname} with #{SiteSetting.pfaffmanager_do_install}"
+      begin
+        if SiteSetting.pfaffmanager_do_install == '/bin/true'
+          Rails.logger.warn "logger fake install!! #{hostname}"
+          puts "puts fake install!! #{hostname}"
+          self.request_status = "fake install complete!"
+          self.save
+          results = "ok"
+        else
+          puts "puts real install!! #{hostname}"
+          Rails.logger.warn "logger real install!! #{hostname}"
+          Rails.logger.warn "job created for #{id}"
+          puts "gonna enqueueue"
+          Jobs.enqueue(:create_droplet, server_id: id)
+          # Rails.logger.warn "results #{results}"
+          results
+        end
+      rescue
+        Rails.logger.warn("rescue in queue_create_droplet")
       end
     end
 
@@ -181,12 +193,13 @@ module Pfaffmanager
          self.save
        else
          begin
+           Rails.logger.warn "going to execute #{instructions.join(' ')}"
            Discourse::Utils.execute_command(*instructions)
            update_server_status
-         rescue => e
-           puts "got a problem"
-           Discourse.warn('this is an error', location: to, error_message: e.message)
-           false
+          rescue => e
+            puts "got a problem"
+            Discourse.warn('this is an error',  error_message: e.message)
+            false
          end
        end
 
@@ -248,7 +261,7 @@ module Pfaffmanager
     end
 
     def build_do_install_inventory # TODO: move to private
-      Rails.logger.warn "installation_script_template running now"
+      Rails.logger.warn "build_do_install_inventory running now"
       inventory_file = File.open("/tmp/#{hostname}.yml", "w")
       user = User.find(user_id)
       user_name = user.name || user.username # eslint-disable-line no-unused-vars
@@ -266,7 +279,7 @@ module Pfaffmanager
     end
 
     def build_upgrade_inventory # TODO: move to private
-      Rails.logger.warn "upgrade_script_template running now"
+      Rails.logger.warn "build_upgrade_inventory running now"
       inventory_file = File.open("/tmp/#{hostname}.yml", "w")
       user = User.find(user_id)
       # /* eslint-disable-next-line */

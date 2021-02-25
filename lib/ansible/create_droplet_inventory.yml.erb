@@ -1,8 +1,8 @@
-all:                                                                                                                                                                                                                                     
-  vars:                                                                                                                                                                                                                                  
-    ansible_user: root                                                                                                                                                                                                                   
-    become_user: root  
-    ansible_ssh_private_key_file:  <%= ssh_key_path%>
+all:
+  vars:
+    ansible_user: root
+    become_user: root
+    # ansible_ssh_private_key_file:  <%= ssh_key_path%>
     discourse_name: "<%= user_name%>"
     discourse_email: "<%= user.email%>"
     discourse_developer_email: "<%= user.email%>"
@@ -11,7 +11,7 @@ all:
     #discourse_smtp_user: missing
     #discourse_smtp_password: broken
     #discourse_smtp_port: 2525
-    droplet_size: s-1vcpu-2gb # TODO select
+    droplet_size: s-1vcpu-2gb-amd # TODO select
     droplet_region: nyc3 # TODO select
     discourse_hostname: "<%= hostname %>"
     discourse_ssh_user: root # TODO: adjust --ignored?

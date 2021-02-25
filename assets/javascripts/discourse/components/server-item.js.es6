@@ -28,10 +28,18 @@ export default Component.extend({
     return ( loading);
   },
 
-  @discourseComputed("server.encrypted_do_api_key",
+  @discourseComputed("server.install_type", "server.encrypted_do_api_key")
+  canCreateVM(installType, doApiKey) {
+    console.log('canCreateVM');
+    console.log(doApiKey);
+    console.log(installType);
+    return ((doApiKey || installType == 'ec2'));
+  },
+
+  @discourseComputed("server.install_type", "server.encrypted_do_api_key",
   "server.encrypted_mg_api_key",
   "server.hostname", "originalHostname", "loading")
-   createDropletDisabled(doApiKey, mgApiKey,
+   createDropletDisabled(installType, doApiKey, mgApiKey,
     hostname, originalHostname, loading) {
       this.set("originalHostname", originalHostname ? originalHostname : hostname);
       console.log("hostname");
@@ -45,7 +53,7 @@ export default Component.extend({
       // CONFUSED: this causes hostnameValid to get modified twice on render. Why?
       //this.set("hostnameValid", ("hostname".match(/unconfigured/g)) ? false : true );
 
-      return (!doApiKey || !mgApiKey
+      return (!(doApiKey || installType == 'ec2') || !mgApiKey
       || hostname.match(/ /g))
       || (originalHostname && hostname != originalHostname);
   },

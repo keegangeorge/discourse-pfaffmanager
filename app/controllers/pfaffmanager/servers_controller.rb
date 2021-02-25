@@ -45,7 +45,6 @@ module Pfaffmanager
     end
 
     def create_droplet
-      server_id = params[:id]
       Rails.logger.warn "servers_controller.create_droplet"
       server = ::Pfaffmanager::Server.find(params[:server][:user_id])
       server.queue_create_droplet
@@ -83,15 +82,14 @@ module Pfaffmanager
           Rails.logger.warn "servers_controller.install INVALID ACCESS!!!!!"
           render json: failed_json, status: 403
         else
-          status = server.create_droplet
-          if status
-            render json: success_json
-          else
-            render json: failed_json, status: 500
-          end
+          Rails.logger.warn "servers_controller going to queue!"
+          status = server.queue_create_droplet
+          puts "putting status #{status}"
+          Rails.logger.warn("logger status #{status}")
+          render json: success_json
         end
       rescue
-        render json: failed_json, status: 500
+        render json: failed_json, status: 501
       end
     end
 

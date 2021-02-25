@@ -14,19 +14,19 @@ plugins:
   pfaffmanager_vault_file:
     default: /data/pfaffmanager/vault-password.txt
     client: false
-    hidden: false    
+    hidden: false
   pfaffmanager_playbook_dir:
     default: /home/pfaffman/src/literatecomputing/lc-manager-playbook
     client: false
-    hidden: false        
+    hidden: false
   pfaffmanager_upgrade_playbook:
     default: /bin/true
     client: false
-    hidden: false            
+    hidden: false
   pfaffmanager_do_install:
     default: /bin/true
     client: false
-    hidden: false            
+    hidden: false
   pfaffmanager_api_key:
     default: ""
     client: false
@@ -80,9 +80,8 @@ plugins:
     hidden: false
     type: boolean
   pfaffmanager_droplet_install_types:
-    default: 'std|lite'
+    default: 'std|lite|ec2'
     client: true
     hidden: false
     type: list
     list_type: simple
-    

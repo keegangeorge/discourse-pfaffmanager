@@ -32,8 +32,8 @@
             {{#if hostnameValid}}<span class="hostname-message">Must be valid and saved</span>{{/if}}
           </div>
         </div>
-        {{#if server.encrypted_do_api_key}}
-          <div class="pfaffmanager-group warning">Ready to create Digital Ocean Droplet</div>
+        {{#if canCreateVM}}
+          <div class="pfaffmanager-group warning">Can Create a VM</div>
         {{else}}
           <div class="pfaffmanager-group warning">Digital Ocean API Key is required for droplet creation</div>
           <div class="pfaffmanager-group pfaffmanager-do-api-key">
@@ -95,7 +95,7 @@
             </div>
           {{/if}}
         {{else}}
-          Sorry! Custom installation are types not yet supported.
+          Sorry! Install type "{{ server.install_type}}"" is not yet supported.
         {{/if}}
       {{/if}}
     </div>

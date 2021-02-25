@@ -7,6 +7,7 @@ module Jobs
 
     def execute(args)
       puts "createDroplet.execute_onceoff starting..."
+      Rails.logger.warn("createDroplet.execute_onceoff starting...")
 
       puts "createDroplet.execute_onceoff looking for #{args[:server_id]}"
       server = Pfaffmanager::Server.find(args[:server_id])
