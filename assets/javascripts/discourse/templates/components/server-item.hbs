@@ -46,7 +46,7 @@
         {{#if true}}
 
           <div>
-            <label for="droplet_size">{{i18n "pfaffmanager.droplet_size"}}</label>
+            <label for="droplet_size">{{i18n "pfaffmanager.server.droplet_size.label"}}</label>
 
             <div class="pfaffmanager-droplet-size">
               {{combo-box
@@ -55,6 +55,10 @@
                 content=dropletSizes
                 class="droplet-size"
                 onChange=(action (mut server.droplet_size))
+                options=(hash
+                  filterable=true
+                  none="pfaffmanager.server.droplet_size.none"
+                )
               }}
               </div>
           </div>
