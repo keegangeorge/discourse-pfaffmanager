@@ -80,8 +80,15 @@ plugins:
     hidden: false
     type: boolean
   pfaffmanager_droplet_install_types:
-    default: 'std|lite|ec2'
+    default: ''
     client: true
     hidden: false
-    type: list
-    list_type: simple
+    type: enum
+    enum: "PfaffmanagerInstallType"
+  pfaffmanager_droplet_sizes:
+    default: ''
+    client: true
+    hidden: false
+    type: enum
+    enum: "PfaffmanagerDropletSize"
+

@@ -3,7 +3,7 @@ en:
     discourse_subscriptions:
       subscribe:
         title: "Pay Now"
-      plans: 
+      plans:
         success: "Thank you! Your subscription or server has been created."
         payment_button: "Pay Now"
       navigation:
@@ -11,7 +11,7 @@ en:
     filters:
       servers:
         help: "Create, modify, or upgrade your servers"
-         
+
     pfaffmanager:
       title: "Disourse Manager"
       show: "Show server"
@@ -21,6 +21,14 @@ en:
       mg_api_key: "Mailgun Api Key"
       cloudflare_api_key: "Cloudflare Api Key (not implemented)"
       b3_api_key: "Backblaze B3 Api Key (not implemented)"
+      do:
+        size:
+          AMD1CPU1GB: "AMD 1 CPU 1GB"
+          AMD1CPU2GB: "AMD 1 CPU 2GB"
+      install_type:
+        lite: "LITE: no plugins, no mail receiver"
+        std: "Standard: mail receiver, no plugins"
+        ec2: "ec2: 2-container"
       server:
         create: "Create server"
         update: "Update server"
@@ -32,12 +40,12 @@ en:
         status_retrieved: "Retrieved"
         inventory: 'inventory'
         maxmind_license_key: 'Maxmind License Key'
-        request: "Enter 1 to start rebuild"        
+        request: "Enter 1 to start rebuild"
         rebuild: "Rebuild Server"
         request_status: "Request Activity"
         request_result: "Request Status"
         navigation_link: "Manage Servers"
         request_section_header: "Remote Activity Status"
-        x_servers: 
+        x_servers:
           one: 'Just the one server...'
           other: 'Have %{count} servers!'

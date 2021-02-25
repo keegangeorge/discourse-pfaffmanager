@@ -1,21 +1,11 @@
 import { ajax } from 'discourse/lib/ajax';
 import { popupAjaxError } from 'discourse/lib/ajax-error';
 import EmberObject from "@ember/object";
-import discourseComputed from "discourse-common/utils/decorators";
-import { computed } from "@ember/object";
-
 
 const Server = EmberObject.extend();
 
 Server.reopenClass({
   server_status(model) { return JSON.parse(model);},
-  @discourseComputed("encrypted_do_api_key")
-  canCreateDroplet(do_api_key) {
-    return "sdflkjsdflkjsdflksdflksdf";
-  },
-  banana(){
-    return "banana";
-  },
   dropletCreate(model) {
     // eslint-disable-next-line no-console
     console.log("dropletCreate in the model j/d/models/server.js.es6");
