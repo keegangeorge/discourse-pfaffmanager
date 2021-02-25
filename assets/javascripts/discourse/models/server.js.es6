@@ -35,7 +35,8 @@ Server.reopenClass({
       hostname: model.hostname,
       do_api_key: model.do_api_key,
       mg_api_key: model.mg_api_key,
-      maxmind_license_key: model.maxmind_license_key
+      maxmind_license_key: model.maxmind_license_key,
+      droplet_size: model.droplet_size
     };
     // eslint-disable-next-line no-console
     console.log(server);

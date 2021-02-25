@@ -50,11 +50,10 @@
 
             <div class="pfaffmanager-droplet-size">
               {{combo-box
-                name="pfaffmanager_droplet_size"
                 value=server.droplet_size
+                valueProperty="value"
                 content=dropletSizes
                 class="droplet-size"
-                nameProperty="name"
                 onChange=(action (mut server.droplet_size))
               }}
               </div>

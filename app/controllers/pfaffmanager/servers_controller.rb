@@ -219,7 +219,8 @@ module Pfaffmanager
         :smtp_password,
         :smtp_notification_email,
         :smtp_user,
-        :smtp_port
+        :smtp_port,
+        :droplet_size
       )
     end
   end
