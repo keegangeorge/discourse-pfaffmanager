@@ -49,3 +49,6 @@ en:
         x_servers:
           one: 'Just the one server...'
           other: 'Have %{count} servers!'
+        droplet_size:
+          label: "Droplet Size"
+          none: "Select a size..."
