@@ -11,7 +11,7 @@ module Pfaffmanager
       Rails.logger.warn "\n\n\n\nServer controller INDEX user #{current_user.username} in the house.\n\n\n\n"
       servers = ::Pfaffmanager::Server.where(user_id: current_user.id)
       Rails.logger.warn "-----------------> Server controller found #{servers.count} servers"
-      render json: servers, each_serializer: ServersSerializer
+      render json: servers, each_serializer: ServerSerializer
     end
 
     def show
@@ -183,23 +183,27 @@ module Pfaffmanager
           server.hostname = data[:hostname] if data[:hostname]
           server.do_api_key = data[:do_api_key] if data[:do_api_key] && data[:do_api_key].length > 0
           server.mg_api_key = data[:mg_api_key] if data[:mg_api_key] && data[:mg_api_key].length > 0
-          server.maxmind_license_key = data[:maxmind_license_key] unless data[:maxmind_license_key].nil?
+          server.maxmind_license_key = data[:maxmind_license_key] if data[:maxmind_license_key].present?
           server.droplet_size = data[:droplet_size] if data[:droplet_size].present?
           # server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
           # server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?
           # server.smtp_port = data[:smtp_port] unless data[:smtp_port].nil?
           # server.smtp_password = data[:smtp_password] unless data[:smtp_password].nil?
           # server.smtp_user = data[:smtp_user] unless data[:smtp_user].nil?
-          # don't try to start a build if one is running
+          # TODO don't try to start a build if one is running
         end
 
-        Rails.logger.warn "server controller update about to save R: #{server.request}"
+        Rails.logger.warn "server controller update about to save R: #{server.request} with #{server.droplet_size}"
         server.save
 
         if server.errors.present?
           return render_json_error(server.errors.full_messages)
         else
-          return render json: success_json.merge(server: server.as_json), serializer: PfaffmanagerServerSerializer
+          return_json = success_json.merge(server: server.as_json)
+          server
+          # puts "Server: #{server}"
+          # puts "return_json: #{return_json}"
+          return render json: server, serializer: ServerSerializer
         end
       end
 

@@ -28,6 +28,7 @@ en:
       install_type:
         lite: "LITE: no plugins, no mail receiver"
         std: "Standard: mail receiver, no plugins"
+        pro: "Professional: mail receiver, recommended plugins, 2-container installation"
         ec2: "ec2: 2-container"
       server:
         create: "Create server"

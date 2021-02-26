@@ -16,8 +16,8 @@ class PfaffmanagerDropletSize
 
   def self.values
     @values ||= [
-        { name: "pfaffmanager.do.size.AMD1CPU1GB", value: AMD1CPU1GB },
-        { name: "pfaffmanager.do.size.AMD1CPU2GB", value: AMD1CPU2GB },
+        { name: I18n.t("js.pfaffmanager.do.size.AMD1CPU1GB"), value: AMD1CPU1GB },
+        { name: I18n.t("js.pfaffmanager.do.size.AMD1CPU2GB"), value: AMD1CPU2GB },
     ]
   end
 

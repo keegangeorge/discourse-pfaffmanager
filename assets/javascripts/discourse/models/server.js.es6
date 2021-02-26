@@ -29,7 +29,6 @@ Server.reopenClass({
     // eslint-disable-next-line no-console
     console.log("update in j/d/models/server.js.es6");
     // eslint-disable-next-line no-console
-    console.log(model);
     let server = {
       user_id: model.user_id,
       hostname: model.hostname,
@@ -39,7 +38,6 @@ Server.reopenClass({
       droplet_size: model.droplet_size
     };
     // eslint-disable-next-line no-console
-    console.log(server);
     return ajax(`/pfaffmanager/servers/${model.id}`, {
       type: "PUT",
       data: {

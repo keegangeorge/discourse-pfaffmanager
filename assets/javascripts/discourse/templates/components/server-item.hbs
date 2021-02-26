@@ -43,7 +43,7 @@
             </div>
           </div>
         {{/if}}
-        {{#if true}}
+        {{#if isDropletInstallType}}
 
           <div>
             <label for="droplet_size">{{i18n "pfaffmanager.server.droplet_size.label"}}</label>
@@ -52,7 +52,7 @@
               {{combo-box
                 value=server.droplet_size
                 valueProperty="value"
-                content=dropletSizes
+                content=server.available_droplet_sizes
                 class="droplet-size"
                 onChange=(action (mut server.droplet_size))
                 options=(hash
@@ -63,7 +63,7 @@
               </div>
           </div>
         {{/if}}
-        {{#if server.encrypted_mg_api_key}}
+        {{#if server.have_mg_api_key}}
           <div class="pfaffmanager-group warning">Ready to configure Mailgun</div>
         {{else}}
           <div class="pfaffmanager-group warning">Mailgun API Key is required for installation</div>

@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 class PfaffmanagerInstallType
-  STD ||= "Standard"
-  LITE ||= "Lite"
-  EC2 ||= "EC2"
+  STD ||= "std"
+  PRO ||= "pro"
+  LITE ||= "lite"
+  EC2 ||= "ec2"
 
   def self.valid_value?(val)
     values.any? { |v| v[:value] == val }
@@ -11,9 +12,10 @@ class PfaffmanagerInstallType
 
   def self.values
     @values ||= [
-        { name: "pfaffmanager.install_type.lite", value: LITE },
-        { name: "pfaffmanager.install_type.ec2", value: EC2 },
-        { name: "pfaffmanager.install_type.std", value: STD },
+        { name: I18n.t("js.pfaffmanager.install_type." + LITE), value: LITE },
+        { name: I18n.t("js.pfaffmanager.install_type." + EC2), value: EC2 },
+        { name: I18n.t("js.pfaffmanager.install_type." + STD), value: STD },
+        { name: I18n.t("js.pfaffmanager.install_type." + PRO), value: PRO },
     ]
   end
 

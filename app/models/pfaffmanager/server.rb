@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 MAXMIND_PRODUCT ||= 'GeoLite2-City'
-DO_INSTALL_TYPES = ['std', 'pro', 'lc_pro']
+DO_INSTALL_TYPES ||= ['std', 'pro', 'lc_pro']
 require 'sshkey'
 
 module Pfaffmanager
