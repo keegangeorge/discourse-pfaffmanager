@@ -11,7 +11,7 @@ module Pfaffmanager
       Rails.logger.warn "\n\n\n\nServer controller INDEX user #{current_user.username} in the house.\n\n\n\n"
       servers = ::Pfaffmanager::Server.where(user_id: current_user.id)
       Rails.logger.warn "-----------------> Server controller found #{servers.count} servers"
-      render_json_dump({ servers: servers })
+      render json: servers, each_serializer: ServersSerializer
     end
 
     def show
@@ -22,7 +22,8 @@ module Pfaffmanager
       clean_server = server.attributes.except('discourse_api_key', 'last_output', 'encrypted_ssh_key_private', 'ssh_key_private', 'do_api_key', 'mg_api_key')
 
       #render_json_dump({ server: server, except: [:ssh_key_private ] })
-      render_json_dump({ server: clean_server })
+      # render_json_dump({ server: clean_server })
+      render json: server, serializer: ServerSerializer
     end
 
     def set_api_key
@@ -198,7 +199,7 @@ module Pfaffmanager
         if server.errors.present?
           return render_json_error(server.errors.full_messages)
         else
-          return render json: success_json.merge(server: server.as_json)
+          return render json: success_json.merge(server: server.as_json), serializer: PfaffmanagerServerSerializer
         end
       end
 
