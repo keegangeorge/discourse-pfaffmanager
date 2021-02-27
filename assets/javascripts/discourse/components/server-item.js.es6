@@ -27,10 +27,11 @@ export default Component.extend({
     console.log("isEc2Install")
     return ec2InstallTypes.includes(installType);
   },
-  @discourseComputed("loading")
-  updateDisabledServer(loading) {
-    console.log("updateDisabledServer");
-    return ( loading);
+  @discourseComputed("loading", "server.ansible_running")
+  updateDisabledServer(loading, ansibleRunning) {
+    console.log("updateDisabledServer--ansible");
+    console.log(ansibleRunning);
+    return ( loading || ansibleRunning);
   },
 
   @discourseComputed("server.install_type", "server.have_do_api_key")
@@ -80,7 +81,7 @@ export default Component.extend({
         } else {
           console.log("Success");
         }
-      }).finally(() => this.set("loading", false));
+      }); // TODO: make sure that ansible always registers something AND that it gets to message bus
     },
 
     upgradeServer() {

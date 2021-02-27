@@ -105,12 +105,13 @@
           class="btn btn-primary"
           disabled=updateDisabledServer}}
           {{else}}
+          {{server.ansible_running}}
             <div class="pull-right">
               {{d-button label="pfaffmanager.server.do_create"
                 action=(action "dropletCreate")
                 icon="plus"
                 class="btn btn-primary do-create"
-                disabled=createDropletDisabled
+                disabled=updateDisabledServer
                 }}
             </div>
           {{/if}}

@@ -16,6 +16,8 @@ module Pfaffmanager
       :request_created_at,
       :request_result,
       :request_status,
+      :request_status_updated_at,
+      :ansible_running,
       :active,
       :last_action,
       :smtp_host,
@@ -29,7 +31,7 @@ module Pfaffmanager
       :install_type,
       :do_install_types,
       :ec2_install_types,
-      :have_vm
+      :have_vm,
 
     def have_vm
       object.request.present?
@@ -37,6 +39,10 @@ module Pfaffmanager
 
     def have_do_api_key
       object.encrypted_do_api_key.present?
+    end
+
+    def ansible_running
+      !/pfaffmanager-playbook (failure|success)/.match?(object.request_status)
     end
 
     def have_mg_api_key

@@ -322,8 +322,9 @@ module Pfaffmanager
       Rails.logger.warn "server.publish_status_update"
       data = {
         request_status: self.request_status,
-        request_status_updated_at: self.request_status_updated_at
+        request_status_updated_at: Time.now
       }
+      data[:ansible_running] = !/pfaffmanager-playbook (failure|success)/.match?(self.request_status)
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
       # to allow real-time access to all servers on the site
       MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
