@@ -16,7 +16,7 @@
     </div>
     {{#if server.request_status}}
       <div class="pfaffmanager-server-status">
-        <span class="pfaffmanager-status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
+        <span class="pfaffmanager-status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.request}}</b></span>
         <br>{{i18n "pfaffmanager.server.request_status" }}:&nbsp; {{server.request_status }}
               ({{format-date server.request_status_updated_at format="medium" }})
         <br>{{i18n "pfaffmanager.server.request_result" }}:&nbsp; {{server.request_result }}
@@ -105,7 +105,6 @@
           class="btn btn-primary"
           disabled=updateDisabledServer}}
           {{else}}
-          {{server.ansible_running}}
             <div class="pull-right">
               {{d-button label="pfaffmanager.server.do_create"
                 action=(action "dropletCreate")

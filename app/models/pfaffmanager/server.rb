@@ -15,9 +15,8 @@ module Pfaffmanager
     validate :connection_validator
     before_save :update_server_status unless :discourse_api_key.nil?
     before_save :do_api_key_validator if !:do_api_key.blank?
-    before_save :reset_request if !:request_status.nil?
     before_create :assert_has_ssh_keys
-    after_save :publish_status_update
+    #after_save :publish_status_update
 
     SMTP_CREDENTIALS = 'smtp_credentials'
     LATEST_INVENTORY = 'latest_inventory'
@@ -81,15 +80,13 @@ module Pfaffmanager
     end
 
     def self.ensure_pfaffmanager_groups
-      if !Rails.env.test?
-        ensure_group(SiteSetting.pfaffmanager_create_server_group)
-        ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
-        ensure_group(SiteSetting.pfaffmanager_server_manager_group)
-        ensure_group(SiteSetting.pfaffmanager_pro_server_group)
-        ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
-        ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
-        ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
-      end
+      ensure_group(SiteSetting.pfaffmanager_create_server_group)
+      ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
+      ensure_group(SiteSetting.pfaffmanager_server_manager_group)
+      ensure_group(SiteSetting.pfaffmanager_pro_server_group)
+      ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
+      ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
+      ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
     end
     # end
 
@@ -131,7 +128,6 @@ module Pfaffmanager
       rescue => e
         Rails.logger.warn "cannot update server status: #{e[0..200]}"
       end
-      publish_status_update
     end
 
     def install
@@ -165,6 +161,7 @@ module Pfaffmanager
           Rails.logger.warn "job created for #{id}"
           puts "gonna enqueueue"
           Jobs.enqueue(:create_droplet, server_id: id)
+          server.log_new_request("Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
           # Rails.logger.warn "results #{results}"
           results
         end
@@ -183,7 +180,9 @@ module Pfaffmanager
        "--vault-password-file",
        SiteSetting.pfaffmanager_vault_file,
        "--extra-vars",
-       "discourse_do_api_key=#{do_api_key} discourse_mg_api_key=#{mg_api_key}"
+       "discourse_do_api_key=#{do_api_key}",
+       "--extra-vars",
+       "discourse_mg_api_key=#{mg_api_key}"
        Rails.logger.warn "going to run with: #{instructions.join(' ')}"
        if SiteSetting.pfaffmanager_do_install == '/bin/true' ||
           do_api_key == 'testing' ||
@@ -195,10 +194,11 @@ module Pfaffmanager
          begin
            Rails.logger.warn "going to execute #{instructions.join(' ')}"
            Discourse::Utils.execute_command(*instructions)
-           update_server_status
           rescue => e
             puts "got a problem"
             Discourse.warn('this is an error',  error_message: e.message)
+            self.request_status = "pfaffmanager-playbook failure"
+            self.save
             false
          end
        end
@@ -206,27 +206,38 @@ module Pfaffmanager
     end
 
     def queue_upgrade()
+      # called by servers_controller queue_upgrade
       Rails.logger.warn "server.queue_upgrade for #{id} "
+      puts "server.queue_upgrade for #{id} "
       self.request = -1
       self.request_status_updated_at = Time.now
       self.last_action = "Process rebuild/upgrade"
+      success = false
       begin
-        success = self.save
+        puts "queue_upgrade about to save"
+        self.save
+        puts "queue_upgrade save complete"
         Jobs.enqueue(:server_upgrade, server_id: id)
         Rails.logger.warn "upgrade job created for #{id}"
+        puts "upgrade job created for #{id}"
         Rails.logger.error "upgrade job created for #{id}" if SiteSetting.pfaffmanager_debug_to_log
+        puts "going to log_new_request"
+        self.log_new_request("Upgrade queued. Waiting to start.")
+        puts "log_new_request returned"
+        success = true
       rescue
-        success = nil
+        puts "server.queue_upgrade rescue!!! error!!"
+        Rails.logger.error "server.queue_upgrade failed for #{id} "
       end
       success
     end
 
     def run_upgrade()
+      # // called by server_upgrade job
       Rails.logger.warn "Running upgrade for #{id} -- #{hostname}"
       self.last_output = "run_upgrade starting"
       Rails.logger.error "starting upgrade"
       self.save
-      update_server_status
       inventory_path = build_upgrade_inventory
       Rails.logger.warn "inventory: #{inventory_path}"
       instructions = SiteSetting.pfaffmanager_upgrade_playbook,
@@ -249,6 +260,21 @@ module Pfaffmanager
         self.save
         false
       end
+    end
+
+    def log_new_request(request_status)
+      puts "log_new_request started for #{request_status}"
+      self.request_status_updated_at = Time.now
+      self.request_status = request_status
+      data = {
+        request_status: self.request_status,
+        request_status_updated_at: self.request_status_updated_at
+      }
+      puts "log new request about to save"
+      save_result = self.save
+      puts "log new request about to post to message bus"
+      MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
+      save_result
     end
 
     # private
@@ -296,31 +322,11 @@ module Pfaffmanager
       inventory_file.path
     end
 
-    def reset_request # update server model that process is finished
-      Rails.logger.warn " -=--------------------- RESET #{request_status}\n" unless false
-      case request_status
-      when "Success"
-        Rails.logger.warn "Set request_result OK"
-          self.request_result = 'ok'
-          update_server_status
-          self.request = 0
-          self.request_status_updated_at = Time.now
-      when "Processing rebuild"
-        self.request_result = 'running'
-          Rails.logger.warn "Set request_result running"
-          self.request = -1
-          self.request_status_updated_at = Time.now
-      when "Failed"
-        self.request_result = 'failed'
-          self.request = 0
-          Rails.logger.warn "Set request_result failed"
-          self.request_status_updated_at = Time.now
-      end
-    end
-
     def publish_status_update
       Rails.logger.warn "server.publish_status_update"
       data = {
+        request: self.request,
+        request_created_at: self.request_created_at,
         request_status: self.request_status,
         request_status_updated_at: Time.now
       }

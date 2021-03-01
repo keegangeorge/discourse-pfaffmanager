@@ -79,16 +79,3 @@ plugins:
     client: false
     hidden: false
     type: boolean
-  pfaffmanager_droplet_install_types:
-    default: ''
-    client: true
-    hidden: false
-    type: enum
-    enum: "PfaffmanagerInstallType"
-  pfaffmanager_droplet_sizes:
-    default: ''
-    client: true
-    hidden: false
-    type: enum
-    enum: "PfaffmanagerDropletSize"
-

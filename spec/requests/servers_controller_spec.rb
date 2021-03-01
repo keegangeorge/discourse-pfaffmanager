@@ -2,18 +2,13 @@
 require 'rails_helper'
 
 describe Pfaffmanager::ServersController do
-  fab!(:user) { Fabricate(:user) }
+  fab!(:user) { Fabricate(:user, username: 'pfaffmanager_user') }
   fab!(:create_user) { Fabricate(:user) }
   fab!(:admin) { Fabricate(:admin) }
   fab!(:another_user) { Fabricate(:user) }
   fab!(:trust_level_2) { Fabricate(:user, trust_level: TrustLevel[2]) }
-  let(:discourse_server) { Fabricate(:server,
-    user_id: user.id,
-    hostname: 'working.discourse.invalid',
-    discourse_api_key: 'working-discourse-key')}
   SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
   SiteSetting.pfaffmanager_do_install = 'true'
-  create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
 
   # create_server_group_name = "create_server"
   # group = Group.create(name: create_server_group_name)
@@ -54,22 +49,33 @@ describe Pfaffmanager::ServersController do
       }}', headers: {})
   end
 
+  describe "servers" do
+    let(:discourse_server) { Fabricate(:server,
+      user: user,
+      hostname: 'working.discourse.invalid',
+      discourse_api_key: 'working-discourse-key',
+      install_type: 'std',
+      droplet_size: "missing")}
+
 it 'can list if no servers' do
   sign_in(user)
   get "/pfaffmanager/servers.json"
   expect(response.status).to eq(200)
+  json = response.parsed_body
+  expect(json['servers'].length).to eq(0)
 end
 
 it 'can list when there is a server' do
+  puts "can list discourse server hostname: #{discourse_server.hostname} host user: #{discourse_server.user_id}. User #{user.id} "
+  servers = Pfaffmanager::Server.all
+  puts "XXXY got #{servers.count} servers"
+  puts "First server: #{servers.first['hostname']} has #{servers.first['user_id']}"
   sign_in(user)
-  hostname = 'bogus.invalid'
+  puts "Userid: #{user.id} #{user.username}"
   #TODO: should fabricate this
-  s = Pfaffmanager::Server.createServerFromParams(user_id: user.id,
-                                                  hostname: hostname , request_status: 'not updated')
   get "/pfaffmanager/servers.json"
-  expect(response.status).to eq(200)
   json = response.parsed_body
-  expect(json['servers'][0]['hostname']).to eq(hostname)
+  expect(response.status).to eq(200)
   expect(json['servers'].count).to eq(1)
 end
 
@@ -122,7 +128,7 @@ it 'Admin can create a server' do
 end
 
 it 'CreateServer fails if not in create group' do
-  group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
+  #group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
   sign_in(user)
   params = {}
   params['server'] = { user_id: user.id }
@@ -133,7 +139,7 @@ it 'CreateServer fails if not in create group' do
 end
 
 it 'can update status' do
-  request_status = 'new status'
+  #request_status = 'new status'
   sign_in(admin)
   s = Pfaffmanager::Server.createServerFromParams(user_id: user.id,
                                                   hostname: 'bogus.invalid' , request_status: 'not updated')
@@ -152,23 +158,26 @@ it 'has the right owner' do
 end
 
 it 'will upgrade for server owner' do
-  server_owner = User.find(discourse_server.user_id)
-  sign_in(server_owner)
+  sign_in(user)
   path = "/pfaffmanager/upgrade/#{discourse_server.id}.json"
   post path
-  expect(server_owner.id).to eq(discourse_server.user_id)
+  expect(user.id).to eq(discourse_server.user_id)
   expect(response.status).to eq(200)
   expect(response.parsed_body['success']).to eq "OK"
+  expect { discourse_server.reload }.to change { discourse_server.request_status }
+  expect(response.status).to eq(200)
 end
 
 it 'will upgrade for an admin' do
-  server_owner = User.find(discourse_server.user_id)
+  puts 'starting upgrade for admin'
   sign_in(admin)
   path = "/pfaffmanager/upgrade/#{discourse_server.id}.json"
+  puts 'posting upgrade for admin'
   post path
   expect(admin.id).not_to eq(discourse_server.user_id)
   expect(response.status).to eq(200)
   expect(response.parsed_body['success']).to eq "OK"
+  expect { discourse_server.reload }.to change { discourse_server.request_status }
 end
 
 it 'refuses to upgrade for user who does not own server' do
@@ -192,14 +201,12 @@ it 'will do digital ocean install for server owner' do
 end
 
 it 'will not do digital ocean install if not a DO install type' do
-  server_owner = User.find(discourse_server.user_id)
-  sign_in(server_owner)
+  sign_in(user)
   discourse_server.install_type = 'none'
   discourse_server.save
   path = "/pfaffmanager/install/#{discourse_server.id}.json"
   put path
-  expect(server_owner.id).to eq(discourse_server.user_id)
-  expect(response.status).to eq(500)
+  expect(response.status).to eq(501)
   expect(response.parsed_body['failed']).to eq "FAILED"
 end
 
@@ -248,7 +255,6 @@ it 'non server managers cannot initiate upgrades the old way' do
     params['server'] = { id: discourse_server.id, user_id: user.id, request: 1 }
     put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
     expect(response.status).to eq(200)
-    expect(response.parsed_body['success']).to eq "OK"
     discourse_server.reload
     expect(discourse_server.request).to be nil
     expect(discourse_server.last_action).to be nil
@@ -287,27 +293,51 @@ end
 #   expect(discourse_server.smtp_notification_email).to eq(smtp_notification_email)
 # end
 
-it 'allows status to be updated via API' do
+it 'does not allow status to be updated via API' do
   sign_in(admin)
     new_status = 'new status'
+    fake_status = 'not a status'
+    discourse_server.request_status = fake_status
+    discourse_server.save
     params = {}
     params['server'] = { request_status: new_status }
     put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(response.status).to eq(200)
+    expect(response.parsed_body['server']['request_status']).to eq(fake_status)
+end
+
+it 'users cannot update status' do
+  sign_in(user)
+    new_status = 'new status'
+    params = {}
+    params = { request_status: new_status }
+    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
+    expect(response.status).to eq(400)
+    expect { discourse_server.reload }
+      .not_to change { discourse_server.request_status }
+end
+
+it 'can get an ssh pub key by server id' do
+  get "/pfaffmanager/ssh-key/#{discourse_server.id}"
+  expect(response.body).to include "ssh-rsa"
+end
+
+skip 'can get an ssh pub key by server hostname' do
+  get "/pfaffmanager/ssh-key/#{discourse_server.hostname}"
+  expect(response.body).to include "ssh-rsa"
+end
+
+it 'allows status to be updated via update status route' do
+  sign_in(admin)
+    new_status = 'doing something important'
+    params = {}
+    params = { request_status: new_status }
+    puts "about to put to /pfaffmanager/status for #{discourse_server.id}"
+    put "/pfaffmanager/status/#{discourse_server.id}.json", params: params
     expect(response.status).to eq(200)
     expect(response.parsed_body['success']).to eq "OK"
     expect { discourse_server.reload }
       .to change { discourse_server.request_status }
 end
-it 'users cannot update status' do
-  sign_in(user)
-    new_status = 'new status'
-    params = {}
-    params['server'] = { request_status: new_status }
-    put "/pfaffmanager/servers/#{discourse_server.id}.json", params: params
-    expect(response.status).to eq(200)
-    expect(response.parsed_body['success']).to eq "OK"
-    expect { discourse_server.reload }
-      .not_to change { discourse_server.request_status }
-end
-
+  end
 end

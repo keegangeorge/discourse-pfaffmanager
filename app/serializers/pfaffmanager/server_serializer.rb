@@ -25,16 +25,17 @@ module Pfaffmanager
       :smtp_password,
       :smtp_port,
       :smtp_user,
-      :available_droplet_sizes,
+        :available_droplet_sizes,
       :droplet_size,
       :last_output,
-      :install_type,
-      :do_install_types,
-      :ec2_install_types,
-      :have_vm,
+     :install_type,
+    :do_install_types,
+    :ec2_install_types,
+    :have_vm
 
     def have_vm
       object.request.present?
+
     end
 
     def have_do_api_key
@@ -42,6 +43,7 @@ module Pfaffmanager
     end
 
     def ansible_running
+      puts "ansible running test"
       !/pfaffmanager-playbook (failure|success)/.match?(object.request_status)
     end
 

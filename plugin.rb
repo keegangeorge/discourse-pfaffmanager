@@ -22,7 +22,7 @@ after_initialize do
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
   #SeedFu.fixture_paths << Rails.root.join("plugins", "discourse-pfaffmanager", "db", "fixtures").to_s
   # load File.expand_path('app/jobs/regular/fake_upgrade.rb', __dir__)
-  Pfaffmanager::Server.ensure_pfaffmanager_groups
+  Pfaffmanager::Server.ensure_pfaffmanager_groups if Rails.env == "test"
   SiteSetting.pfaffmanager_api_key ||= ApiKey.create(description: 'pfaffmanager key').key_hash
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
 

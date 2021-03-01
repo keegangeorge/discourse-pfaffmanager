@@ -8,6 +8,7 @@ Pfaffmanager::Engine.routes.draw do
   get "/servers" => "servers#index", constraints: PfaffmanagerConstraint.new
   get "/servers/:id" => "servers#show", constraints: PfaffmanagerConstraint.new
   put "/servers/:id" => "servers#update", constraints: PfaffmanagerConstraint.new
+  put "/status/:id" => "servers#update_status", constraints: AdminConstraint.new
   post "/api_key/:id" => "servers#set_api_key", constraints: PfaffmanagerConstraint.new
   post "/upgrade/:id" => "servers#queue_upgrade", constraints: PfaffmanagerConstraint.new
   put "/install/:id" => "servers#install", constraints: PfaffmanagerConstraint.new
