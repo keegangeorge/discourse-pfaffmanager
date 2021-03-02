@@ -25,6 +25,15 @@ module Pfaffmanager
     register_custom_field_type(LATEST_INVENTORY, :text)
     register_custom_field_type(CUSTOM_PLUGINS, :text)
 
+    PFAFFMANAGER_GROUP_NAMES ||= [
+      SiteSetting.pfaffmanager_create_server_group,
+      SiteSetting.pfaffmanager_unlimited_server_group,
+      SiteSetting.pfaffmanager_server_manager_group,
+      SiteSetting.pfaffmanager_pro_server_group,
+      SiteSetting.pfaffmanager_ec2_server_group,
+      SiteSetting.pfaffmanager_ec2_pro_server_group,
+      SiteSetting.pfaffmanager_hosted_server_group
+    ]
     scope :find_user, ->(user) { find_by_user_id(user.id) }
 
     def custom_fields_fk
@@ -80,7 +89,8 @@ module Pfaffmanager
     end
 
     # looks like this isn't used
-    def self.ensure_pfaffmanager_groups
+    def self.ensure_pfaffmanager_groups!
+      puts "RUNNING ensure_pfaffmanager_groups. Env: #{Rails.env}"
       ensure_group(SiteSetting.pfaffmanager_create_server_group)
       ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
       ensure_group(SiteSetting.pfaffmanager_server_manager_group)
@@ -88,6 +98,15 @@ module Pfaffmanager
       ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
       ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
       ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
+    end
+    # end
+
+    def self.destroy_pfaffmanager_groups!
+      puts "RUNNING destroy_pfaffmanager_groups. Env: #{Rails.env}"
+      Pfaffmanager::Server::PFAFFMANAGER_GROUP_NAMES.each do |name|
+        group = Group.find_by_name(name)
+        group.destroy if group.present?
+      end
     end
     # end
 

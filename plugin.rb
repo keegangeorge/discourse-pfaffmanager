@@ -21,8 +21,7 @@ load File.expand_path('lib/encryptable.rb', __dir__)
 after_initialize do
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
   #SeedFu.fixture_paths << Rails.root.join("plugins", "discourse-pfaffmanager", "db", "fixtures").to_s
-  # load File.expand_path('app/jobs/regular/fake_upgrade.rb', __dir__)
-  Pfaffmanager::Server.ensure_pfaffmanager_groups if Rails.env == "test"
+  Pfaffmanager::Server.ensure_pfaffmanager_groups! #unless Rails.env == "test"
   SiteSetting.pfaffmanager_api_key ||= ApiKey.create(description: 'pfaffmanager key').key_hash
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
 
@@ -70,8 +69,15 @@ after_initialize do
         Rails.logger.warn "Removing #{self.user_id} from #{gu.group_id}"
         gu.destroy
       end
-      # remove from group
-      # TODO: and redirect somewhere else?
     end
+  end
+  class ::Group < ::ActiveRecord::Base
+    def self.refresh_automatic_groups!(*args)
+      puts "Running pfaffmanager's refresh_automatic_groups!"
+      args = AUTO_GROUPS.keys if args.empty?
+      args.each { |group| refresh_automatic_group!(group) }
+      Pfaffmanager::Server.destroy_pfaffmanager_groups!
+    end
+
   end
 end

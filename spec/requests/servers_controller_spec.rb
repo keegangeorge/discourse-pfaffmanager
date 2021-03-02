@@ -7,14 +7,13 @@ describe Pfaffmanager::ServersController do
   fab!(:admin) { Fabricate(:admin) }
   fab!(:another_user) { Fabricate(:user) }
   fab!(:trust_level_2) { Fabricate(:user, trust_level: TrustLevel[2]) }
-  # fab!(:pfaffmanager_create_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_create_server_group) }
-  # fab!(:pfaffmanager_unlimited_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_unlimited_server_group) }
-  # fab!(:pfaffmanager_server_manager_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_server_manager_group) }
-  # fab!(:pfaffmanager_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_pro_server_group) }
-  # fab!(:pfaffmanager_ec2_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_server_group) }
-  # fab!(:pfaffmanager_ec2_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_pro_server_group) }
-  # fab!(:pfaffmanager_hosted_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_hosted_server_group) }
-
+  # let!(:pfaffmanager_create_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_create_server_group) }
+  # let!(:pfaffmanager_unlimited_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_unlimited_server_group) }
+  # let!(:pfaffmanager_server_manager_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_server_manager_group) }
+  # let!(:pfaffmanager_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_pro_server_group) }
+  # let!(:pfaffmanager_ec2_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_server_group) }
+  # let!(:pfaffmanager_ec2_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_pro_server_group) }
+  # let!(:pfaffmanager_hosted_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_hosted_server_group) }
   SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
   # SiteSetting.pfaffmanager_do_install = 'true'
 

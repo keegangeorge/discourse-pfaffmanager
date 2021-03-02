@@ -8,13 +8,15 @@ module Pfaffmanager
     let(:discourse_server) { Fabricate(:server,
       hostname: 'working.discourse.invalid',
       discourse_api_key: 'working-discourse-key')}
-      create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
-      pro_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
-      ec2_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_server_group)
-      ec2_pro_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_pro_server_group)
-      pfaffmanager_hosted_server_group = Group.find_by_name(SiteSetting.pfaffmanager_hosted_server_group)
-
+# fab!(:pfaffmanager_create_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_create_server_group) }
+# fab!(:pfaffmanager_unlimited_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_unlimited_server_group) }
+# fab!(:pfaffmanager_server_manager_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_server_manager_group) }
+# fab!(:pfaffmanager_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_pro_server_group) }
+# fab!(:pfaffmanager_ec2_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_server_group) }
+# fab!(:pfaffmanager_ec2_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_pro_server_group) }
+# fab!(:pfaffmanager_hosted_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_hosted_server_group) }
 before do
+
   SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
   SiteSetting.pfaffmanager_do_install = '/bin/true'
   SiteSetting.pfaffmanager_skip_actions = true
@@ -81,6 +83,7 @@ before do
             }).
        to_return(status: 403, body: "", headers: {}) #not sure what the actual error status is
 end
+
     it "has a table name" do
       expect(described_class.table_name).to eq ("pfaffmanager_servers")
     end
@@ -132,6 +135,7 @@ end
     end
 
     it 'creates a server if user is added to createServer group' do
+      create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
       expect { GroupUser.create(group_id: create_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
@@ -139,6 +143,7 @@ end
       expect(GroupUser.find_by(user_id: user.id, group_id: create_group.id)).to eq nil
     end
     it 'creates a pro server if user is added to proServer group' do
+      pro_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
       expect { GroupUser.create(group_id: pro_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
@@ -147,21 +152,25 @@ end
     end
 
     it 'creates a ec2 server if user is added to ec2Server group' do
-      expect { GroupUser.create(group_id: ec2_group.id, user_id: user.id) }
+      ec2_server_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_server_group)
+      expect { GroupUser.create(group_id: ec2_server_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'ec2'
-      expect(GroupUser.find_by(user_id: user.id, group_id: ec2_group.id)).to eq nil
+      expect(GroupUser.find_by(user_id: user.id, group_id: ec2_server_group.id)).to eq nil
     end
+
     it 'creates a ec2 pro server if user is added to ec2Server group' do
-      expect { GroupUser.create(group_id: ec2_pro_group.id, user_id: user.id) }
+      ec2_pro_server_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_pro_server_group)
+      expect { GroupUser.create(group_id: ec2_pro_server_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'ec2_pro'
-      expect(GroupUser.find_by(user_id: user.id, group_id: ec2_pro_group.id)).to eq nil
+      expect(GroupUser.find_by(user_id: user.id, group_id: ec2_pro_server_group.id)).to eq nil
     end
 
-    it 'creates a LC pro server with LC keys if user is added to LCProServer group', skip: "skip group tests" do
+    it 'creates a LC pro server with LC keys if user is added to Hosted Server group' do
+      pfaffmanager_hosted_server_group = Group.find_by_name(SiteSetting.pfaffmanager_hosted_server_group)
       expect { GroupUser.create(group_id: pfaffmanager_hosted_server_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
