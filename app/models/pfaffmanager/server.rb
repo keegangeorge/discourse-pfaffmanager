@@ -79,6 +79,7 @@ module Pfaffmanager
       create(params)
     end
 
+    # looks like this isn't used
     def self.ensure_pfaffmanager_groups
       ensure_group(SiteSetting.pfaffmanager_create_server_group)
       ensure_group(SiteSetting.pfaffmanager_unlimited_server_group)
@@ -175,34 +176,34 @@ module Pfaffmanager
       inventory_path = build_do_install_inventory
       Rails.logger.warn "inventory: #{inventory_path}"
       instructions = SiteSetting.pfaffmanager_do_install,
-       "-i",
-       inventory_path,
-       "--vault-password-file",
-       SiteSetting.pfaffmanager_vault_file,
-       "--extra-vars",
-       "discourse_do_api_key=#{do_api_key}",
-       "--extra-vars",
-       "discourse_mg_api_key=#{mg_api_key}"
-       Rails.logger.warn "going to run with: #{instructions.join(' ')}"
-       if SiteSetting.pfaffmanager_do_install == '/bin/true' ||
-          do_api_key == 'testing' ||
-          mg_api_key == 'testing'
-         Rails.logger.warn "NOT creating!! #{instructions.join(' ')}"
-         self.request_status = 'fake install'
-         self.save
-       else
-         begin
-           Rails.logger.warn "going to execute #{instructions.join(' ')}"
-           Discourse::Utils.execute_command(*instructions)
-          rescue => e
-            puts "got a problem"
-            Discourse.warn('this is an error',  error_message: e.message)
-            self.request_status = "pfaffmanager-playbook failure"
-            self.save
-            false
-         end
-       end
-
+        "-i",
+        inventory_path,
+        "--vault-password-file",
+        SiteSetting.pfaffmanager_vault_file,
+        "--extra-vars",
+        "discourse_do_api_key=#{do_api_key}",
+        "--extra-vars",
+        "discourse_mg_api_key=#{mg_api_key}"
+      Rails.logger.warn "going to run with: #{instructions.join(' ')}"
+      if SiteSetting.pfaffmanager_do_install == '/bin/true' ||
+        do_api_key == 'testing' ||
+        mg_api_key == 'testing'
+        Rails.logger.warn "NOT creating!! #{instructions.join(' ')}"
+        self.request_status = 'fake install'
+        self.save
+      else
+        begin
+          Rails.logger.warn "going to execute #{instructions.join(' ')}"
+          Discourse::Utils.execute_command(*instructions)
+          true
+        rescue => e
+          puts "got a problem"
+          Discourse.warn('this is an error',  error_message: e.message)
+          self.request_status = "pfaffmanager-playbook failure"
+          self.save
+          false
+        end
+      end
     end
 
     def queue_upgrade()

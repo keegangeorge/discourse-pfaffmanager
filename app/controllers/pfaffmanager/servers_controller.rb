@@ -18,11 +18,8 @@ module Pfaffmanager
 
     def show
       Rails.logger.warn "\n\n\n\nServer controller SHOW for user #{current_user.username} in the house.\n\n\n\n"
-
       # TODO: Allow admin to see server of other users
       server = ::Pfaffmanager::Server.find_by(user_id: current_user.id, id: params[:id])
-      clean_server = server.attributes.except('discourse_api_key', 'last_output', 'encrypted_ssh_key_private', 'ssh_key_private', 'do_api_key', 'mg_api_key')
-
       #render_json_dump({ server: server, except: [:ssh_key_private ] })
       # render_json_dump({ server: clean_server })
       render json: server, serializer: ServerSerializer
@@ -70,27 +67,22 @@ module Pfaffmanager
       end
     end
 
-    def create_droplet
-      Rails.logger.warn "servers_controller.create_droplet"
-      server = ::Pfaffmanager::Server.find(params[:server][:user_id])
-      server.queue_create_droplet
-    end
-
     def queue_upgrade
       puts "calling servers controller queue_upgrade for #{params[:id]}"
       server_id = params[:id]
       Rails.logger.warn "servers_controller.queue_upgrade for #{server_id}"
       begin
-        server = ::Pfaffmanager::Server.find(server_id)
-        puts "server user_id: #{server.user_id} -- current: #{current_user.id}"
-        if (current_user.id != server.user_id) && !current_user.admin?
+        @server = ::Pfaffmanager::Server.find(server_id)
+        return render json: failed_json, status: 403 unless can_upgrade
+          puts "server user_id: #{@server.user_id} -- current: #{current_user.id}"
+        if (current_user.id != @server.user_id) && !current_user.admin?
           Rails.logger.warn "servers_controller.run_upgrade INVALID ACCESS!!!!!"
           puts "servers_controller.run_upgrade INVALID ACCESS!!!!!"
           render json: failed_json, status: 403
         else
           puts "controller going to queue_upgrade"
-          status = server.queue_upgrade
-          server.log_new_request("Upgrade queued. Waiting to start.")
+          status = @server.queue_upgrade
+          @server.log_new_request("Upgrade queued. Waiting to start.")
           puts "controller got #{status}"
           if status
             puts "controller upgrade success"
@@ -108,19 +100,19 @@ module Pfaffmanager
 
     def install
       server_id = params[:id]
-      Rails.logger.warn "servers_controller.install for #{server_id}"
+      @server = ::Pfaffmanager::Server.find(server_id)
+      Rails.logger.warn "servers_controller.install for #{@server_id}"
       begin
-        server = ::Pfaffmanager::Server.find(server_id)
-        puts "server user_id: #{server.user_id} -- current: #{current_user.id} -- install type: #{server.install_type}"
-        if (current_user.id != server.user_id) && !current_user.admin?
+        puts "server user_id: #{@server.user_id} -- current: #{current_user.id} -- install type: #{@server.install_type}"
+        if (current_user.id != @server.user_id) && !current_user.admin?
           Rails.logger.warn "servers_controller.install INVALID ACCESS!!!!!"
           render json: failed_json, status: 403
-        elsif !(DO_INSTALL_TYPES.include?(server.install_type))
+        elsif !(DO_INSTALL_TYPES.include?(@server.install_type))
           Rails.logger.warn "servers_controller.install NOT DO INSTALL!!!!!"
           render json: failed_json, status: 501
         else
           Rails.logger.warn "servers_controller going to queue!"
-          status = server.queue_create_droplet
+          status = @server.queue_create_droplet
           puts "putting status #{status}"
           Rails.logger.warn("logger status #{status}")
           render json: success_json
@@ -128,6 +120,22 @@ module Pfaffmanager
       rescue
         render json: failed_json, status: 501
       end
+    end
+
+    def can_upgrade
+      manage_group = Group.where(name: SiteSetting.pfaffmanager_server_manager_group)
+      # TODO: make 6.months.ago a setting
+      can_manage = !Group.member_of(manage_group, current_user).empty? || current_user.admin || @server.created_at > 6.months.ago
+
+      if can_manage
+        Rails.logger.warn "you can manage"
+        puts "you can manage"
+      else
+        # TODO: raise an error? (Or stop on the front end and dno't worry here)
+        Rails.logger.warn "You are not allowed to manage"
+        puts "You are not allowed to manage!! created: #{server.created_at}"
+      end
+      can_manage
     end
 
     def create
@@ -159,58 +167,33 @@ module Pfaffmanager
       Rails.logger.warn "\nrequest_status: #{params[:request_status]}"
       server = ::Pfaffmanager::Server.find_by(id: params[:id])
       Rails.logger.warn "Server? Got '#{server.hostname}'"
-      manage_group = Group.where(name: SiteSetting.pfaffmanager_server_manager_group)
-      # TODO: make 6.months.ago a setting
-      can_manage = !Group.member_of(manage_group, current_user).empty? || current_user.admin || server.created_at < 6.months.ago
 
-      if can_manage
-        Rails.logger.warn "you can manage"
-        request = params[:server][:request].present? ? params[:server][:request].to_i : nil
-        Rails.logger.warn "got the request"
-      else
-        # TODO: raise an error? (Or stop on the front end and dno't worry here)
-        Rails.logger.warn "You are not allowed to manage"
-      end
-      # # TODO: Why not just past the fields rather than a name of a field?
-      # # but it requires changing this and Ansible, so I'll leave it 2020-11-12
-      # EDIT: maybe I wized up before I used this crazy idea. . .
-      # leaving the comment just in case because I'm bad at git
-      #      field = params[:server][:field] unless params[:server].nil?
-      #      value = params[:server][:value] unless params[:server].nil?
-
-      Rails.logger.warn "------------------> GOT REQUEST: #{request}" if request
       if server
         data = server_params
         Rails.logger.warn "\nProcessing server! Data: #{data}"
+        puts "\nProcessing server! Data: #{data}"
         Rails.logger.warn "request status nil: #{data[:request_status].nil?}"
         Rails.logger.warn "current admin: #{current_user.admin}"
 
-        Rails.logger.warn "\n\nNORMAL server controller update!"
-        # server.user_id = data[:user_id] if data[:user_id]
-        # server.hostname = data[:hostname] if data[:hostname]
         server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
         server.hostname = data[:hostname] if data[:hostname]
-        server.do_api_key = data[:do_api_key] if data[:do_api_key] && data[:do_api_key].length > 0
-        server.mg_api_key = data[:mg_api_key] if data[:mg_api_key] && data[:mg_api_key].length > 0
+        server.do_api_key = data[:do_api_key] if data[:do_api_key].present?
+        server.mg_api_key = data[:mg_api_key] if data[:mg_api_key].present?
         server.maxmind_license_key = data[:maxmind_license_key] if data[:maxmind_license_key].present?
         server.droplet_size = data[:droplet_size] if data[:droplet_size].present?
-        # server.smtp_host = data[:smtp_host] unless data[:smtp_host].nil?
-        # server.smtp_notification_email = data[:smtp_notification_email] unless data[:smtp_notification_email].nil?
-        # server.smtp_port = data[:smtp_port] unless data[:smtp_port].nil?
-        # server.smtp_password = data[:smtp_password] unless data[:smtp_password].nil?
-        # server.smtp_user = data[:smtp_user] unless data[:smtp_user].nil?
-        # TODO don't try to start a build if one is running
+        server.smtp_host = data[:smtp_host] if data[:smtp_host].present?
+        server.smtp_notification_email = data[:smtp_notification_email] if data[:smtp_notification_email].present?
+        server.smtp_port = data[:smtp_port] if data[:smtp_port].present?
+        server.smtp_password = data[:smtp_password] if data[:smtp_password].present?
+        server.smtp_user = data[:smtp_user] if data[:smtp_user].present?
 
         Rails.logger.warn "server controller update about to save R: #{server.request} with #{server.droplet_size}"
+        puts "server controller update about to save R: #{server.request} with #{server.droplet_size}"
         server.save
 
         if server.errors.present?
           return render_json_error(server.errors.full_messages)
         else
-          return_json = success_json.merge(server: server.as_json)
-          server
-          # puts "Server: #{server}"
-          # puts "return_json: #{return_json}"
           return render json: server, serializer: ServerSerializer
         end
       end

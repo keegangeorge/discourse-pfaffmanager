@@ -131,36 +131,14 @@ end
         .and change(discourse_server, :installed_version)
     end
 
-    it 'updates request result when request_status succeeds' do
-      discourse_server.request_status = "Success"
-      expect { discourse_server.save }
-        .to change(discourse_server, :request_result).to('ok')
-        .and change(discourse_server, :request).to(0)
-        .and change(discourse_server, :request_status_updated_at)
-    end
-    it 'updates request result when request_status running' do
-      discourse_server.request_status = "Processing rebuild"
-      expect { discourse_server.save }
-        .to change(discourse_server, :request_result).to('running')
-        .and change(discourse_server, :request_status_updated_at)
-      expect(discourse_server.request).not_to eq 0
-    end
-    it 'updates request result when request_status failed' do
-      discourse_server.request_status = "Failed"
-      expect { discourse_server.save }
-        .to change(discourse_server, :request_result).to('failed')
-        .and change(discourse_server, :request_status_updated_at)
-        .and change(discourse_server, :request).to(0)
-    end
-
-    it 'creates a server if user is added to createServer group', skip: "skip group tests" do
+    it 'creates a server if user is added to createServer group' do
       expect { GroupUser.create(group_id: create_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'std'
       expect(GroupUser.find_by(user_id: user.id, group_id: create_group.id)).to eq nil
     end
-    it 'creates a pro server if user is added to proServer group', skip: "skip group tests"  do
+    it 'creates a pro server if user is added to proServer group' do
       expect { GroupUser.create(group_id: pro_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
@@ -168,14 +146,14 @@ end
       expect(GroupUser.find_by(user_id: user.id, group_id: pro_group.id)).to eq nil
     end
 
-    it 'creates a ec2 server if user is added to ec2Server group', skip: "skip group tests"  do
+    it 'creates a ec2 server if user is added to ec2Server group' do
       expect { GroupUser.create(group_id: ec2_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'ec2'
       expect(GroupUser.find_by(user_id: user.id, group_id: ec2_group.id)).to eq nil
     end
-    it 'creates a ec2 pro server if user is added to ec2Server group', skip: "skip group tests"  do
+    it 'creates a ec2 pro server if user is added to ec2Server group' do
       expect { GroupUser.create(group_id: ec2_pro_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
