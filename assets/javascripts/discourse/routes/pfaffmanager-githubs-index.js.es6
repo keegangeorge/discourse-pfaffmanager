@@ -3,7 +3,7 @@ import DiscourseRoute from 'discourse/routes/discourse';
 export default DiscourseRoute.extend({
   controllerName: 'githubs-index',
 
-  model (params) {
+  model () {
     return this.store.findAll('github');
   },
 

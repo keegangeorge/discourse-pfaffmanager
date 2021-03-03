@@ -12,8 +12,9 @@ export default Controller.extend({
     const server = this.server;
 
     this.messageBus.subscribe(
+      // `/pfaffmanager-server-status/${server.id}`, data => {
       `/pfaffmanager-server-status/${server.id}`, data => {
-        server.setProperties({
+          server.setProperties({
           request: data.request,
           request_created_at: data.request_created_at,
           request_status: data.request_status,

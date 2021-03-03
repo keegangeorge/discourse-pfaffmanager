@@ -1,7 +1,5 @@
 import Controller from '@ember/controller';
 import Server from '../models/server';
-import discourseComputed from 'discourse-common/utils/decorators';
-import { computed } from '@ember/object';
 
 export default Controller.extend({
 
@@ -35,12 +33,6 @@ export default Controller.extend({
         console.log(this.model);
         // eslint-disable-next-line no-console
         console.log(result);
-
-        if (result.errors) {
-          console.log('Errors: ', errors);
-        } else {
-          console.log('Success');
-        }
       });
     },
     upgradeServer () {
@@ -52,20 +44,13 @@ export default Controller.extend({
         // eslint-disable-next-line no-console
         console.log(result);
 
-        if (result.errors) {
-          // eslint-disable-next-line no-console
-          console.log('Errors: ', errors);
-        } else {
-          // eslint-disable-next-line no-console
-          console.log('Success');
-        }
       });
     },
     updateServer () {
       Server.updateServer(this.server).then((result) => {
         if (result.errors) {
           // eslint-disable-next-line no-console
-          console.log('Errors: ', errors);
+          console.log('Errors: ', result.errors);
         } else if (result.success) {
           this.set('server', Server.create(result.server));
         }
