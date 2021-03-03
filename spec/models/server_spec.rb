@@ -8,81 +8,81 @@ module Pfaffmanager
     let(:discourse_server) { Fabricate(:server,
       hostname: 'working.discourse.invalid',
       discourse_api_key: 'working-discourse-key')}
-# fab!(:pfaffmanager_create_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_create_server_group) }
-# fab!(:pfaffmanager_unlimited_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_unlimited_server_group) }
-# fab!(:pfaffmanager_server_manager_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_server_manager_group) }
-# fab!(:pfaffmanager_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_pro_server_group) }
-# fab!(:pfaffmanager_ec2_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_server_group) }
-# fab!(:pfaffmanager_ec2_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_pro_server_group) }
-# fab!(:pfaffmanager_hosted_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_hosted_server_group) }
-before do
+    let!(:pfaffmanager_create_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_create_server_group) }
+    # let!(:pfaffmanager_unlimited_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_unlimited_server_group) }
+    # let!(:pfaffmanager_server_manager_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_server_manager_group) }
+    let!(:pfaffmanager_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_pro_server_group) }
+    let!(:pfaffmanager_ec2_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_server_group) }
+    let!(:pfaffmanager_ec2_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_pro_server_group) }
+    let!(:pfaffmanager_hosted_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_hosted_server_group) }
+  before do
 
-  SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
-  SiteSetting.pfaffmanager_do_install = '/bin/true'
-  SiteSetting.pfaffmanager_skip_actions = true
-  SiteSetting.pfaffmanager_do_api_key = 'fake-do-api-key'
-  SiteSetting.pfaffmanager_mg_api_key = 'fake-mg-api-key'
-  stub_request(:get, "https://api.digitalocean.com/v2/account").
-    with(
+    SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
+    SiteSetting.pfaffmanager_do_install = '/bin/true'
+    SiteSetting.pfaffmanager_skip_actions = true
+    SiteSetting.pfaffmanager_do_api_key = 'fake-do-api-key'
+    SiteSetting.pfaffmanager_mg_api_key = 'fake-mg-api-key'
+    stub_request(:get, "https://api.digitalocean.com/v2/account").
+      with(
+        headers: {
+      'Authorization' => 'Bearer fake-do-api-key',
+      'Host' => 'api.digitalocean.com'
+        }).
+      to_return(status: 200, body: "", headers: {})
+
+    stub_request(:get, "https://api.digitalocean.com/v2/account").
+      with(
       headers: {
-     'Authorization' => 'Bearer fake-do-api-key',
-     'Host' => 'api.digitalocean.com'
+    'Authorization' => 'Bearer do-valid-key',
+    'Host' => 'api.digitalocean.com'
       }).
-    to_return(status: 200, body: "", headers: {})
-
-  stub_request(:get, "https://api.digitalocean.com/v2/account").
-    with(
-    headers: {
-   'Authorization' => 'Bearer do-valid-key',
-   'Host' => 'api.digitalocean.com'
-    }).
-    to_return(status: 200, body: '{"account": { "status":"active"}}', headers: {})
-  stub_request(:get, "https://working.discourse.invalid/admin/dashboard.json").
-    with(
-          headers: {
-            'Api-Key' => 'working-discourse-key',
-            'Api-Username' => 'system',
-            'Host' => 'working.discourse.invalid'
-          }).
-    to_return(status: 200, body: '{
-        "updated_at": "2020-10-26T17:21:00.678Z",
-        "version_check": {
-        "installed_version": "2.6.0.beta4",
-        "installed_sha": "abb00c3780987678fbc6f21ab0c8e46ac297ca75",
-        "installed_describe": "v2.6.0.beta4 +56",
-        "git_branch": "tests-passed",
-        "updated_at": "2020-10-26T17:01:08.197Z",
-        "latest_version": "2.6.0.beta4",
-        "critical_updates": false,
-        "missing_versions_count": 0,
-        "stale_data": false
-        }}', headers: {})
-   stub_request(:get, "https://api.digitalocean.com/v2/account").
-     with(
-          headers: {
-         'Authorization' => 'Bearer do-INvalid-key',
-         'Host' => 'api.digitalocean.com'
-          }).
-
-     to_return(status: 404, body: '{"errors":["The requested URL or resource could not be found."],"error_type":"not_found"}', headers: {})
-     # the api:key gets converted to this basic auth authorization
-     # TODO: generate this rrather than hard-code it.
-     stub_request(:get, "https://api.mailgun.net/v3/domains").
-       with(
-          headers: {
-         'Authorization' => 'Basic YXBpOm1nLXZhbGlkLWtleQ==',
-         'Host' => 'api.mailgun.net'
-          }).
-
-       to_return(status: 200, body: "", headers: {})
-     stub_request(:get, "https://api.mailgun.net/v3/domains").
-       with(
+      to_return(status: 200, body: '{"account": { "status":"active"}}', headers: {})
+    stub_request(:get, "https://working.discourse.invalid/admin/dashboard.json").
+      with(
             headers: {
-           'Authorization' => 'Basic YXBpOmludmFsaWQtbWctdmFsaWQta2V5',
-           'Host' => 'api.mailgun.net'
+              'Api-Key' => 'working-discourse-key',
+              'Api-Username' => 'system',
+              'Host' => 'working.discourse.invalid'
             }).
-       to_return(status: 403, body: "", headers: {}) #not sure what the actual error status is
-end
+      to_return(status: 200, body: '{
+          "updated_at": "2020-10-26T17:21:00.678Z",
+          "version_check": {
+          "installed_version": "2.6.0.beta4",
+          "installed_sha": "abb00c3780987678fbc6f21ab0c8e46ac297ca75",
+          "installed_describe": "v2.6.0.beta4 +56",
+          "git_branch": "tests-passed",
+          "updated_at": "2020-10-26T17:01:08.197Z",
+          "latest_version": "2.6.0.beta4",
+          "critical_updates": false,
+          "missing_versions_count": 0,
+          "stale_data": false
+          }}', headers: {})
+    stub_request(:get, "https://api.digitalocean.com/v2/account").
+      with(
+            headers: {
+          'Authorization' => 'Bearer do-INvalid-key',
+          'Host' => 'api.digitalocean.com'
+            }).
+
+      to_return(status: 404, body: '{"errors":["The requested URL or resource could not be found."],"error_type":"not_found"}', headers: {})
+      # the api:key gets converted to this basic auth authorization
+      # TODO: generate this rrather than hard-code it.
+      stub_request(:get, "https://api.mailgun.net/v3/domains").
+        with(
+            headers: {
+          'Authorization' => 'Basic YXBpOm1nLXZhbGlkLWtleQ==',
+          'Host' => 'api.mailgun.net'
+            }).
+
+        to_return(status: 200, body: "", headers: {})
+      stub_request(:get, "https://api.mailgun.net/v3/domains").
+        with(
+              headers: {
+            'Authorization' => 'Basic YXBpOmludmFsaWQtbWctdmFsaWQta2V5',
+            'Host' => 'api.mailgun.net'
+              }).
+        to_return(status: 403, body: "", headers: {}) #not sure what the actual error status is
+  end
 
     it "has a table name" do
       expect(described_class.table_name).to eq ("pfaffmanager_servers")
@@ -135,15 +135,16 @@ end
     end
 
     it 'creates a server if user is added to createServer group' do
-      create_group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
+      create_group = pfaffmanager_create_server_group
       expect { GroupUser.create(group_id: create_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'std'
       expect(GroupUser.find_by(user_id: user.id, group_id: create_group.id)).to eq nil
     end
+
     it 'creates a pro server if user is added to proServer group' do
-      pro_group = Group.find_by_name(SiteSetting.pfaffmanager_pro_server_group)
+      pro_group = pfaffmanager_pro_server_group
       expect { GroupUser.create(group_id: pro_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
@@ -152,7 +153,7 @@ end
     end
 
     it 'creates a ec2 server if user is added to ec2Server group' do
-      ec2_server_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_server_group)
+      ec2_server_group = pfaffmanager_ec2_server_group
       expect { GroupUser.create(group_id: ec2_server_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
@@ -161,7 +162,7 @@ end
     end
 
     it 'creates a ec2 pro server if user is added to ec2Server group' do
-      ec2_pro_server_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_pro_server_group)
+      ec2_pro_server_group = pfaffmanager_ec2_pro_server_group
       expect { GroupUser.create(group_id: ec2_pro_server_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last
@@ -170,7 +171,7 @@ end
     end
 
     it 'creates a LC pro server with LC keys if user is added to Hosted Server group' do
-      pfaffmanager_hosted_server_group = Group.find_by_name(SiteSetting.pfaffmanager_hosted_server_group)
+      pfaffmanager_hosted_server_group
       expect { GroupUser.create(group_id: pfaffmanager_hosted_server_group.id, user_id: user.id) }
         .to change { Pfaffmanager::Server.count }.by(1)
       server = Pfaffmanager::Server.where(user_id: user.id).last

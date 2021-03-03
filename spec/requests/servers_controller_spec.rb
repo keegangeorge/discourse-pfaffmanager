@@ -8,7 +8,7 @@ describe Pfaffmanager::ServersController do
   fab!(:another_user) { Fabricate(:user) }
   fab!(:trust_level_2) { Fabricate(:user, trust_level: TrustLevel[2]) }
   # let!(:pfaffmanager_create_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_create_server_group) }
-  # let!(:pfaffmanager_unlimited_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_unlimited_server_group) }
+  let!(:pfaffmanager_unlimited_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_unlimited_server_group) }
   # let!(:pfaffmanager_server_manager_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_server_manager_group) }
   # let!(:pfaffmanager_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_pro_server_group) }
   # let!(:pfaffmanager_ec2_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_server_group) }
@@ -119,7 +119,7 @@ describe Pfaffmanager::ServersController do
 # end
 
 it 'UnlimitedCreate group can create a server and NOT be removed from group' do
-  group = Group.find_by_name(SiteSetting.pfaffmanager_unlimited_server_group)
+  group = pfaffmanager_unlimited_server_group
   group.add(user)
   sign_in(user)
   params = {}
@@ -146,7 +146,6 @@ it 'Admin can create a server' do
 end
 
 it 'CreateServer fails if not in create group' do
-  #group = Group.find_by_name(SiteSetting.pfaffmanager_create_server_group)
   sign_in(user)
   params = {}
   params['server'] = { user_id: user.id }

@@ -39,7 +39,8 @@ module Pfaffmanager
 
     def get_pub_key
       Rails.logger.warn "\n#{'-' * 40}\nServers controller get_pub_key\n"
-      puts "get_pub_key for #{params[:id]}"
+      puts "get_pub_key for #{params[:slug]}"
+
       server = ::Pfaffmanager::Server.find(params[:id])
       render plain: server.ssh_key_public
     end

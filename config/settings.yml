@@ -43,37 +43,37 @@ plugins:
     default: "NewServer"
     client: false
     hidden: false
-    type: group
+    type: text
   pfaffmanager_pro_server_group:
     default: "ProServer"
     client: false
     hidden: false
-    type: group
+    type: text
   pfaffmanager_ec2_server_group:
     default: "Ec2Server"
     client: false
     hidden: false
-    type: group
+    type: text
   pfaffmanager_ec2_pro_server_group:
     default: "EC2ProServer"
     client: false
     hidden: false
-    type: group
+    type: text
   pfaffmanager_hosted_server_group:
     default: "LCProServer"
     client: false
     hidden: false
-    type: group
+    type: text
   pfaffmanager_unlimited_server_group:
     default: "NoLimit"
     client: false
     hidden: false
-    type: group
+    type: text
   pfaffmanager_server_manager_group:
     default: "ServerManager"
     client: false
     hidden: false
-    type: group
+    type: text
   pfaffmanager_debug_to_log:
     default: false
     client: false

@@ -21,7 +21,7 @@ load File.expand_path('lib/encryptable.rb', __dir__)
 after_initialize do
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
   #SeedFu.fixture_paths << Rails.root.join("plugins", "discourse-pfaffmanager", "db", "fixtures").to_s
-  Pfaffmanager::Server.ensure_pfaffmanager_groups! #unless Rails.env == "test"
+  Pfaffmanager::Server.ensure_pfaffmanager_groups! unless Rails.env == "test"
   SiteSetting.pfaffmanager_api_key ||= ApiKey.create(description: 'pfaffmanager key').key_hash
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
 
@@ -70,14 +70,5 @@ after_initialize do
         gu.destroy
       end
     end
-  end
-  class ::Group < ::ActiveRecord::Base
-    def self.refresh_automatic_groups!(*args)
-      puts "Running pfaffmanager's refresh_automatic_groups!"
-      args = AUTO_GROUPS.keys if args.empty?
-      args.each { |group| refresh_automatic_group!(group) }
-      Pfaffmanager::Server.destroy_pfaffmanager_groups!
-    end
-
   end
 end
