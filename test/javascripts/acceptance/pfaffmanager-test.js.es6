@@ -1,14 +1,12 @@
-import { acceptance, exists } from "discourse/tests/helpers/qunit-helpers";
-import { test } from "qunit";
-import { visit } from "@ember/test-helpers";
+import { acceptance } from "discourse/tests/helpers/qunit-helpers";
 
-acceptance("Pfaffmanager - Index page", function (needs) {
+acceptance("Discourse Pfaffmanager", function (needs) {
   needs.user();
 
-  test("show server list", async function (assert) {
+  test("viewing server page", async (assert) => {
     await visit("/pfaffmanager/servers");
 
-    assert.ok($("body").length, "has a body");
-    assert.ok(exists("div.pfaffmanager-index"), "has pfaffmanager index");
+    assert.ok($(".pfaffmanager-index").length, "has server list");
+    // assert.ok($(".product:first-child a").length, "has a link");
   });
 });
