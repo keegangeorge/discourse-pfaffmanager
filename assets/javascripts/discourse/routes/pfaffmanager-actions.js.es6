@@ -1,9 +1,9 @@
-import DiscourseRoute from 'discourse/routes/discourse';
+import DiscourseRoute from "discourse/routes/discourse";
 
 export default DiscourseRoute.extend({
-  controllerName: 'actions',
+  controllerName: "actions",
 
-  renderTemplate () {
-    this.render('actions');
-  }
+  renderTemplate() {
+    this.render("actions");
+  },
 });

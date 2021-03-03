@@ -1,14 +1,15 @@
-import DiscourseRoute from 'discourse/routes/discourse';
+import DiscourseRoute from "discourse/routes/discourse";
 
 export default DiscourseRoute.extend({
-  activate () {
+  activate() {
     this._super(...arguments);
 
-    this.messageBus.subscribe(`/pfaffmanager-server-status/${self.id}`,
+    this.messageBus.subscribe(
+      `/pfaffmanager-server-status/${self.id}`,
       this.server_message
     );
   },
-  deactivate () {
+  deactivate() {
     this.messageBus.unsubscribe(`/pfaffmanager-server-status/${self.id}`);
-  }
+  },
 });

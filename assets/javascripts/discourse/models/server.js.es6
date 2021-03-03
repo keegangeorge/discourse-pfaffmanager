@@ -1,11 +1,13 @@
-import { ajax } from 'discourse/lib/ajax';
-import { popupAjaxError } from 'discourse/lib/ajax-error';
+import { ajax } from "discourse/lib/ajax";
+import { popupAjaxError } from "discourse/lib/ajax-error";
 import EmberObject from "@ember/object";
 
 const Server = EmberObject.extend();
 
 Server.reopenClass({
-  server_status(model) { return JSON.parse(model);},
+  server_status(model) {
+    return JSON.parse(model);
+  },
   dropletCreate(model) {
     // eslint-disable-next-line no-console
     console.log("dropletCreate in the model j/d/models/server.js.es6");
@@ -22,7 +24,7 @@ Server.reopenClass({
     // eslint-disable-next-line no-console
     console.log(model);
     return ajax(`/pfaffmanager/upgrade/${model.id}.json`, {
-      type: "POST"
+      type: "POST",
     }).catch(popupAjaxError);
   },
   updateServer(model) {
@@ -35,20 +37,20 @@ Server.reopenClass({
       do_api_key: model.do_api_key,
       mg_api_key: model.mg_api_key,
       maxmind_license_key: model.maxmind_license_key,
-      droplet_size: model.droplet_size
+      droplet_size: model.droplet_size,
     };
     // eslint-disable-next-line no-console
     return ajax(`/pfaffmanager/servers/${model.id}`, {
       type: "PUT",
       data: {
-        server
-      }
+        server,
+      },
     }).catch(popupAjaxError);
   },
 
   listServers() {
     return ajax(`/pfaffmanager/servers`, {
-      type: "GET"
+      type: "GET",
     }).catch(popupAjaxError);
   },
 
@@ -56,17 +58,16 @@ Server.reopenClass({
     return ajax(`/pfaffmanager/servers`, {
       type: "POST",
       data: {
-        server
-      }
+        server,
+      },
     }).catch(popupAjaxError);
   },
 
   findServer(serverId) {
     return ajax(`/pfaffmanager/servers/${serverId}`, {
-      type: "GET"
+      type: "GET",
     }).catch(popupAjaxError);
-  }
+  },
 });
 
 export default Server;
-

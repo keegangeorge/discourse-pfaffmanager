@@ -1,13 +1,13 @@
-import DiscourseRoute from 'discourse/routes/discourse';
-import Server from '../models/server';
+import DiscourseRoute from "discourse/routes/discourse";
+import Server from "../models/server";
 
 export default DiscourseRoute.extend({
-  model (params) {
+  model(params) {
     return Server.findServer(params.id);
   },
 
-  setupController (controller, model) {
-    controller.set('server', Server.create(model.server));
+  setupController(controller, model) {
+    controller.set("server", Server.create(model.server));
     controller.subscribe();
-  }
+  },
 });
