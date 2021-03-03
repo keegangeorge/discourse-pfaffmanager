@@ -44,7 +44,9 @@ module Pfaffmanager
     end
 
     def ansible_running
-      !(object.request_status.nil? || /pfaffmanager-playbook (failure|success)/.match?(object.request_status))
+      job_started = !object.request_status.nil?
+      job_completed = /pfaffmanager-playbook (failure|success)/.match?(object.request_status)
+      job_started && !job_completed
     end
 
     def have_mg_api_key
