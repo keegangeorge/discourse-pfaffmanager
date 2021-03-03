@@ -306,10 +306,10 @@ it 'can get an ssh pub key by server id' do
   expect(response.body).to include "ssh-rsa"
 end
 
-skip 'can get an ssh pub key by server hostname' do
-  get "/pfaffmanager/ssh-key/#{new_server.hostname}"
-  expect(response.body).to include "ssh-rsa"
-end
+# skip 'can get an ssh pub key by server hostname' do
+#   get "/pfaffmanager/ssh-key/#{new_server.hostname}"
+#   expect(response.body).to include "ssh-rsa"
+# end
 
 it 'allows status to be updated via update status route' do
   sign_in(admin)
