@@ -44,8 +44,7 @@ module Pfaffmanager
     end
 
     def ansible_running
-      puts "ansible running test"
-      !/pfaffmanager-playbook (failure|success)/.match?(object.request_status)
+      !(object.request_status.nil? || /pfaffmanager-playbook (failure|success)/.match?(object.request_status))
     end
 
     def have_mg_api_key
