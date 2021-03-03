@@ -40,7 +40,7 @@ plugins:
     client: false
     hidden: false
   pfaffmanager_create_server_group:
-    default: "NewServer"
+    default: "CreateServer"
     client: false
     hidden: false
     type: text
@@ -65,7 +65,7 @@ plugins:
     hidden: false
     type: text
   pfaffmanager_unlimited_server_group:
-    default: "NoLimit"
+    default: "UnlimitedServers"
     client: false
     hidden: false
     type: text
