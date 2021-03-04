@@ -147,12 +147,14 @@ module Pfaffmanager
 
       rescue => e
         Rails.logger.warn "cannot update server status: #{e[0..200]}"
+        puts "cannot update server status: #{e[0..200]}"
       end
     end
 
     def install
-      Rails.logger.warn "server.install for #{id}"
-      server = Pfaffmanager::Server.find_by(id: id)
+      puts "Doing install for #{self.id}--#{self.hostname}"
+      server = self
+      Rails.logger.warn "server.install for #{self.id}"
       Rails.logger.warn "Got server #{server.hostname}. Type: #{server.install_type} "
       if server && (DO_INSTALL_TYPES.include? server.install_type)
         Rails.logger.warn "queueing create for server #{server.hostname}"
@@ -173,6 +175,7 @@ module Pfaffmanager
           Rails.logger.warn "logger fake install!! #{hostname}"
           puts "puts fake install!! #{hostname}"
           self.request_status = "fake install complete!"
+          self.request = "Create Fake Droplet"
           self.save
           results = "ok"
         else
@@ -183,7 +186,9 @@ module Pfaffmanager
           Jobs.enqueue(:create_droplet, server_id: id)
           server.log_new_request("Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
           # Rails.logger.warn "results #{results}"
-          results
+          self.request = "Create Droplet"
+          self.save
+          results = "ok"
         end
       rescue
         Rails.logger.warn("rescue in queue_create_droplet")
@@ -234,7 +239,7 @@ module Pfaffmanager
       self.last_action = "Process rebuild/upgrade"
       success = false
       begin
-        puts "queue_upgrade about to save"
+        puts "server model queue_upgrade about to save"
         self.save
         puts "queue_upgrade save complete"
         Jobs.enqueue(:server_upgrade, server_id: id)

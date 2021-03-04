@@ -148,20 +148,17 @@ end
 it 'CreateServer fails if not in create group' do
   sign_in(user)
   params = {}
-  params['server'] = { user_id: user.id }
   post '/pfaffmanager/servers.json', params: params
   expect(response.status).to eq(200)
-  server = response.parsed_body['server']
-  expect(server["id"]).to eq nil
+  # expect(response.parsed_body).to eq
 end
 
 it 'will upgrade for server owner' do
   sign_in(user)
     path = "/pfaffmanager/upgrade/#{installed_server.id}.json"
     post path
-    expect(user.id).to eq(installed_server.user_id)
     expect(response.status).to eq(200)
-    expect(response.parsed_body['success']).to eq "OK"
+    expect(response.parsed_body['server']["hostname"]).to eq installed_server.hostname
     expect { installed_server.reload }.to change { installed_server.request_status }
     expect(response.status).to eq(200)
 end
@@ -174,7 +171,7 @@ end
     post path
     expect(admin.id).not_to eq(installed_server.user_id)
     expect(response.status).to eq(200)
-    expect(response.parsed_body['success']).to eq "OK"
+    expect(response.parsed_body['server']["hostname"]).to eq installed_server.hostname
     expect { installed_server.reload }.to change { installed_server.request_status }
   end
 
@@ -182,8 +179,7 @@ it 'refuses to upgrade for user who does not own server' do
   sign_in(another_user)
   post "/pfaffmanager/upgrade/#{installed_server.id}.json"
   expect(another_user.id).not_to eq(installed_server.user_id)
-  expect(response.status).to eq(403)
-  expect(response.parsed_body['failed']).to eq "FAILED"
+  expect(response.status).to eq(404)
 end
 
 it 'will do digital ocean install for server owner' do
@@ -193,7 +189,7 @@ it 'will do digital ocean install for server owner' do
   path = "/pfaffmanager/install/#{new_server.id}.json"
   put path
   expect(response.status).to eq(200)
-  expect(response.parsed_body['success']).to eq "OK"
+  expect(response.parsed_body['server']["hostname"]).to eq new_server.hostname
 end
 
 it 'will not do digital ocean install if not a DO install type' do
@@ -206,7 +202,7 @@ it 'will not do digital ocean install if not a DO install type' do
   expect(response.parsed_body['failed']).to eq "FAILED"
 end
 
-it 'will digital ocean install for an admin' do
+it 'will do digital ocean install for an admin' do
   new_server.install_type = 'pro'
   new_server.save
   sign_in(admin)
@@ -214,7 +210,7 @@ it 'will digital ocean install for an admin' do
   put path
   expect(admin.id).not_to eq(new_server.user_id)
   expect(response.status).to eq(200)
-  expect(response.parsed_body['success']).to eq "OK"
+  expect(response.parsed_body['server']["hostname"]).to eq new_server.hostname
 end
 
 it 'refuses to install for user who does not own server' do
@@ -223,8 +219,7 @@ it 'refuses to install for user who does not own server' do
   sign_in(another_user)
   put "/pfaffmanager/install/#{new_server.id}.json"
   expect(another_user.id).not_to eq(new_server.user_id)
-  expect(response.status).to eq(403)
-  expect(response.parsed_body['failed']).to eq "FAILED"
+  expect(response.status).to eq(404)
 end
 
 # TODO: add this back

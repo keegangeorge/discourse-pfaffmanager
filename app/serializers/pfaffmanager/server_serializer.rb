@@ -19,7 +19,7 @@ module Pfaffmanager
       :request_status,
       :request_status_updated_at,
       :ansible_running,
-      :active,
+      :active, # we have an active VM with Discourse (mostly?) installed -- should probably be renamed have_vm
       :last_action,
       :smtp_host,
       :smtp_notification_email,
@@ -35,8 +35,7 @@ module Pfaffmanager
     :have_vm
 
     def have_vm
-      object.request.present?
-
+      object.active.present?
     end
 
     def have_do_api_key
