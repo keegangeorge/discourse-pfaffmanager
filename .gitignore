@@ -7,3 +7,4 @@ node_modules/
 .bundle/
 auto_generated
 Gemfile.lock
+coverage
