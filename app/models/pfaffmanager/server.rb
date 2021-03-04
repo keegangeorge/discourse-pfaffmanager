@@ -158,6 +158,8 @@ module Pfaffmanager
       Rails.logger.warn "Got server #{server.hostname}. Type: #{server.install_type} "
       if server && (DO_INSTALL_TYPES.include? server.install_type)
         Rails.logger.warn "queueing create for server #{server.hostname}"
+        self.request = "Creating Digital Ocean Droplet for new installation"
+        self.save
         queue_create_droplet
       else
         # we don't know what to do!
@@ -215,6 +217,8 @@ module Pfaffmanager
         Rails.logger.warn "NOT creating!! #{instructions.join(' ')}"
         self.request_status = 'fake install'
         self.save
+        sleep 10
+        self.request_status = 'pfaffmanager-playbook success'
       else
         begin
           Rails.logger.warn "going to execute #{instructions.join(' ')}"
