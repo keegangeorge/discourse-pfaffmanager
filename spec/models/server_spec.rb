@@ -134,6 +134,11 @@ module Pfaffmanager
         .and change(discourse_server, :installed_version)
     end
 
+    it 'sets request when an install is queued' do
+      discourse_server.queue_create_droplet
+      expect(discourse_server.last_action).to eq "Create Fake Droplet"
+    end
+
     it 'creates a server if user is added to createServer group' do
       create_group = pfaffmanager_create_server_group
       expect { GroupUser.create(group_id: create_group.id, user_id: user.id) }

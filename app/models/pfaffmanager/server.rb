@@ -158,7 +158,7 @@ module Pfaffmanager
       Rails.logger.warn "Got server #{server.hostname}. Type: #{server.install_type} "
       if server && (DO_INSTALL_TYPES.include? server.install_type)
         Rails.logger.warn "queueing create for server #{server.hostname}"
-        self.request = "Creating Digital Ocean Droplet for new installation"
+        self.last_action = "Creating Digital Ocean Droplet for new installation"
         self.save
         queue_create_droplet
       else
@@ -175,10 +175,13 @@ module Pfaffmanager
       begin
         if SiteSetting.pfaffmanager_do_install == '/bin/true'
           Rails.logger.warn "logger fake install!! #{hostname}"
-          puts "puts fake install!! #{hostname}"
-          self.request_status = "fake install complete!"
-          self.request = "Create Fake Droplet"
-          self.save
+          puts "puts fake install!! #{self.hostname}"
+          self.log_new_request("Fake Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
+          self.request_status = "pfaffmanager-playbook fake install complete! success"
+          self.last_action = "Create Fake Droplet"
+          save_result = self.save!
+          puts "Save result--> #{save_result} -- #{self.request}"
+          puts "res: #{save_result ? 'yes' : 'no'}"
           results = "ok"
         else
           puts "puts real install!! #{hostname}"
@@ -186,14 +189,16 @@ module Pfaffmanager
           Rails.logger.warn "job created for #{id}"
           puts "gonna enqueueue"
           Jobs.enqueue(:create_droplet, server_id: id)
-          server.log_new_request("Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
+          self.log_new_request("Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
           # Rails.logger.warn "results #{results}"
-          self.request = "Create Droplet"
+          self.last_action = "Queued Create Droplet"
           self.save
           results = "ok"
         end
-      rescue
-        Rails.logger.warn("rescue in queue_create_droplet")
+      rescue => e
+        STDERR.puts e.message
+        STDERR.puts e.backtrace.join("\n")
+        Rails.logger.error("rescue in queue_create_droplet")
       end
     end
 
@@ -215,10 +220,9 @@ module Pfaffmanager
         do_api_key == 'testing' ||
         mg_api_key == 'testing'
         Rails.logger.warn "NOT creating!! #{instructions.join(' ')}"
-        self.request_status = 'fake install'
+        self.last_action = 'fake install'
+        self.request_status = 'fake install started'
         self.save
-        sleep 10
-        self.request_status = 'pfaffmanager-playbook success'
       else
         begin
           Rails.logger.warn "going to execute #{instructions.join(' ')}"
@@ -291,7 +295,7 @@ module Pfaffmanager
       end
     end
 
-    def log_new_request(request_status)
+    def log_new_request(request_status, last_action = "")
       puts "log_new_request started for #{request_status}"
       self.request_status_updated_at = Time.now
       self.request_status = request_status
@@ -299,6 +303,9 @@ module Pfaffmanager
         request_status: self.request_status,
         request_status_updated_at: self.request_status_updated_at
       }
+
+      data[:last_action] = last_action if last_action.present?
+
       puts "log new request about to save"
       save_result = self.save
       puts "log new request about to post to message bus"
@@ -359,7 +366,7 @@ module Pfaffmanager
         request_status: self.request_status,
         request_status_updated_at: Time.now
       }
-      data[:ansible_running] = !/pfaffmanager-playbook (failure|success)/.match?(self.request_status)
+      data[:ansible_running] = !/pfaffmanager-playbook.* (failure|success)/.match?(self.request_status)
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
       # to allow real-time access to all servers on the site
       MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])

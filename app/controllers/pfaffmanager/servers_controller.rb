@@ -20,9 +20,6 @@ module Pfaffmanager
 
     def show
       Rails.logger.warn "\n\n\n\nServer controller SHOW for user #{current_user.username} in the house.\n\n\n\n"
-      # TODO: Allow admin to see server of other users
-      #render_json_dump({ server: server, except: [:ssh_key_private ] })
-      # render_json_dump({ server: clean_server })
       render json: @server, serializer: ServerSerializer
     end
 
@@ -114,6 +111,8 @@ module Pfaffmanager
           status = @server.queue_create_droplet
           puts "status is #{status}"
           Rails.logger.warn("logger status #{status}")
+          puts "Server: #{@server[:hostname]}"
+          puts "last action: #{@server[:last_action]}"
           render json: @server, serializer: ServerSerializer
         end
       rescue

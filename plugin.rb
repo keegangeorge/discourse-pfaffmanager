@@ -22,7 +22,7 @@ after_initialize do
   load File.expand_path('../app/controllers/server_controller.rb', __FILE__)
   #SeedFu.fixture_paths << Rails.root.join("plugins", "discourse-pfaffmanager", "db", "fixtures").to_s
   Pfaffmanager::Server.ensure_pfaffmanager_groups! unless Rails.env == "test"
-  SiteSetting.pfaffmanager_api_key = ApiKey.create(description: 'pfaffmanager key').key_hash unless SiteSetting.pfaffmanager_api_key.present?
+  SiteSetting.pfaffmanager_api_key = ApiKey.create(description: "pfaffmanager key #{Time.now}").key unless SiteSetting.pfaffmanager_api_key.present?
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
 
   add_model_callback(GroupUser, :after_save) do

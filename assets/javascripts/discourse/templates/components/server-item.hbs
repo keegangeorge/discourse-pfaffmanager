@@ -1,42 +1,46 @@
- <h3><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
+<div class="pfaffmanager">
+
+  <h3 class="server-heading"><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
 
   <form>
 
-    <div class="pfaffmanager-group server-status">
-      {{#if server.installed_version }}
+   {{#if server.installed_version }}
+      <div class="installed-server-status">
         {{!-- maxmind_license_key not implemented --}}
         <br>Created&nbsp; {{~format-date server.created_at format="medium" }}
         <br>Last update&nbsp; {{~format-date server.updated_at format="medium" }}
         <br>{{i18n "pfaffmanager.server.installed_version" }}:&nbsp; {{server.installed_version }}
         <br>{{i18n "pfaffmanager.server.installed_sha" }}:&nbsp; <a href="https://github.com/discourse/discourse/commit/{{server.installed_sha}}">{{server.installed_sha}}</a>
         <br>{{i18n "pfaffmanager.server.status_retrieved" }}&nbsp; {{format-date server.server_status_updated_at format="medium" }}
-      {{else}}
-        <span class="version-not-available">Discourse version information is not yet available</span>
-      {{/if}}
-    </div>
+      </div>
+    {{/if}}
+
     {{#if server.request_status}}
-      <div class="pfaffmanager-server-status">
-        <span class="pfaffmanager-status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.request}}</b></span>
+      <div class="request-status">
+        <span class="status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
         <br>{{i18n "pfaffmanager.server.request_status" }}:&nbsp; {{server.request_status }}
               ({{format-date server.request_status_updated_at format="medium" }})
         <br>{{i18n "pfaffmanager.server.request_result" }}:&nbsp; {{server.request_result }}
       </div>
-    {{else}}
-      <div class="pfaffmanager-group server-edit">
-        <span class="pfaffmanager-group server-status-header">{{i18n "pfaffmanager.server.status_header" }}</span>
+    {{/if}}
 
-        <div class="pfaffmanager-group pref-manager-hostname">
-          <label class="control-label">{{i18n "pfaffmanager.hostname"}}</label>
-          <div class="pfaffmanager-hostname">
+
+    {{#if needVM}}
+      <div class="server-edit">
+        <span class="server-status-header">{{i18n "pfaffmanager.server.status_header" }}</span>
+
+        <div class="hostname">
+          <label>{{i18n "pfaffmanager.hostname"}}</label>
+          <div class="hostname-input">
             {{input type="text" autocomplete=off value=server.hostname class="input-large"}}
             {{#if hostnameValid}}<span class="hostname-message">Must be valid and saved</span>{{/if}}
           </div>
         </div>
         {{#if canCreateVM}}
-          <div class="pfaffmanager-group warning">Can Create a VM</div>
+          <div class="warning">Can Create a VM</div>
         {{else}}
-          <div class="pfaffmanager-group warning">Digital Ocean API Key is required for droplet creation</div>
-          <div class="pfaffmanager-group pfaffmanager-do-api-key">
+          <div class="warning">Digital Ocean API Key is required for droplet creation</div>
+          <div class="pfaffmanager-do-api-key">
             <label class="control-label">{{i18n "pfaffmanager.do_api_key"}}</label>
             <div class="do-api-key">
               {{input type="text" autocomplete=off value=server.do_api_key class="input-large"}}
@@ -64,19 +68,19 @@
           </div>
         {{/if}}
         {{#if server.have_mg_api_key}}
-          <div class="pfaffmanager-group warning">Ready to configure Mailgun</div>
+          <div class="warning">Ready to configure Mailgun</div>
         {{else}}
-          <div class="pfaffmanager-group warning">Mailgun API Key is required for installation</div>
-          <div class="pfaffmanager-group pfaffmanager-mg-api-key">
+          <div class="warning">Mailgun API Key is required for installation</div>
+          <div class="pfaffmanager-mg-api-key">
             <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
             <div class="mg-api-key">
               {{input type="text" value=server.mg_api_key class="input-large"}}
             </div>
           </div>
         {{/if}}
-        {{#if false}}
+        {{#if canUseMaxmind}}
           {{!-- maxmind_license_key not implemented --}}
-          <div class="pfaffmanager-group pfaffmanager-maxmind-license-key">
+          <div class="pfaffmanager-maxmind-license-key">
             <label class="control-label">{{i18n "pfaffmanager.server.maxmind_license_key"}}</label>
             <div class="maxmind-license-key">
               {{input type="password" value=server.maxmind_license_key class="input-large"}}
@@ -85,6 +89,7 @@
         {{/if}}
       </div>
     {{/if}}
+
     <div class="pull-right">
       {{conditional-loading-spinner condition=loading size="small"}}
       {{#if haveVM}}
@@ -92,12 +97,13 @@
           label="pfaffmanager.server.run_upgrade"
           action="upgradeServer"
           icon="check"
-          class="btn btn-primary"}}
+          class="btn btn-primary"
+          disabled=upgradeServerDisabled}}
       {{ else }}
         {{!-- need stuff to create/claim VM --}}
         {{#if isDropletInstallType}}
-          {{#if createDropletDisabled}}
-            {{updateReason}}
+          {{#if upgradeServerDisabled}}
+            <span class="button-disabled-reason">{{updateReason}}</span>
             {{d-button
           label="pfaffmanager.server.update"
           action=(action "updateServer")
@@ -110,7 +116,7 @@
                 action=(action "dropletCreate")
                 icon="plus"
                 class="btn btn-primary do-create"
-                disabled=updateDisabledServer
+                disabled=createDropletDisabled
                 }}
             </div>
           {{/if}}
@@ -119,4 +125,9 @@
         {{/if}}
       {{/if}}
     </div>
+
+
   </form>
+
+
+</div>

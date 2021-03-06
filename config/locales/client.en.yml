@@ -46,7 +46,7 @@ en:
         request_status: "Request Activity"
         request_result: "Request Status"
         navigation_link: "Manage Servers"
-        request_section_header: "Last Job Run"
+        request_section_header: "Last Action"
         x_servers:
           one: 'Just the one server...'
           other: 'Have %{count} servers!'

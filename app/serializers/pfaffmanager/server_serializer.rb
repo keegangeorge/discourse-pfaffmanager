@@ -44,7 +44,7 @@ module Pfaffmanager
 
     def ansible_running
       job_started = !object.request_status.nil?
-      job_completed = /pfaffmanager-playbook (failure|success)/.match?(object.request_status)
+      job_completed = /pfaffmanager-playbook.*(failure|success)/.match?(object.request_status)
       job_started && !job_completed
     end
 
