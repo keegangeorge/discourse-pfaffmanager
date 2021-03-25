@@ -147,13 +147,16 @@ export default Component.extend({
         console.log("this is the result");
         // eslint-disable-next-line no-console
         console.log(result);
+        // eslint-disable-next-line no-console
         console.log("the last action is");
+        // eslint-disable-next-line no-console
         console.log(result.server.last_action);
         // eslint-disable-next-line no-console
         console.log("this is the server result");
         // eslint-disable-next-line no-console
         console.log(result.server);
         this.set("server", result.server);
+        // eslint-disable-next-line no-console
         console.log(this);
 
         if (result.errors) {
