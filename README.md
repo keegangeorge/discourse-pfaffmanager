@@ -2,6 +2,9 @@
 
 Pfaffmanager is a plugin for a proof of concept for adding a model.
 
+
+It might do some other stuff.
+
 ## Installation
 
 Follow [Install a Plugin](https://meta.discourse.org/t/install-a-plugin/19157)
