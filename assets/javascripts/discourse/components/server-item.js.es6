@@ -22,6 +22,10 @@ export default Component.extend({
   haveVM(status) {
     return status;
   },
+  @discourseComputed("server.have_vm")
+  needVM(status) {
+    return !status;
+  },
   @discourseComputed("server.install_type", "server.do_install_types")
   isDropletInstallType(installType, doInstallTypes) {
     // eslint-disable-next-line no-console
@@ -126,6 +130,10 @@ export default Component.extend({
     //this.set("hostnameValid", ("hostname".match(/unconfigured/g)) ? false : true );
 
     return loading || ansibleRunning;
+  },
+
+  markDirty() {
+    this.set("dirty", true);
   },
   actions: {
     dropletCreate() {
