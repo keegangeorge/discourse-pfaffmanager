@@ -32,7 +32,7 @@
         <div class="hostname">
           <label>{{i18n "pfaffmanager.hostname"}}</label>
           <div class="hostname-input">
-            {{input type="text" autocomplete=off value=server.hostname class="input-large"}}
+            {{input type="text"  focus-out=(action "updateServer") autocomplete=off value=server.hostname class="input-large"}}
             {{#if hostnameValid}}<span class="hostname-message">Must be valid and saved</span>{{/if}}
           </div>
         </div>
@@ -43,7 +43,10 @@
           <div class="pfaffmanager-do-api-key">
             <label class="control-label">{{i18n "pfaffmanager.do_api_key"}}</label>
             <div class="do-api-key">
-              {{input type="text" autocomplete=off value=server.do_api_key class="input-large"}}
+              {{input type="text" autocomplete=off 
+                value=server.do_api_key 
+                class="input-large"
+                focus-out=(action "updateServer")}}
             </div>
           </div>
         {{/if}}
@@ -58,7 +61,7 @@
                 valueProperty="value"
                 content=server.available_droplet_sizes
                 class="droplet-size"
-                onChange=(action (mut server.droplet_size))
+                onChange=(action "updateServer")
                 options=(hash
                   filterable=true
                   none="pfaffmanager.server.droplet_size.none"
@@ -74,7 +77,7 @@
           <div class="pfaffmanager-mg-api-key">
             <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
             <div class="mg-api-key">
-              {{input type="text" value=server.mg_api_key class="input-large"}}
+              {{input type="text"  focus-out=(action "updateServer") value=server.mg_api_key class="input-large"}}
             </div>
           </div>
         {{/if}}
