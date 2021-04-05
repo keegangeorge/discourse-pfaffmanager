@@ -85,7 +85,10 @@ export default Component.extend({
       haveMgApiKey &&
       haveDoApiKey
     ) {
-      this.set("updateReason", "createDropletDisabled--Save hostname to continue");
+      this.set(
+        "updateReason",
+        "createDropletDisabled--Save hostname to continue"
+      );
     } else {
       this.set(
         "updateReason",
@@ -104,13 +107,8 @@ export default Component.extend({
     );
   },
 
-  @discourseComputed(
-    "server.ansible_running",
-    "loading"
-  )
-  upgradeServerDisabled(
-    ansibleRunning, loading,
-  ) {
+  @discourseComputed("server.ansible_running", "loading")
+  upgradeServerDisabled(ansibleRunning, loading) {
     // eslint-disable-next-line no-console
     console.log("server-item.updateServerDisabled");
     // eslint-disable-next-line no-console
@@ -127,7 +125,7 @@ export default Component.extend({
     // CONFUSED: this causes hostnameValid to get modified twice on render. Why?
     //this.set("hostnameValid", ("hostname".match(/unconfigured/g)) ? false : true );
 
-    return (loading || ansibleRunning);
+    return loading || ansibleRunning;
   },
   actions: {
     dropletCreate() {
