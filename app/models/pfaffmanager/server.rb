@@ -132,6 +132,7 @@ module Pfaffmanager
           self.server_status_updated_at = Time.now
           version_check = JSON.parse(result.body)['version_check']
           self.installed_version = version_check['installed_version']
+          self.active = true
           self.installed_sha = version_check['installed_sha']
           self.git_branch = version_check['git_branch']
           data = {
