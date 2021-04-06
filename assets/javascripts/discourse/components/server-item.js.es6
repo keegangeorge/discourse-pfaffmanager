@@ -79,7 +79,7 @@ export default Component.extend({
       originalHostname ? originalHostname : hostname
     );
     // eslint-disable-next-line no-console
-    console.log("server-item.createDropletDisabled: hostname");
+    console.log("server-item.createDropletDisabled: $(hostname)");
     // eslint-disable-next-line no-console
     console.log(hostname);
     // console.log(originalHostname);
@@ -198,7 +198,6 @@ export default Component.extend({
         })
         .finally(() => this.set("loading", false));
     },
-
     updateServer() {
       this.set("loading", true);
       // see update in j/d/models/server.js.es6
@@ -219,6 +218,35 @@ export default Component.extend({
           }
         })
         .finally(() => this.set("loading", false));
+    },
+    updateDoApiKey() {
+      console.log("updateDoApiKey,..,.starting");
+      this.set("loading", true);
+      // see update in j/d/models/server.js.es6
+      Server.updateServer(this.server)
+        .then((result) => {
+          if (result.errors) {
+            // eslint-disable-next-line no-console
+            console.log("do api key Errors: ", result.errors);
+          } else if (result.success) {
+            // eslint-disable-next-line no-console
+            console.log("updateDoApiKey.success");
+            // eslint-disable-next-line no-console
+            console.log(result);
+            console.log("setttttttting server");
+            this.set("server.have_do_api_key", true);
+            //this.set("server", result.server);
+            // eslint-disable-next-line no-console
+            console.log("updateDoApiKey complete");
+            //2b02cfc99a497a11276505312fe446004e09ba080e226537e23077911d5ef830
+          }
+        })
+        .finally(() => {
+          console.log("do api key finally");
+          console.log(this);
+
+          this.set("loading", false);
+        });
     },
   },
 });

@@ -17,7 +17,7 @@ module Pfaffmanager
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_create :assert_has_ssh_keys
     #after_save :publish_status_update
-
+    
     SMTP_CREDENTIALS = 'smtp_credentials'
     LATEST_INVENTORY = 'latest_inventory'
     CUSTOM_PLUGINS = 'custom_plugins'
@@ -360,11 +360,14 @@ module Pfaffmanager
 
     def publish_status_update
       Rails.logger.warn "server.publish_status_update"
+      Rails.logger.warn "key: #{!self.encrypted_do_api_key.nil?}"
       data = {
         request: self.request,
         request_created_at: self.request_created_at,
         request_status: self.request_status,
-        request_status_updated_at: Time.now
+        request_status_updated_at: Time.now,
+        have_do_api_key: !self.encrypted_do_api_key.nil?,
+        have_mg_api_key: !self.encrypted_mg_api_key.nil?
       }
       data[:ansible_running] = !/pfaffmanager-playbook.* (failure|success)/.match?(self.request_status)
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]

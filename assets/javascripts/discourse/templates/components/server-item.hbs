@@ -37,19 +37,33 @@
           </div>
         </div>
         {{#if canCreateVM}}
-          <div class="warning">Can Create a VM</div>
+          <div class="ready">Have valid Digital Ocean Access Key</div>
         {{else}}
-          <div class="warning">Digital Ocean API Key is required for droplet creation</div>
           <div class="pfaffmanager-do-api-key">
             <label class="control-label">{{i18n "pfaffmanager.do_api_key"}}</label>
             <div class="do-api-key">
               {{input type="text" autocomplete=off 
                 value=server.do_api_key 
                 class="input-large"
-                focus-out=(action "updateServer")}}
+                focus-out=(action "updateDoApiKey")}}
+          <span class="warning">Missing Digital Ocean API Key is required for installation on new droplet</span>
+            </div>
+            
+          </div>
+        {{/if}}
+
+        {{#if server.have_mg_api_key}}
+          <div class="ready">Have Valid Mailgun API Key</div>
+        {{else}}
+          <div class="pfaffmanager-mg-api-key">
+            <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
+            <div class="mg-api-key">
+              {{input type="text"  focus-out=(action "updateServer") value=server.mg_api_key class="input-large"}}
+            <span class="warning">Missing Mailgun API Key is required for installation</span>
             </div>
           </div>
         {{/if}}
+
         {{#if isDropletInstallType}}
 
           <div>
@@ -68,17 +82,6 @@
                 )
               }}
               </div>
-          </div>
-        {{/if}}
-        {{#if server.have_mg_api_key}}
-          <div class="warning">Ready to configure Mailgun</div>
-        {{else}}
-          <div class="warning">Mailgun API Key is required for installation</div>
-          <div class="pfaffmanager-mg-api-key">
-            <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
-            <div class="mg-api-key">
-              {{input type="text"  focus-out=(action "updateServer") value=server.mg_api_key class="input-large"}}
-            </div>
           </div>
         {{/if}}
         {{#if canUseMaxmind}}
