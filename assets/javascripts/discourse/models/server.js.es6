@@ -30,7 +30,6 @@ Server.reopenClass({
   updateServer(model) {
     // eslint-disable-next-line no-console
     console.log("update in j/d/models/server.js.es6");
-    console.log(model);
     // eslint-disable-next-line no-console
     let server = {
       user_id: model.user_id,
