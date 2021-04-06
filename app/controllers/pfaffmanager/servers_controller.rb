@@ -192,6 +192,8 @@ module Pfaffmanager
         Rails.logger.warn "server controller update about to save R: #{@server.request} with #{@server.droplet_size}"
         puts "server controller update about to save R: #{@server.request} with #{@server.droplet_size}"
         @server.save
+        @server.reload
+        puts "Server saved!!! do: #{@server.encrypted_do_api_key.nil?}, mg: #{@server.encrypted_mg_api_key.nil?}"
         data = {
           have_do_api_key: !@server.encrypted_do_api_key.nil?,
           have_mg_api_key: !@server.encrypted_mg_api_key.nil?

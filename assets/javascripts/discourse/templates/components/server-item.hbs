@@ -45,8 +45,8 @@
               {{input type="text" autocomplete=off 
                 value=server.do_api_key 
                 class="input-large"
-                focus-out=(action "updateDoApiKey")}}
-          <span class="warning">Missing Digital Ocean API Key is required for installation on new droplet</span>
+                focus-out=(action "updateServer")}}
+          <span class="warning">Digital Ocean API Key is required for installation on new droplet</span>
             </div>
             
           </div>
@@ -59,7 +59,7 @@
             <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
             <div class="mg-api-key">
               {{input type="text"  focus-out=(action "updateServer") value=server.mg_api_key class="input-large"}}
-            <span class="warning">Missing Mailgun API Key is required for installation</span>
+            <span class="warning">Mailgun API Key is required for installation</span>
             </div>
           </div>
         {{/if}}

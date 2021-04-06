@@ -366,8 +366,6 @@ module Pfaffmanager
         request_created_at: self.request_created_at,
         request_status: self.request_status,
         request_status_updated_at: Time.now,
-        have_do_api_key: !self.encrypted_do_api_key.nil?,
-        have_mg_api_key: !self.encrypted_mg_api_key.nil?
       }
       data[:ansible_running] = !/pfaffmanager-playbook.* (failure|success)/.match?(self.request_status)
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
