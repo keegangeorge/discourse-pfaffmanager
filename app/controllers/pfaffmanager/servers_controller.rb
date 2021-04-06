@@ -198,7 +198,7 @@ module Pfaffmanager
         data = {
           have_do_api_key: !@server.encrypted_do_api_key.nil?,
           have_mg_api_key: !@server.encrypted_mg_api_key.nil?
-        }        
+        }
         @server.publish_update(data)
 
         if @server.errors.present?

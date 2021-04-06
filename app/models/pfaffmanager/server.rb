@@ -17,7 +17,6 @@ module Pfaffmanager
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_create :assert_has_ssh_keys
     #after_save :publish_status_update
-    
     SMTP_CREDENTIALS = 'smtp_credentials'
     LATEST_INVENTORY = 'latest_inventory'
     CUSTOM_PLUGINS = 'custom_plugins'
