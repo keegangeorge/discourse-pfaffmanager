@@ -144,7 +144,6 @@ export default Component.extend({
     },
     updateDropletSize(value) {
       this.set("loading", true);
-      console.log("update droplet!" + value);
       this.set("server.droplet_size", value);
       Server.updateServer(this.server)
         .then((result) => {
