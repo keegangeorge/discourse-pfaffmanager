@@ -43,10 +43,10 @@ en:
         maxmind_license_key: 'Maxmind License Key'
         request: "Enter 1 to start rebuild"
         rebuild: "Rebuild Server"
-        request_status: "Request Activity"
-        request_result: "Request Status"
+        request_status: "Current Operation"
+        request_result: "Current Status"
         navigation_link: "Manage Servers"
-        request_section_header: "Last Action"
+        request_section_header: "Last Process Initiated"
         x_servers:
           one: 'Just the one server...'
           other: 'Have %{count} servers!'

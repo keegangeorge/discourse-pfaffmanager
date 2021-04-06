@@ -18,7 +18,6 @@ module Pfaffmanager
       :request_result,
       :request_status,
       :request_status_updated_at,
-      :ansible_running,
       :active, # we have an active VM with Discourse (mostly?) installed -- should probably be renamed have_vm
       :last_action,
       :smtp_host,
@@ -42,11 +41,11 @@ module Pfaffmanager
       object.encrypted_do_api_key.present?
     end
 
-    def ansible_running
-      job_started = !object.request_status.nil?
-      job_completed = /pfaffmanager-playbook.*(failure|success)/.match?(object.request_status)
-      job_started && !job_completed
-    end
+    # def ansible_running
+    #   job_started = !object.request_status.nil?
+    #   job_completed = /pfaffmanager-playbook.*(failure|success)/.match?(object.request_status)
+    #   job_started && !job_completed
+    # end
 
     def have_mg_api_key
       object.encrypted_mg_api_key.present?

@@ -121,8 +121,10 @@ module Pfaffmanager
     end
 
     def update_server_status
-      puts "server.update_server_status"
+      puts "server.update_server_status for #{request_status}"
       begin
+        self.request_result = /fail/.match?(self.request_status) ?  "Failure" : "OK"
+        puts "request_result: #{self.request_result}"
         if encrypted_discourse_api_key.present? && !discourse_api_key.blank?
           headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
@@ -136,10 +138,12 @@ module Pfaffmanager
           self.installed_sha = version_check['installed_sha']
           self.git_branch = version_check['git_branch']
           data = {
+            active: self.active,
             installed_version: self.installed_version,
             installed_sha: self.installed_sha,
             server_status_json: self.server_status_json,
             server_status_updated_at: self.server_status_updated_at,
+            request_result: self.request_result,
             git_branch: self.git_branch
           }
           publish_update(data)
@@ -179,6 +183,8 @@ module Pfaffmanager
           self.log_new_request("Fake Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
           self.request_status = "pfaffmanager-playbook fake install complete! success"
           self.last_action = "Create Fake Droplet"
+          self.active = true
+          publish_status_update
           save_result = self.save!
           puts "Save result--> #{save_result} -- #{self.request}"
           puts "res: #{save_result ? 'yes' : 'no'}"
@@ -301,7 +307,8 @@ module Pfaffmanager
       self.request_status = request_status
       data = {
         request_status: self.request_status,
-        request_status_updated_at: self.request_status_updated_at
+        request_status_updated_at: self.request_status_updated_at,
+        active: self.active
       }
 
       data[:last_action] = last_action if last_action.present?
@@ -366,8 +373,9 @@ module Pfaffmanager
         request_created_at: self.request_created_at,
         request_status: self.request_status,
         request_status_updated_at: Time.now,
+        request_result: self.request_result,
+        active: self.active
       }
-      data[:ansible_running] = !/pfaffmanager-playbook.* (failure|success)/.match?(self.request_status)
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
       # to allow real-time access to all servers on the site
       MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])

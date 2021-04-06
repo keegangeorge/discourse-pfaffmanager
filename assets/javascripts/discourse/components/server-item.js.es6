@@ -22,14 +22,6 @@ export default Component.extend({
   hostnameValid(hostname) {
     return !hostname.match(/ /g);
   },
-  @discourseComputed("server.have_vm")
-  haveVM(status) {
-    return status;
-  },
-  @discourseComputed("server.have_vm")
-  needVM(status) {
-    return !status;
-  },
   @discourseComputed("server.install_type", "server.do_install_types")
   isDropletInstallType(installType, doInstallTypes) {
     // eslint-disable-next-line no-console
@@ -42,15 +34,6 @@ export default Component.extend({
     console.log("isEc2Install");
     return ec2InstallTypes.includes(installType);
   },
-  @discourseComputed("loading", "server.ansible_running")
-  updateDisabledServer(loading, ansibleRunning) {
-    // eslint-disable-next-line no-console
-    console.log("server-item.updateDisabledServer--ansibleRunning");
-    // eslint-disable-next-line no-console
-    console.log(ansibleRunning);
-    return loading || ansibleRunning;
-  },
-
   @discourseComputed("server.install_type", "server.have_do_api_key")
   canCreateVM(installType, haveDoApiKey) {
     // eslint-disable-next-line no-console
@@ -83,26 +66,19 @@ export default Component.extend({
       loading
     );
   },
-
-  @discourseComputed("server.ansible_running", "loading")
-  upgradeServerDisabled(ansibleRunning, loading) {
-    // eslint-disable-next-line no-console
-    console.log("server-item.updateServerDisabled");
-    // eslint-disable-next-line no-console
-    console.log(ansibleRunning);
-    if (ansibleRunning) {
-      this.set("updateReason", "upgradeServerDisabled--Ansible Task Running");
-    } else {
-      this.set(
-        "updateReason",
-        "upgradeServerDisabled--server model update in progress"
-      );
-    }
-    return loading || ansibleRunning;
+  @discourseComputed("server.active")
+  serverActive(active) {
+    return active;
   },
-
-  markDirty() {
-    this.set("dirty", true);
+  @discourseComputed("server.request_status")
+  upgradeServerDisabled(status) {
+    let running = !/pfaffmanager-playbook.*(failure|success)/.test(status);
+    // eslint-disable-next-line no-console
+    console.log("server-item.updateServerDisabled" + status);
+    // eslint-disable-next-line no-console
+    console.log(running);
+    let loading = this.get("loading");
+    return loading || running;
   },
   actions: {
     dropletCreate() {
@@ -173,7 +149,7 @@ export default Component.extend({
             "upgradeServer in controllers/pfaffmanager-servers-show.js.es6"
           );
           // eslint-disable-next-line no-console
-          console.log(this.model);
+          console.log(this);
           // eslint-disable-next-line no-console
           console.log(result);
 

@@ -51,6 +51,7 @@ module Pfaffmanager
         @server.log_new_request(request_status)
         @server.request_status = request_status
         @server.request_status_updated_at = Time.now
+        @server.request_result = /fail/.match?(request_status) ?  "Failure" : "OKK"
         @server.active ||= /pfaffmanager-playbook have_vm/.match?(@server.request_status)
         puts "update_status going to save"
         status = @server.save
@@ -197,7 +198,9 @@ module Pfaffmanager
         puts "Server saved!!! do: #{@server.encrypted_do_api_key.nil?}, mg: #{@server.encrypted_mg_api_key.nil?}"
         data = {
           have_do_api_key: !@server.encrypted_do_api_key.nil?,
-          have_mg_api_key: !@server.encrypted_mg_api_key.nil?
+          have_mg_api_key: !@server.encrypted_mg_api_key.nil?,
+          request_result: @server.request_result,
+          active: @server.active
         }
         @server.publish_update(data)
 

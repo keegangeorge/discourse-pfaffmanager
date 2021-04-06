@@ -17,7 +17,7 @@
 
     {{#if server.request_status}}
       <div class="request-status">
-        <span class="status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
+          <span class="status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
         <br>{{i18n "pfaffmanager.server.request_status" }}:&nbsp; {{server.request_status }}
               ({{format-date server.request_status_updated_at format="medium" }})
         <br>{{i18n "pfaffmanager.server.request_result" }}:&nbsp; {{server.request_result }}
@@ -25,7 +25,7 @@
     {{/if}}
 
 
-    {{#if needVM}}
+    {{#unless serverActive}}
       <div class="server-edit">
         <span class="server-status-header">{{i18n "pfaffmanager.server.status_header" }}</span>
 
@@ -94,11 +94,11 @@
           </div>
         {{/if}}
       </div>
-    {{/if}}
+    {{/unless}}
 
     <div class="pull-right">
-      {{conditional-loading-spinner condition=loading size="small"}}
-      {{#if haveVM}}
+      {{conditional-loading-spinner condition=upgradeServerDisabled size="small"}}
+      {{#if server.active}}
         {{d-button
           label="pfaffmanager.server.run_upgrade"
           action="upgradeServer"
@@ -108,15 +108,6 @@
       {{ else }}
         {{!-- need stuff to create/claim VM --}}
         {{#if isDropletInstallType}}
-          {{#if upgradeServerDisabled}}
-            <span class="button-disabled-reason">{{updateReason}}</span>
-            {{d-button
-          label="pfaffmanager.server.update"
-          action=(action "updateServer")
-          icon="check"
-          class="btn btn-primary"
-          disabled=updateDisabledServer}}
-          {{else}}
             <div class="pull-right">
               {{d-button label="pfaffmanager.server.do_create"
                 action=(action "dropletCreate")
@@ -125,7 +116,6 @@
                 disabled=createDropletDisabled
                 }}
             </div>
-          {{/if}}
         {{else}}
           Sorry! Install type "{{ server.install_type}}"" is not yet supported.
         {{/if}}

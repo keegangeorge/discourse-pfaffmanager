@@ -21,6 +21,8 @@ export default Controller.extend({
           ansible_running: data.ansible_running,
           have_do_api_key: data.have_do_api_key,
           have_mg_api_key: data.have_mg_api_key,
+          request_result: data.request_result,
+          active: data.active,
         });
       }
     );

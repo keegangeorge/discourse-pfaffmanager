@@ -11,7 +11,7 @@ module Jobs
           sleep 0.5
         end
         s.request_result = 'ok'
-        s.request_status = 'Success'
+        s.request_status = 'pfaffmanager-playbook fake upgrade success'
         s.save
     end
   end

@@ -11,7 +11,6 @@ all:
         <%= hostname %>:
           ssh_key_filename: /tmp/id_rsa_server<%= id%>.pub
           ansible_ssh_private_key_file: /tmp/id_rsa_server<%= id%>
-          ansible_ssh_private_key_file:  <%= ssh_key_path%>
           discourse_name: "<%= user_name%>"
           discourse_email: "<%= user.email%>"
           discourse_install_type: "<%= install_type %>" # TODO select
