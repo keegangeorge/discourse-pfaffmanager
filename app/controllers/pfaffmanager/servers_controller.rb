@@ -51,7 +51,7 @@ module Pfaffmanager
         @server.log_new_request(request_status)
         @server.request_status = request_status
         @server.request_status_updated_at = Time.now
-        @server.active = /pfaffmanager-playbook have_vm/.match?(@server.request_status)
+        @server.active ||= /pfaffmanager-playbook have_vm/.match?(@server.request_status)
         puts "update_status going to save"
         status = @server.save
         if status
