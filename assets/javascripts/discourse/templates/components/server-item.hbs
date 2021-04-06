@@ -33,7 +33,7 @@
           <label>{{i18n "pfaffmanager.hostname"}}</label>
           <div class="hostname-input">
             {{input type="text"  focus-out=(action "updateServer") autocomplete=off value=server.hostname class="input-large"}}
-            {{#if hostnameValid}}<span class="hostname-message">Must be valid and saved</span>{{/if}}
+            {{#unless hostnameValid}}<span class="warning">Invalid Hostname</span>{{/unless}}
           </div>
         </div>
         {{#if canCreateVM}}
@@ -75,7 +75,7 @@
                 valueProperty="value"
                 content=server.available_droplet_sizes
                 class="droplet-size"
-                onChange=(action "updateServer")
+                onChange=(action "updateDropletSize")
                 options=(hash
                   filterable=true
                   none="pfaffmanager.server.droplet_size.none"

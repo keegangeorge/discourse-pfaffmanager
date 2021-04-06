@@ -176,6 +176,7 @@ module Pfaffmanager
         puts "\nProcessing server! Data: #{data}"
         Rails.logger.warn "request status nil: #{data[:request_status].nil?}"
         Rails.logger.warn "current admin: #{current_user.admin}"
+        Rails.logger.warn "droplet size: #{data[:droplet_size]}"
 
         @server.discourse_api_key = data[:discourse_api_key] if data[:discourse_api_key]
         @server.hostname = data[:hostname] if data[:hostname]

@@ -15,7 +15,6 @@ export default Controller.extend({
         }
       });
     },
-
     createServer() {
       const server = {
         user_id: this.currentUser.id,

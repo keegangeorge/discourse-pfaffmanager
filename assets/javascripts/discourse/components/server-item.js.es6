@@ -18,6 +18,10 @@ export default Component.extend({
       loading
     );
   },
+  @discourseComputed("server.hostname")
+  hostnameValid(hostname) {
+    return !hostname.match(/ /g);
+  },
   @discourseComputed("server.have_vm")
   haveVM(status) {
     return status;
@@ -63,7 +67,6 @@ export default Component.extend({
     "server.have_do_api_key",
     "server.have_mg_api_key",
     "server.hostname",
-    "originalHostname",
     "loading"
   )
   createDropletDisabled(
@@ -71,43 +74,13 @@ export default Component.extend({
     haveDoApiKey,
     haveMgApiKey,
     hostname,
-    originalHostname,
     loading
   ) {
-    this.set(
-      "originalHostname",
-      originalHostname ? originalHostname : hostname
-    );
-    // eslint-disable-next-line no-console
-    console.log("server-item.createDropletDisabled: $(hostname)");
-    // eslint-disable-next-line no-console
-    console.log(hostname);
-    // console.log(originalHostname);
-    if (
-      originalHostname &&
-      hostname !== originalHostname &&
-      haveMgApiKey &&
-      haveDoApiKey
-    ) {
-      this.set(
-        "updateReason",
-        "createDropletDisabled--Save hostname to continue"
-      );
-    } else {
-      this.set(
-        "updateReason",
-        "createDropletDisabled--Required parameters must be saved before installation"
-      );
-    }
-    // CONFUSED: this causes hostnameValid to get modified twice on render. Why?
-    //this.set("hostnameValid", ("hostname".match(/unconfigured/g)) ? false : true );
-
     return (
       !(haveDoApiKey || installType === "ec2") ||
       !haveMgApiKey ||
       hostname.match(/ /g) ||
-      loading ||
-      (originalHostname && hostname !== originalHostname)
+      loading
     );
   },
 
@@ -117,7 +90,6 @@ export default Component.extend({
     console.log("server-item.updateServerDisabled");
     // eslint-disable-next-line no-console
     console.log(ansibleRunning);
-    // console.log(originalHostname);
     if (ansibleRunning) {
       this.set("updateReason", "upgradeServerDisabled--Ansible Task Running");
     } else {
@@ -126,9 +98,6 @@ export default Component.extend({
         "upgradeServerDisabled--server model update in progress"
       );
     }
-    // CONFUSED: this causes hostnameValid to get modified twice on render. Why?
-    //this.set("hostnameValid", ("hostname".match(/unconfigured/g)) ? false : true );
-
     return loading || ansibleRunning;
   },
 
@@ -173,6 +142,27 @@ export default Component.extend({
         }
       }); // TODO: make sure that ansible always registers something AND that it gets to message bus
     },
+    updateDropletSize(value) {
+      this.set("loading", true);
+      console.log("update droplet!" + value);
+      this.set("server.droplet_size", value);
+      Server.updateServer(this.server)
+        .then((result) => {
+          if (result.errors) {
+            // eslint-disable-next-line no-console
+            console.log("Errors: ", result.errors);
+          } else if (result.success) {
+            // eslint-disable-next-line no-console
+            console.log("updateServer.success");
+            // eslint-disable-next-line no-console
+            console.log(result);
+            this.set("server", Server.create(result.server));
+            // eslint-disable-next-line no-console
+            console.log("updateServer.success complete");
+          }
+        })
+        .finally(() => this.set("loading", false));
+    },
 
     upgradeServer() {
       this.set("loading", true);
@@ -212,7 +202,6 @@ export default Component.extend({
             // eslint-disable-next-line no-console
             console.log(result);
             this.set("server", Server.create(result.server));
-            this.set("originalHostname", this.server.hostname);
             // eslint-disable-next-line no-console
             console.log("updateServer.success complete");
           }
