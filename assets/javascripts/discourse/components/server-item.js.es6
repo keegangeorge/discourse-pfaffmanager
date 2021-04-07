@@ -82,12 +82,15 @@ export default Component.extend({
   },
   @discourseComputed("loading", "server.request_status")
   upgradeServerDisabled(loading, status) {
-    let running = !/pfaffmanager-playbook.*(failure|success)/.test(status);
+    let running = !/.*(failure|success)/.test(status);
     // eslint-disable-next-line no-console
     console.log("server-item.updateServerDisabled" + status);
     // eslint-disable-next-line no-console
     console.log(running);
-    return loading || running;
+    if (running) {
+      this.set("loading", false);
+    }
+    return running;
   },
   actions: {
     dropletCreate() {
