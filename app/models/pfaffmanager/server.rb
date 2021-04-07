@@ -97,6 +97,7 @@ module Pfaffmanager
       ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
       ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
       ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
+      ensure_group(SiteSetting.pfaffmanager_self_install_group)
     end
     # end
 
@@ -123,7 +124,7 @@ module Pfaffmanager
     def update_server_status
       puts "server.update_server_status for #{request_status}"
       begin
-        self.request_result = /fail/.match?(self.request_status) ?  "Failure" : "OK"
+        self.request_result = /fail/.match?(self.request_status) ? "Failure" : "OK"
         puts "request_result: #{self.request_result}"
         if encrypted_discourse_api_key.present? && discourse_api_key.present?
           puts "update_server_status has the stuff to do the request"

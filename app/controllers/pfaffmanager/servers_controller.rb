@@ -50,7 +50,7 @@ module Pfaffmanager
         request_status = params[:request_status]
         @server.request_status = request_status
         @server.request_status_updated_at = Time.now
-        @server.request_result = /fail/.match?(request_status) ?  "Failure" : "OK"
+        @server.request_result = /fail/.match?(request_status) ? "Failure" : "OK"
         @server.active ||= /pfaffmanager-playbook have_vm/.match?(@server.request_status)
         puts "update_status going to save"
         status = @server.save
