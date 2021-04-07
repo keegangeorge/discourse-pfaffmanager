@@ -343,7 +343,10 @@ module Pfaffmanager
         request_status: self.request_status,
         request_status_updated_at: self.request_status_updated_at,
         request_result: self.request_result,
-        active: self.active
+        active: self.active,
+        installed_version: self.installed_version,
+        installed_sha: self.installed_version,
+        status_retrieved: self.status_retrieved
       }
       puts "p_s_u: gonna publish #{data}"
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]

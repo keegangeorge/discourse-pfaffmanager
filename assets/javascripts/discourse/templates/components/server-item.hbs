@@ -5,8 +5,8 @@
   <form>
 
    {{#if server.installed_version }}
+   <h3>Discourse Server Status</h3>
       <div class="installed-server-status">
-        {{!-- maxmind_license_key not implemented --}}
         <br>Created&nbsp; {{~format-date server.created_at format="medium" }}
         <br>Last update&nbsp; {{~format-date server.updated_at format="medium" }}
         <br>{{i18n "pfaffmanager.server.installed_version" }}:&nbsp; {{server.installed_version }}
@@ -16,6 +16,7 @@
     {{/if}}
 
     {{#if server.request_status}}
+    <h3>Request Processing Status</h3>
       <div class="request-status">
           <span class="status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
         <br>{{i18n "pfaffmanager.server.request_status" }}:&nbsp; {{server.request_status }}
