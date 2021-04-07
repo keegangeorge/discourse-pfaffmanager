@@ -16,7 +16,7 @@ module Pfaffmanager
     before_save :update_server_status unless :discourse_api_key.nil?
     before_save :do_api_key_validator if !:do_api_key.blank?
     before_create :assert_has_ssh_keys
-    #after_save :publish_status_update
+    after_save :publish_status_update
     SMTP_CREDENTIALS = 'smtp_credentials'
     LATEST_INVENTORY = 'latest_inventory'
     CUSTOM_PLUGINS = 'custom_plugins'
@@ -125,7 +125,8 @@ module Pfaffmanager
       begin
         self.request_result = /fail/.match?(self.request_status) ?  "Failure" : "OK"
         puts "request_result: #{self.request_result}"
-        if encrypted_discourse_api_key.present? && !discourse_api_key.blank?
+        if encrypted_discourse_api_key.present? && discourse_api_key.present?
+          puts "update_server_status has the stuff to do the request"
           headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
           puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
@@ -137,16 +138,6 @@ module Pfaffmanager
           self.active = true
           self.installed_sha = version_check['installed_sha']
           self.git_branch = version_check['git_branch']
-          data = {
-            active: self.active,
-            installed_version: self.installed_version,
-            installed_sha: self.installed_sha,
-            server_status_json: self.server_status_json,
-            server_status_updated_at: self.server_status_updated_at,
-            request_result: self.request_result,
-            git_branch: self.git_branch
-          }
-          publish_update(data)
         end
 
       rescue => e
@@ -180,11 +171,9 @@ module Pfaffmanager
         if SiteSetting.pfaffmanager_do_install == '/bin/true'
           Rails.logger.warn "logger fake install!! #{hostname}"
           puts "puts fake install!! #{self.hostname}"
-          self.log_new_request("Fake Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
           self.request_status = "pfaffmanager-playbook fake install complete! success"
           self.last_action = "Create Fake Droplet"
           self.active = true
-          publish_status_update
           save_result = self.save!
           puts "Save result--> #{save_result} -- #{self.request}"
           puts "res: #{save_result ? 'yes' : 'no'}"
@@ -195,7 +184,6 @@ module Pfaffmanager
           Rails.logger.warn "job created for #{id}"
           puts "gonna enqueueue"
           Jobs.enqueue(:create_droplet, server_id: id)
-          self.log_new_request("Discourse Create Droplet", "Create Droplet queued. Waiting to start.")
           # Rails.logger.warn "results #{results}"
           self.last_action = "Queued Create Droplet"
           self.save
@@ -248,9 +236,9 @@ module Pfaffmanager
       # called by servers_controller queue_upgrade
       Rails.logger.warn "server.queue_upgrade for #{id} "
       puts "server.queue_upgrade for #{id} "
-      self.request = -1
       self.request_status_updated_at = Time.now
       self.last_action = "Process rebuild/upgrade"
+      self.request_status = "Queueing upgrade"
       success = false
       begin
         puts "server model queue_upgrade about to save"
@@ -260,14 +248,12 @@ module Pfaffmanager
         Rails.logger.warn "upgrade job created for #{id}"
         puts "upgrade job created for #{id}"
         Rails.logger.error "upgrade job created for #{id}" if SiteSetting.pfaffmanager_debug_to_log
-        puts "going to log_new_request"
-        self.log_new_request("Upgrade queued. Waiting to start.")
-        puts "log_new_request returned"
         success = true
       rescue
         puts "server.queue_upgrade rescue!!! error!!"
         Rails.logger.error "server.queue_upgrade failed for #{id} "
       end
+      puts "queue_upgrade returning #{success}"
       success
     end
 
@@ -299,25 +285,6 @@ module Pfaffmanager
         self.save
         false
       end
-    end
-
-    def log_new_request(request_status, last_action = "")
-      puts "log_new_request started for #{request_status}"
-      self.request_status_updated_at = Time.now
-      self.request_status = request_status
-      data = {
-        request_status: self.request_status,
-        request_status_updated_at: self.request_status_updated_at,
-        active: self.active
-      }
-
-      data[:last_action] = last_action if last_action.present?
-
-      puts "log new request about to save"
-      save_result = self.save
-      puts "log new request about to post to message bus"
-      MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
-      save_result
     end
 
     # private
@@ -367,24 +334,22 @@ module Pfaffmanager
 
     def publish_status_update
       Rails.logger.warn "server.publish_status_update"
-      Rails.logger.warn "key: #{!self.encrypted_do_api_key.nil?}"
+      puts  self.request_created_at
+      puts  self.request_status
+      puts  "result: #{self.request_result}"
+      puts  "a: #{self.active}"
       data = {
-        request: self.request,
         request_created_at: self.request_created_at,
         request_status: self.request_status,
-        request_status_updated_at: Time.now,
+        request_status_updated_at: self.request_status_updated_at,
         request_result: self.request_result,
         active: self.active
       }
+      puts "p_s_u: gonna publish #{data}"
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]
       # to allow real-time access to all servers on the site
       MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
-    end
-
-    def publish_update(data)
-      Rails.logger.warn "server.publish_update"
-      puts "server.publish_update #{data}"
-      MessageBus.publish("/pfaffmanager-server-status/#{self.id}", data, user_ids: [self.user_id, 1])
+      puts "publish_status_update complete"
     end
 
     def managed_inventory_template

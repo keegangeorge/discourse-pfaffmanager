@@ -48,10 +48,9 @@ module Pfaffmanager
         puts "servers controller going to look for #{params[:id]}"
         puts "found server #{@server.hostname}"
         request_status = params[:request_status]
-        @server.log_new_request(request_status)
         @server.request_status = request_status
         @server.request_status_updated_at = Time.now
-        @server.request_result = /fail/.match?(request_status) ?  "Failure" : "OKK"
+        @server.request_result = /fail/.match?(request_status) ?  "Failure" : "OK"
         @server.active ||= /pfaffmanager-playbook have_vm/.match?(@server.request_status)
         puts "update_status going to save"
         status = @server.save
@@ -78,7 +77,6 @@ module Pfaffmanager
         else
           puts "controller going to queue_upgrade"
           status = @server.queue_upgrade
-          @server.log_new_request("Upgrade queued. Waiting to start.")
           puts "controller got #{status}"
           if status
             puts "controller upgrade success"
@@ -128,18 +126,18 @@ module Pfaffmanager
       can_manage = !Group.member_of(manage_group, current_user).empty? || current_user.admin || @server.created_at > 6.months.ago
 
       if can_manage
-        Rails.logger.warn "you can manage"
-        puts "you can manage"
+        Rails.logger.warn "rails warn you can manage"
+        puts "puts warn you can manage"
       else
         # TODO: raise an error? (Or stop on the front end and dno't worry here)
         Rails.logger.warn "You are not allowed to manage"
-        puts "You are not allowed to manage!! created: #{server.created_at}"
+        puts "puts You are not allowed to manage!! created: #{server.created_at}"
       end
       can_manage
     end
 
     def create
-      puts "server controller creating "
+      puts "puts server controller creating "
       Rails.logger.warn "server controller Creating in Controller!!!!!! "
       create_groups = Group.where(name: SiteSetting.pfaffmanager_create_server_group).or(Group.where(name: SiteSetting.pfaffmanager_unlimited_server_group))
       can_create = create_groups && !Group.member_of(create_groups, current_user).empty? || current_user.admin
@@ -199,7 +197,6 @@ module Pfaffmanager
         data = {
           have_do_api_key: !@server.encrypted_do_api_key.nil?,
           have_mg_api_key: !@server.encrypted_mg_api_key.nil?,
-          request_result: @server.request_result,
           active: @server.active
         }
         @server.publish_update(data)

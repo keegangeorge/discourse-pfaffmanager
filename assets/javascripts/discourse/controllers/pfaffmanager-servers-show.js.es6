@@ -18,9 +18,9 @@ export default Controller.extend({
           request_created_at: data.request_created_at,
           request_status: data.request_status,
           request_status_updated_at: data.request_status_updated_at,
-          ansible_running: data.ansible_running,
-          have_do_api_key: data.have_do_api_key,
-          have_mg_api_key: data.have_mg_api_key,
+          // ansible_running: data.ansible_running,
+          // have_do_api_key: data.have_do_api_key,
+          // have_mg_api_key: data.have_mg_api_key,
           request_result: data.request_result,
           active: data.active,
         });
