@@ -38,6 +38,8 @@ after_initialize do
     create_groups << ec2_server_group.try(:id)
     ec2_pro_server_group = Group.find_by_name(SiteSetting.pfaffmanager_ec2_pro_server_group)
     create_groups << ec2_pro_server_group.try(:id)
+    self_install_server_group = Group.find_by_name(SiteSetting.pfaffmanager_self_install_group)
+    create_groups << self_install_server_group.try(:id)
     pfaffmanager_hosted_server_group = Group.find_by_name(SiteSetting.pfaffmanager_hosted_server_group)
     create_groups << pfaffmanager_hosted_server_group.try(:id)
     params = { user_id: self.user_id }
@@ -53,6 +55,9 @@ after_initialize do
         params[:install_type] = 'ec2'
       when ec2_pro_server_group.id
         params[:install_type] = 'ec2_pro'
+      when pfaffmanager_self_install_group.id
+        puts "pfaffmanager_self_install_group"
+        params[:install_type] = 'self_install'
       when pfaffmanager_hosted_server_group.id
         params[:install_type] = 'lc_pro'
         Rails.logger.error "Creating hosted server with no DO API KEY!" unless SiteSetting.pfaffmanager_do_api_key != ''

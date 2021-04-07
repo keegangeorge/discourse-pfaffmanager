@@ -5,6 +5,7 @@ class PfaffmanagerInstallType
   PRO ||= "pro"
   LITE ||= "lite"
   EC2 ||= "ec2"
+  SELF ||= "self"
 
   def self.valid_value?(val)
     values.any? { |v| v[:value] == val }
@@ -16,6 +17,7 @@ class PfaffmanagerInstallType
         { name: I18n.t("js.pfaffmanager.install_type." + EC2), value: EC2 },
         { name: I18n.t("js.pfaffmanager.install_type." + STD), value: STD },
         { name: I18n.t("js.pfaffmanager.install_type." + PRO), value: PRO },
+        { name: I18n.t("js.pfaffmanager.install_type." + PRO), value: SELF },
     ]
   end
 
