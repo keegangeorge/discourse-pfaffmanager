@@ -16,7 +16,7 @@
     {{/if}}
 
     {{#if server.request_status}}
-    <h3>Request Processing Status</h3>
+        <span class="server-status-header">{{i18n "pfaffmanager.server.status_header" }}</span>
       <div class="request-status">
           <span class="status-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
         <br>{{i18n "pfaffmanager.server.request_status" }}:&nbsp; {{server.request_status }}
@@ -28,8 +28,6 @@
 
     {{#unless serverActive}}
       <div class="server-edit">
-        <span class="server-status-header">{{i18n "pfaffmanager.server.status_header" }}</span>
-
         <div class="hostname">
           <label>{{i18n "pfaffmanager.hostname"}}</label>
           <div class="hostname-input">
@@ -38,38 +36,46 @@
           </div>
         </div>
         {{#if canCreateVM}}
-          <div class="ready">Have valid Digital Ocean Access Key</div>
+                     {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
+              <span class="ready">Have valid Digital Ocean Access Key</span>
         {{else}}
           <div class="pfaffmanager-do-api-key">
             <label class="control-label">{{i18n "pfaffmanager.do_api_key"}}</label>
+          <span class="warning">Required for installation on new droplet</span>
             <div class="do-api-key">
               {{input type="text" autocomplete=off 
                 value=server.do_api_key 
                 class="input-large"
                 focus-out=(action "updateServer")}}
-          <span class="warning">Digital Ocean API Key is required for installation on new droplet</span>
             </div>
             
           </div>
         {{/if}}
 
+               <div class="pfaffmanager-mg-api-key">
         {{#if server.have_mg_api_key}}
-          <div class="ready">Have Valid Mailgun API Key</div>
+                              {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
+ <span class="ready">Have Valid Mailgun API Key</span>
         {{else}}
           <div class="pfaffmanager-mg-api-key">
             <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
+            <span class="warning">Required for installation</span>
             <div class="mg-api-key">
               {{input type="text"  focus-out=(action "updateServer") value=server.mg_api_key class="input-large"}}
-            <span class="warning">Mailgun API Key is required for installation</span>
             </div>
           </div>
         {{/if}}
-
+  </div>
         {{#if isDropletInstallType}}
 
           <div>
             <label for="droplet_size">{{i18n "pfaffmanager.server.droplet_size.label"}}</label>
-
+                          {{#unless server.droplet_size}}
+                          <span class="warning">Required for installation</span>
+              {{/unless}}
+          {{#if server.droplet_size}}
+            {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
+          {{/if}}
             <div class="pfaffmanager-droplet-size">
               {{combo-box
                 value=server.droplet_size
@@ -98,8 +104,8 @@
     {{/unless}}
 
     <div class="pull-right">
-      {{conditional-loading-spinner condition=upgradeServerDisabled size="small"}}
       {{#if server.active}}
+      {{conditional-loading-spinner condition=upgradeServerDisabled size="small"}}
         {{d-button
           label="pfaffmanager.server.run_upgrade"
           action="upgradeServer"
@@ -109,6 +115,11 @@
       {{else}}
         {{!-- need stuff to create/claim VM --}}
         {{#if isDropletInstallType}}
+          <div class="droplet-install-button">
+          {{conditional-loading-spinner condition=loading size="small"}}
+          {{#if createDropletDisabled}}
+            <span class="warning">{{updateReason}}</span>
+          {{else}}
             <div class="pull-right">
               {{d-button label="pfaffmanager.server.do_create"
                 action=(action "dropletCreate")
@@ -117,6 +128,9 @@
                 disabled=createDropletDisabled
                 }}
             </div>
+          {{/if}}  
+          </div>
+      
         {{else}}
           Sorry! Install type "{{ server.install_type}}"" is not yet supported.
         {{/if}}

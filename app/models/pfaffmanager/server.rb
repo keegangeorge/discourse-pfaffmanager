@@ -164,7 +164,6 @@ module Pfaffmanager
     end
 
     def queue_create_droplet()
-      results = ""
       Rails.logger.warn "logger server.queue_create_droplet for #{id} with #{SiteSetting.pfaffmanager_do_install}"
       puts "puts server.queue_create_droplet for #{id} #{hostname} with #{SiteSetting.pfaffmanager_do_install}"
       begin
@@ -177,7 +176,6 @@ module Pfaffmanager
           save_result = self.save!
           puts "Save result--> #{save_result} -- #{self.request}"
           puts "res: #{save_result ? 'yes' : 'no'}"
-          results = "ok"
         else
           puts "puts real install!! #{hostname}"
           Rails.logger.warn "logger real install!! #{hostname}"
@@ -187,7 +185,6 @@ module Pfaffmanager
           # Rails.logger.warn "results #{results}"
           self.last_action = "Queued Create Droplet"
           self.save
-          results = "ok"
         end
       rescue => e
         STDERR.puts e.message
@@ -346,7 +343,10 @@ module Pfaffmanager
         active: self.active,
         installed_version: self.installed_version,
         installed_sha: self.installed_version,
-        status_retrieved: self.status_retrieved
+        server_status_updated_at: self.server_status_updated_at,
+        have_do_api_key: self.encrypted_do_api_key.present?,
+        have_mg_api_key: self.encrypted_mg_api_key.present?,
+        droplet_size: self.droplet_size,
       }
       puts "p_s_u: gonna publish #{data}"
       # TODO: add to MessageBus something like -- group_ids: [pfaffmanager_manager_group.id]

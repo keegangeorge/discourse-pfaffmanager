@@ -50,6 +50,7 @@ export default Component.extend({
     "server.have_do_api_key",
     "server.have_mg_api_key",
     "server.hostname",
+    "server.droplet_size",
     "loading"
   )
   createDropletDisabled(
@@ -57,8 +58,17 @@ export default Component.extend({
     haveDoApiKey,
     haveMgApiKey,
     hostname,
+    dropletSize,
     loading
   ) {
+    if (!hostname.match(/ /g) && haveMgApiKey && haveDoApiKey && dropletSize) {
+      this.set("updateReason", "");
+    } else {
+      this.set(
+        "updateReason",
+        "Required parameters must be set before installation"
+      );
+    }
     return (
       !(haveDoApiKey || installType === "ec2") ||
       !haveMgApiKey ||

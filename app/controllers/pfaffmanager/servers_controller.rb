@@ -199,8 +199,6 @@ module Pfaffmanager
           have_mg_api_key: !@server.encrypted_mg_api_key.nil?,
           active: @server.active
         }
-        @server.publish_update(data)
-
         if @server.errors.present?
           return render_json_error(@server.errors.full_messages)
         else
