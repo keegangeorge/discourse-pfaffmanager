@@ -3,8 +3,6 @@ require_dependency "pfaffmanager_constraint"
 
 Pfaffmanager::Engine.routes.draw do
   get "/pfaffmanager/" => "pfaffmanager#index", constraints: PfaffmanagerConstraint.new
-  # get "/actions" => "actions#index", constraints: PfaffmanagerConstraint.new
-  # get "/actions/:id" => "actions#show", constraints: PfaffmanagerConstraint.new
   get "/pfaffmanager/servers" => "servers#index", constraints: PfaffmanagerConstraint.new
   get "/pfaffmanager/servers/:id" => "servers#show", constraints: PfaffmanagerConstraint.new
   put "/pfaffmanager/servers/:id" => "servers#update", constraints: PfaffmanagerConstraint.new
@@ -16,8 +14,6 @@ Pfaffmanager::Engine.routes.draw do
   get "/pfaffmanager/ssh-key/:hostname" => "serverkeys#get_pub_key_by_hostname", constraints: { hostname: /[^\/]+/ }
   post "/pfaffmanager/servers" => "servers#create", constraints: PfaffmanagerConstraint.new
   get "/ssh-key/:hostname" => "serverkeys#get_pub_key_by_hostname", constraints: { hostname: /[^\/]+/ }
-    # get "/githubs" => "githubs#index", constraints: PfaffmanagerConstraint.new
-  # get "/githubs/:id" => "githubs#show", constraints: PfaffmanagerConstraint.new
 end
 
 Discourse::Application.routes.append do
