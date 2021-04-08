@@ -49,7 +49,6 @@ after_initialize do
     pfaffmanager_hosted_server_group = Group.find_by_name(SiteSetting.pfaffmanager_hosted_server_group)
     create_groups << pfaffmanager_hosted_server_group.try(:id)
 
-
     params = { user_id: self.user_id }
     if create_groups.include?(self.group_id)
       # TODO: create server
