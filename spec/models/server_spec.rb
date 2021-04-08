@@ -15,6 +15,7 @@ module Pfaffmanager
     let!(:pfaffmanager_ec2_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_server_group) }
     let!(:pfaffmanager_ec2_pro_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_ec2_pro_server_group) }
     let!(:pfaffmanager_hosted_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_hosted_server_group) }
+    let!(:pfaffmanager_self_install_server_group) { Fabricate(:group, name: SiteSetting.pfaffmanager_self_install_server_group) }
   before do
 
     SiteSetting.pfaffmanager_upgrade_playbook = 'spec-test.yml'
@@ -173,6 +174,15 @@ module Pfaffmanager
       server = Pfaffmanager::Server.where(user_id: user.id).last
       expect(server.install_type).to eq 'ec2_pro'
       expect(GroupUser.find_by(user_id: user.id, group_id: ec2_pro_server_group.id)).to eq nil
+    end
+
+    it 'creates a self install server if user is added to SelfInstall group' do
+      self_install_server_group = pfaffmanager_self_install_server_group
+      expect { GroupUser.create(group_id: self_install_server_group.id, user_id: user.id) }
+        .to change { Pfaffmanager::Server.count }.by(1)
+      server = Pfaffmanager::Server.where(user_id: user.id).last
+      expect(server.install_type).to eq 'self_install'
+      expect(GroupUser.find_by(user_id: user.id, group_id: self_install_server_group.id)).to eq nil
     end
 
     it 'creates a LC pro server with LC keys if user is added to Hosted Server group' do

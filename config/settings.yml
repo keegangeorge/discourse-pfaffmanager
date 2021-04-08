@@ -64,7 +64,7 @@ plugins:
     client: false
     hidden: false
     type: text
-  pfaffmanager_self_install_group:
+  pfaffmanager_self_install_server_group:
     default: "SelfInstall"
     client: false
     hidden: false

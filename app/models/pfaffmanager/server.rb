@@ -31,6 +31,7 @@ module Pfaffmanager
       SiteSetting.pfaffmanager_pro_server_group,
       SiteSetting.pfaffmanager_ec2_server_group,
       SiteSetting.pfaffmanager_ec2_pro_server_group,
+      SiteSetting.pfaffmanager_self_install_server_group,
       SiteSetting.pfaffmanager_hosted_server_group
     ]
     scope :find_user, ->(user) { find_by_user_id(user.id) }
@@ -97,7 +98,7 @@ module Pfaffmanager
       ensure_group(SiteSetting.pfaffmanager_ec2_server_group)
       ensure_group(SiteSetting.pfaffmanager_ec2_pro_server_group)
       ensure_group(SiteSetting.pfaffmanager_hosted_server_group)
-      ensure_group(SiteSetting.pfaffmanager_self_install_group)
+      ensure_group(SiteSetting.pfaffmanager_self_install_server_group)
     end
     # end
 
