@@ -12,12 +12,9 @@ Pfaffmanager::Engine.routes.draw do
   post "/api_key/:id" => "servers#set_api_key", constraints: PfaffmanagerConstraint.new
   post "/upgrade/:id" => "servers#queue_upgrade", constraints: PfaffmanagerConstraint.new
   put "/install/:id" => "servers#install", constraints: PfaffmanagerConstraint.new
-  get "ssh_key/:id" => "serverkeys#get_pub_key"
-  get "ssh-key/:id" => "serverkeys#get_pub_key"
+  get "/ssh_key/:id" => "serverkeys#get_pub_key"
+  get "/ssh-key/:hostname" => "serverkeys#get_pub_key_by_hostname", constraints: { hostname: /[^\/]+/ }
   post "/servers" => "servers#create", constraints: PfaffmanagerConstraint.new
   get "/githubs" => "githubs#index", constraints: PfaffmanagerConstraint.new
   get "/githubs/:id" => "githubs#show", constraints: PfaffmanagerConstraint.new
-  namespace :user do
-    resources :servers
-  end
 end
