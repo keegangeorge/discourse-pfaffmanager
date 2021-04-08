@@ -243,7 +243,7 @@ end
 
 it 'can get a ssh key even if logged in as another user' do
   sign_in(user)
-  get "/pfaffmanager/ssh-key/#{new_server.id}"
+  get "/pfaffmanager/ssh_key/#{new_server.id}"
   expect(response.status).to eq(200)
   expect(response.body).to include('ssh-rsa')
 end
@@ -297,7 +297,12 @@ it 'users cannot update status' do
 end
 
 it 'can get an ssh pub key by server id' do
-  get "/pfaffmanager/ssh-key/#{new_server.id}"
+  get "/pfaffmanager/ssh_key/#{new_server.id}"
+  expect(response.body).to include "ssh-rsa"
+end
+
+it 'can get an ssh pub key by hostname' do
+  get "/pfaffmanager/ssh-key/#{new_server.hostname}"
   expect(response.body).to include "ssh-rsa"
 end
 
