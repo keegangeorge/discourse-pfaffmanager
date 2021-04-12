@@ -105,7 +105,7 @@
     {{/unless}}
 
     <div class="pull-right">
-      {{#if server.active}}
+      {{#if serverActive}}
       {{conditional-loading-spinner condition=upgradeServerDisabled size="small"}}
         {{d-button
           label="pfaffmanager.server.run_upgrade"
@@ -126,7 +126,7 @@
                 action=(action "dropletCreate")
                 icon="plus"
                 class="btn btn-primary do-create"
-                disabled=createDropletDisabled
+                disabled=ansibleRunning
                 }}
             </div>
           {{/if}}  

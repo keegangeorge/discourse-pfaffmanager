@@ -76,9 +76,14 @@ export default Component.extend({
       loading
     );
   },
-  @discourseComputed("server.active")
+  @discourseComputed("server.discourse_version")
   serverActive(active) {
     return active;
+  },
+  @discourseComputed("server.request_status")
+  ansibleRunning(status) {
+    let running = !/.*(failure|success)/.test(status);
+    return running;
   },
   @discourseComputed("loading", "server.request_status")
   upgradeServerDisabled(loading, status) {
