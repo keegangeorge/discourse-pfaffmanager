@@ -172,7 +172,6 @@ module Pfaffmanager
       if @server
         data = server_params
         Rails.logger.warn "\nProcessing server! Data: #{data}"
-        puts "\nProcessing server! Data: #{data}"
         Rails.logger.warn "request status nil: #{data[:request_status].nil?}"
         Rails.logger.warn "current admin: #{current_user.admin}"
         Rails.logger.warn "droplet size: #{data[:droplet_size]}"
@@ -190,10 +189,8 @@ module Pfaffmanager
         @server.smtp_user = data[:smtp_user] if data[:smtp_user].present?
 
         Rails.logger.warn "server controller update about to save R: #{@server.request} with #{@server.droplet_size}"
-        puts "server controller update about to save R: #{@server.request} with #{@server.droplet_size}"
         @server.save
         @server.reload
-        puts "Server saved!!! do: #{@server.encrypted_do_api_key.nil?}, mg: #{@server.encrypted_mg_api_key.nil?}"
         data = {
           have_do_api_key: !@server.encrypted_do_api_key.nil?,
           have_mg_api_key: !@server.encrypted_mg_api_key.nil?,
