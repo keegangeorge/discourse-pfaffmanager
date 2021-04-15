@@ -25,6 +25,9 @@ export default Controller.extend({
           have_mg_api_key: data.have_mg_api_key,
           droplet_size: data.droplet_size,
           active: data.active,
+          installed_version: data.installed_version,
+          installed_sha: data.installed_sha,
+          server_status_updated_at: data.server_status_updated_at,
         });
       }
     );

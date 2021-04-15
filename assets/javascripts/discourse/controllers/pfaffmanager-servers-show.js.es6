@@ -24,6 +24,9 @@ export default Controller.extend({
           droplet_size: data.droplet_size,
           request_result: data.request_result,
           active: data.active,
+          installed_version: data.installed_version,
+          installed_sha: data.installed_sha,
+          server_status_updated_at: data.server_status_updated_at,
         });
       }
     );
