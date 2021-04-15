@@ -83,7 +83,9 @@ export default Component.extend({
   ansibleRunning(status) {
     let running = status && !/.*(failure|success)/.test(status);
     let hasStatus = status !== null;
+    // eslint-disable-next-line no-console
     console.log("hasStatus");
+    // eslint-disable-next-line no-console
     console.log(hasStatus);
     // this.set("hasStatus", hasStatus);
     return running;
