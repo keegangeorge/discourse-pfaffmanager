@@ -8,6 +8,15 @@
   .installed-server-status {
     color: yellow;
   }
+  .has-status {
+    color: blue;
+    .status-missing {
+      color: purple;
+    }
+    .status-present {
+      color: orangered;
+    }
+  }
   .status-header {
     margin-top: 14pt;
     margin-bottom: 1pt;

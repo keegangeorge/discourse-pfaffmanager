@@ -67,7 +67,7 @@ module Pfaffmanager
     end
 
     def self.default_hostname(id)
-      "hostname required #{id}"
+      "hostname required #{Time.now.to_formatted_s(:number)}"
     end
 
     def self.createServerForUser(user_id, hostname = nil)
@@ -208,7 +208,9 @@ module Pfaffmanager
         "discourse_do_api_key=#{do_api_key}",
         "--extra-vars",
         "discourse_mg_api_key=#{mg_api_key}"
-      Rails.logger.warn "going to run with: #{instructions.join(' ')}"
+        Rails.logger.warn "going to run with: #{instructions.join(' ')}"
+        puts "going to run with: #{instructions.join(' ')}"
+
       if SiteSetting.pfaffmanager_do_install == '/bin/true' ||
         do_api_key == 'testing' ||
         mg_api_key == 'testing'

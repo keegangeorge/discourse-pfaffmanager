@@ -4,8 +4,8 @@
 
   <form>
 
-   {{#if server.installed_version }}
-      <div class="server-status">
+   {{#if hasVersion }}
+      <div class="server-status status-missing" id="statusDiv">
    <h3 class="status-header">Discourse Server Status</h3>
         <br>Created&nbsp; {{~format-date server.created_at format="medium" }}
         <br>Last update&nbsp; {{~format-date server.updated_at format="medium" }}
@@ -15,8 +15,8 @@
       </div>
     {{/if}}
 
-    {{#if server.request_status}}
-      <div class="request-status">
+    {{#if hasStatus}}
+      <div id="statusDiv">
         <h3 class="status-header">{{i18n "pfaffmanager.server.status_header" }}</h3>
 
           <span class="section-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
@@ -27,7 +27,7 @@
     {{/if}}
 
 
-    {{#unless serverActive}}
+    {{#unless hasVersion}}
       <div class="server-edit">
         <div class="hostname">
           <label>{{i18n "pfaffmanager.hostname"}}</label>

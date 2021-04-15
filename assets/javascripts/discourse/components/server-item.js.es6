@@ -5,6 +5,8 @@ import Server from "../models/server";
 // import { bufferedProperty } from "discourse/mixins/buffered-content";
 
 export default Component.extend({
+  classNameBindings: ["hasStatus"],
+  hasStatus: true,
   @discourseComputed(
     "server.do_api_key",
     "server.mg_api_key",
@@ -50,16 +52,14 @@ export default Component.extend({
     "server.have_do_api_key",
     "server.have_mg_api_key",
     "server.hostname",
-    "server.droplet_size",
-    "loading"
+    "server.droplet_size"
   )
   createDropletDisabled(
     installType,
     haveDoApiKey,
     haveMgApiKey,
     hostname,
-    dropletSize,
-    loading
+    dropletSize
   ) {
     if (!hostname.match(/ /g) && haveMgApiKey && haveDoApiKey && dropletSize) {
       this.set("updateReason", "");
@@ -72,17 +72,20 @@ export default Component.extend({
     return (
       !(haveDoApiKey || installType === "ec2") ||
       !haveMgApiKey ||
-      hostname.match(/ /g) ||
-      loading
+      hostname.match(/ /g)
     );
   },
-  @discourseComputed("server.discourse_version")
+  @discourseComputed("server.installed_version")
   serverActive(active) {
-    return active;
+    this.set("hasStatus", active !== null);
   },
   @discourseComputed("server.request_status")
   ansibleRunning(status) {
-    let running = !/.*(failure|success)/.test(status);
+    let running = status && !/.*(failure|success)/.test(status);
+    let hasStatus = status !== null;
+    console.log("hasStatus");
+    console.log(hasStatus);
+    // this.set("hasStatus", hasStatus);
     return running;
   },
   @discourseComputed("loading", "server.request_status")
