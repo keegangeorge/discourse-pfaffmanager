@@ -132,14 +132,18 @@ module Pfaffmanager
           headers = { 'api-key' => discourse_api_key, 'api-username' => 'system' }
           protocol = self.hostname.match(/localhost/) ? 'http://' : 'https://'
           puts "\n\nGOING TO GET: #{protocol}#{hostname}/admin/dashboard.json with #{headers}"
-          result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
-          self.server_status_json = result.body
-          self.server_status_updated_at = Time.now
-          version_check = JSON.parse(result.body)['version_check']
-          self.installed_version = version_check['installed_version']
-          self.active = true
-          self.installed_sha = version_check['installed_sha']
-          self.git_branch = version_check['git_branch']
+          begin
+            result = Excon.get("#{protocol}#{hostname}/admin/dashboard.json", headers: headers)
+            self.server_status_json = result.body
+            self.server_status_updated_at = Time.now
+            version_check = JSON.parse(result.body)['version_check']
+            self.installed_version = version_check['installed_version']
+            self.active = true
+            self.installed_sha = version_check['installed_sha']
+            self.git_branch = version_check['git_branch']
+          rescue
+            Rails.logger.warn "Cannot get current version. Oh well."
+          end
         end
 
       rescue => e
@@ -517,17 +521,14 @@ module Pfaffmanager
     end
 
     def connection_validator
-      Rails.logger.warn "connection_validator..."
       unless hostname.present?
         errors.add(:hostname, "Hostname must be present")
       end
-
-        Rails.logger.warn "discourse: #{discourse_api_key}"
-        discourse_api_key.present? && !discourse_api_key_validator
+        # do not validate, server might not be up
+        #discourse_api_key.present? && !discourse_api_key_validator
         mg_api_key.present? && !mg_api_key_validator
         do_api_key.present? && !do_api_key_validator
         maxmind_license_key.present? && !maxmind_license_key_validator
-        Rails.logger.warn "do: #{do_api_key}"
         Rails.logger.warn "done with validations!"
     end
   end

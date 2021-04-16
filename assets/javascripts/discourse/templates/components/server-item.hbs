@@ -117,7 +117,7 @@
         {{!-- need stuff to create/claim VM --}}
         {{#if isDropletInstallType}}
           <div class="droplet-install-button">
-          {{conditional-loading-spinner condition=loading size="small"}}
+          {{conditional-loading-spinner condition=ansibleRunning size="small"}}
           {{#if createDropletDisabled}}
             <span class="warning">{{updateReason}}</span>
           {{else}}

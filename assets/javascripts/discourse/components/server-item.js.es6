@@ -140,6 +140,7 @@ export default Component.extend({
           // eslint-disable-next-line no-console
           console.log("Success");
         }
+        window.location.reload(true);
       }); // TODO: make sure that ansible always registers something AND that it gets to message bus
     },
     updateDropletSize(value) {
