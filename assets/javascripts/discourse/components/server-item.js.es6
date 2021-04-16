@@ -77,14 +77,14 @@ export default Component.extend({
   },
   @discourseComputed("server.installed_version")
   serverActive(active) {
-    this.set("hasStatus", active !== null);
+    this.set("hasVersion", active !== null);
   },
   @discourseComputed("server.request_status")
   ansibleRunning(status) {
     let running = status && !/.*(failure|success)/.test(status);
     let hasStatus = status !== null;
     // eslint-disable-next-line no-console
-    console.log("hasStatus");
+    console.log("hasStatus " + status);
     // eslint-disable-next-line no-console
     console.log(hasStatus);
     // this.set("hasStatus", hasStatus);
@@ -92,9 +92,11 @@ export default Component.extend({
   },
   @discourseComputed("loading", "server.request_status")
   upgradeServerDisabled(loading, status) {
-    let running = !/.*(failure|success)/.test(status);
+    let running = status !== null && !/.*(failure|success)/.test(status);
     // eslint-disable-next-line no-console
     console.log("server-item.updateServerDisabled" + status);
+    // eslint-disable-next-line no-console
+    console.log("server-item-updateServerDisabled loaging" + loading);
     // eslint-disable-next-line no-console
     console.log(running);
     if (running) {

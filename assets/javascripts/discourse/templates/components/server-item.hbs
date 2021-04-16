@@ -4,9 +4,9 @@
 
   <form>
 
-   {{#if hasVersion }}
-      <div class="server-status status-missing" id="statusDiv">
-   <h3 class="status-header">Discourse Server Status</h3>
+   {{#if server.installed_version }}
+      <div class="server-status">
+        <h3 class="status-header">Discourse Server Status</h3>
         <br>Created&nbsp; {{~format-date server.created_at format="medium" }}
         <br>Last update&nbsp; {{~format-date server.updated_at format="medium" }}
         <br>{{i18n "pfaffmanager.server.installed_version" }}:&nbsp; {{server.installed_version }}
@@ -15,7 +15,7 @@
       </div>
     {{/if}}
 
-    {{#if hasStatus}}
+    {{#if server.request_status}}
       <div id="statusDiv">
         <h3 class="status-header">{{i18n "pfaffmanager.server.status_header" }}</h3>
 
@@ -27,7 +27,7 @@
     {{/if}}
 
 
-    {{#unless hasVersion}}
+    {{#unless server.installed_version}}
       <div class="server-edit">
         <div class="hostname">
           <label>{{i18n "pfaffmanager.hostname"}}</label>
@@ -53,10 +53,10 @@
           </div>
         {{/if}}
 
-               <div class="pfaffmanager-mg-api-key">
+        <div class="pfaffmanager-mg-api-key">
         {{#if server.have_mg_api_key}}
-                              {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
- <span class="ready">Have Valid Mailgun API Key</span>
+          {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
+          <span class="ready">Have Valid Mailgun API Key</span>
         {{else}}
           <div class="pfaffmanager-mg-api-key">
             <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
@@ -66,7 +66,7 @@
             </div>
           </div>
         {{/if}}
-  </div>
+  <     /div>
         {{#if isDropletInstallType}}
 
           <div>
@@ -105,7 +105,7 @@
     {{/unless}}
 
     <div class="pull-right">
-      {{#if serverActive}}
+      {{#if server.installed_version}}
       {{conditional-loading-spinner condition=upgradeServerDisabled size="small"}}
         {{d-button
           label="pfaffmanager.server.run_upgrade"
