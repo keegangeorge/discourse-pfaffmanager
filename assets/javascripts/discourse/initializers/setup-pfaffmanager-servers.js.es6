@@ -16,31 +16,35 @@ export default {
           href: "/pfaffmanager/servers",
         });
       }
-      console.log("widget thing");
       if (self.Discourse.currentUser) {
         const newServerMinutes = 30;
         const maxServerLinks = 3;
-        const servers = self.Discourse.currentUser.servers
-          .sort( function(a,b){ return b.id - a.id});;
-        servers.length = (servers.length > maxServerLinks) ? maxServerLinks : servers.length;
+        const servers = self.Discourse.currentUser.servers.sort(function (
+          a,
+          b
+        ) {
+          return b.id - a.id;
+        });
+        servers.length =
+          servers.length > maxServerLinks ? maxServerLinks : servers.length;
 
         if (servers.length > 0) {
           const headerLinks = [];
           servers.filter(Boolean).map((server) => {
-            console.log("in map");
-            console.log(server.id);
-            const isNewServer = (Date.now() - new Date(server.created_at))/ 1000 /60 < newServerMinutes;
+            const isNewServer =
+              (Date.now() - new Date(server.created_at)) / 1000 / 60 <
+              newServerMinutes;
             const newClass = isNewServer ? ".new-server" : "";
             const linkHref = `/pfaffmanager/servers/${server.id}`;
             const linkTitle = `click to configure server ${server.id}`;
             const linkText = `${server.hostname}`;
-            const icon = server.hostname;
-            const deviceClass = server.hostname.match(/ /g) ? ".unconfigured" : "";
+            const deviceClass = server.hostname.match(/ /g)
+              ? ".unconfigured"
+              : "";
             const anchorAttributes = {
               title: linkTitle,
               href: linkHref,
             };
-            console.log(`got anchor ${linkHref}`);
             headerLinks.push(
               h(
                 `li.headerLink${deviceClass}${newClass}`,
@@ -48,12 +52,9 @@ export default {
               )
             );
           });
-          console.log("about to decorate");
           api.decorateWidget("header-buttons:before", (helper) => {
             return helper.h("ul.pfaffmanager-header-links", headerLinks);
           });
-          console.log("the links");
-          console.log(headerLinks);
         }
       }
     });

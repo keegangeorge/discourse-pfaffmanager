@@ -11,8 +11,6 @@ register_asset 'stylesheets/desktop/pfaffmanager.scss', :desktop
 register_asset 'stylesheets/mobile/pfaffmanager.scss', :mobile
 enabled_site_setting :pfaffmanager_enabled
 require 'current_user'
-
-
 PLUGIN_NAME ||= 'Pfaffmanager'
 
 # See discourse-assign for good examples of serializer, callback, adding method

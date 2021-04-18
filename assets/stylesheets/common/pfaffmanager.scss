@@ -42,15 +42,16 @@
       color: red !important;
     }
     a:before {
+      font-size: initial;
       content: "NEW! ";
     }
   }
   .unconfigured {
     a {
-      font-size:0;
+      font-size: 0;
     }
     a:after {
-      content: "new server";
+      content: "configure me!";
       color: purple;
       font-size: initial;
     }
