@@ -33,8 +33,26 @@
     list-style: none;
     a {
       padding: 6px 10px;
-      color: var(--header_primary);
+      color: blue; //var(--header_primary);
       font-size: $font-up-1;
+    }
+  }
+  .new-server {
+    a {
+      color: red !important;
+    }
+    a:before {
+      content: "NEW! ";
+    }
+  }
+  .unconfigured {
+    a {
+      font-size:0;
+    }
+    a:after {
+      content: "new server";
+      color: purple;
+      font-size: initial;
     }
   }
 }
