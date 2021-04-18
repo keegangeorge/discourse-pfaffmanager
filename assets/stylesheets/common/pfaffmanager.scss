@@ -24,3 +24,17 @@
     font-weight: bold;
   }
 }
+
+.pfaffmanager-header-links {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  .headerLink {
+    list-style: none;
+    a {
+      padding: 6px 10px;
+      color: var(--header_primary);
+      font-size: $font-up-1;
+    }
+  }
+}

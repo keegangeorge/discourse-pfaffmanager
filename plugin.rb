@@ -10,6 +10,8 @@ register_asset 'stylesheets/common/pfaffmanager.scss'
 register_asset 'stylesheets/desktop/pfaffmanager.scss', :desktop
 register_asset 'stylesheets/mobile/pfaffmanager.scss', :mobile
 enabled_site_setting :pfaffmanager_enabled
+require 'current_user'
+
 
 PLUGIN_NAME ||= 'Pfaffmanager'
 
@@ -24,6 +26,12 @@ after_initialize do
   Pfaffmanager::Server.ensure_pfaffmanager_groups! unless Rails.env == "test"
   SiteSetting.pfaffmanager_api_key = ApiKey.create(description: "pfaffmanager key #{Time.now}").key unless SiteSetting.pfaffmanager_api_key.present?
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
+
+  add_to_serializer(:current_user, :servers) do
+    servers = ::Pfaffmanager::Server.where(user_id: object.id)
+    puts "Got #{servers.count} servers for #{object.username}"
+    servers
+  end
 
   add_model_callback(GroupUser, :after_save) do
     Rails.logger.warn('GroupUser callback!')

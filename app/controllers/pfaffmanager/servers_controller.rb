@@ -42,6 +42,7 @@ module Pfaffmanager
     end
 
     def update_status
+      set_server
       puts "\n#{'-' * 40}\nServers controller update_status with #{params}\n"
       Rails.logger.warn "\n#{'-' * 40}\nServers controller update_status with #{params} for #{params[:id]}\n"
       begin
