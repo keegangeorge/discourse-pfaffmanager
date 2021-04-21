@@ -1,98 +1,105 @@
 <div class="pfaffmanager">
 
-  <h3 class="server-heading"><a href="https://{{server.hostname}}">{{server.hostname}}</a></h3>
+  <h3 class="server-heading">
+    {{ d-icon "globe" }}
+    <a href="https://{{server.hostname}}">{{server.hostname}}</a>
+  </h3>
 
   <form>
 
-   {{#if server.installed_version }}
-      <div class="server-status">
-        <h3 class="status-header">Discourse Server Status</h3>
-        <br>Created&nbsp; {{~format-date server.created_at format="medium" }}
-        <br>Last update&nbsp; {{~format-date server.updated_at format="medium" }}
-        <br>{{i18n "pfaffmanager.server.installed_version" }}:&nbsp; {{server.installed_version }}
-        <br>{{i18n "pfaffmanager.server.installed_sha" }}:&nbsp; <a href="https://github.com/discourse/discourse/commit/{{server.installed_sha}}">{{server.installed_sha}}</a>
-        <br>{{i18n "pfaffmanager.server.status_retrieved" }}&nbsp; {{format-date server.server_status_updated_at format="medium" }}
-      </div>
+    {{#if server.installed_version }}
+    <div class="server-status">
+      <h3 class="status-header">Discourse Server Status</h3>
+      <br>Created&nbsp; {{~format-date server.created_at format="medium" }}
+      <br>Last update&nbsp; {{~format-date server.updated_at format="medium" }}
+      <br>{{i18n "pfaffmanager.server.installed_version" }}:&nbsp; {{server.installed_version }}
+      <br>{{i18n "pfaffmanager.server.installed_sha" }}:&nbsp; <a
+        href="https://github.com/discourse/discourse/commit/{{server.installed_sha}}">{{server.installed_sha}}</a>
+      <br>{{i18n "pfaffmanager.server.status_retrieved" }}&nbsp; {{format-date server.server_status_updated_at
+      format="medium" }}
+    </div>
     {{/if}}
 
     {{#if server.request_status}}
-      <div id="statusDiv">
-        <h3 class="status-header">{{i18n "pfaffmanager.server.status_header" }}</h3>
+    <div id="statusDiv">
+      <h3 class="status-header">{{i18n "pfaffmanager.server.status_header" }}</h3>
 
-          <span class="section-header">{{i18n "pfaffmanager.server.request_section_header" }}: <b>{{server.last_action}}</b></span>
-        <br>{{i18n "pfaffmanager.server.request_status" }}:&nbsp; {{server.request_status }}
-              ({{format-date server.request_status_updated_at format="medium" }})
-        <br>{{i18n "pfaffmanager.server.request_result" }}:&nbsp; {{server.request_result }}
-      </div>
+      <span class="section-header">{{i18n "pfaffmanager.server.request_section_header" }}:
+        <b>{{server.last_action}}</b></span>
+      <br>{{i18n "pfaffmanager.server.request_status" }}:&nbsp; {{server.request_status }}
+      ({{format-date server.request_status_updated_at format="medium" }})
+      <br>{{i18n "pfaffmanager.server.request_result" }}:&nbsp; {{server.request_result }}
+    </div>
     {{/if}}
 
 
     {{#unless server.installed_version}}
-      <div class="server-edit">
-        <div class="hostname">
-          <label>{{i18n "pfaffmanager.hostname"}}</label>
-          <div class="hostname-input">
-            {{input type="text"  focus-out=(action "updateServer") autocomplete=off value=server.hostname class="input-large"}}
-            {{#unless hostnameValid}}<span class="warning">Invalid Hostname</span>{{/unless}}
+    <div class="server-edit">
+      <div class="hostname">
+        <label>{{i18n "pfaffmanager.hostname"}}</label>
+        <div class="hostname-input">
+          {{input type="text" focus-out=(action "updateServer") autocomplete=off value=server.hostname
+          class="input-large"}}
+          {{#unless hostnameValid}}<span class="warning">Invalid Hostname</span>{{/unless}}
+        </div>
+      </div>
+      {{#if canCreateVM}}
+      {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
+      <span class="ready">Have valid Digital Ocean Access Key</span>
+      {{else}}
+      <div class="pfaffmanager-do-api-key">
+        <label class="control-label">{{i18n "pfaffmanager.do_api_key"}}</label>
+        <span class="warning">Required for installation on new droplet</span>
+        <div class="do-api-key">
+          {{input type="text" autocomplete=off
+          value=server.do_api_key
+          class="input-large"
+          focus-out=(action "updateServer")}}
+        </div>
+
+      </div>
+      {{/if}}
+
+      <div class="pfaffmanager-mg-api-key">
+        {{#if server.have_mg_api_key}}
+        {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
+        <span class="ready">Have Valid Mailgun API Key</span>
+        {{else}}
+        <div class="pfaffmanager-mg-api-key">
+          <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
+          <span class="warning">Required for installation</span>
+          <div class="mg-api-key">
+            {{input type="text" focus-out=(action "updateServer") value=server.mg_api_key class="input-large"}}
           </div>
         </div>
-        {{#if canCreateVM}}
-                     {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
-              <span class="ready">Have valid Digital Ocean Access Key</span>
-        {{else}}
-          <div class="pfaffmanager-do-api-key">
-            <label class="control-label">{{i18n "pfaffmanager.do_api_key"}}</label>
-          <span class="warning">Required for installation on new droplet</span>
-            <div class="do-api-key">
-              {{input type="text" autocomplete=off 
-                value=server.do_api_key 
-                class="input-large"
-                focus-out=(action "updateServer")}}
-            </div>
-            
-          </div>
         {{/if}}
-
-        <div class="pfaffmanager-mg-api-key">
-        {{#if server.have_mg_api_key}}
-          {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
-          <span class="ready">Have Valid Mailgun API Key</span>
-        {{else}}
-          <div class="pfaffmanager-mg-api-key">
-            <label class="control-label">{{i18n "pfaffmanager.mg_api_key"}}</label>
-            <span class="warning">Required for installation</span>
-            <div class="mg-api-key">
-              {{input type="text"  focus-out=(action "updateServer") value=server.mg_api_key class="input-large"}}
-            </div>
-          </div>
-        {{/if}}
-  <     /div>
-        {{#if isDropletInstallType}}
+        < /div>
+          {{#if isDropletInstallType}}
 
           <div>
             <label for="droplet_size">{{i18n "pfaffmanager.server.droplet_size.label"}}</label>
-                          {{#unless server.droplet_size}}
-                          <span class="warning">Required for installation</span>
-              {{/unless}}
-          {{#if server.droplet_size}}
+            {{#unless server.droplet_size}}
+            <span class="warning">Required for installation</span>
+            {{/unless}}
+            {{#if server.droplet_size}}
             {{d-button action=(action "updateServer") class="ok submit-edit" icon="check"}}
-          {{/if}}
+            {{/if}}
             <div class="pfaffmanager-droplet-size">
               {{combo-box
-                value=server.droplet_size
-                valueProperty="value"
-                content=server.available_droplet_sizes
-                class="droplet-size"
-                onChange=(action "updateDropletSize")
-                options=(hash
-                  filterable=true
-                  none="pfaffmanager.server.droplet_size.none"
-                )
+              value=server.droplet_size
+              valueProperty="value"
+              content=server.available_droplet_sizes
+              class="droplet-size"
+              onChange=(action "updateDropletSize")
+              options=(hash
+              filterable=true
+              none="pfaffmanager.server.droplet_size.none"
+              )
               }}
-              </div>
+            </div>
           </div>
-        {{/if}}
-        {{#if canUseMaxmind}}
+          {{/if}}
+          {{#if canUseMaxmind}}
           {{!-- maxmind_license_key not implemented --}}
           <div class="pfaffmanager-maxmind-license-key">
             <label class="control-label">{{i18n "pfaffmanager.server.maxmind_license_key"}}</label>
@@ -100,43 +107,43 @@
               {{input type="password" value=server.maxmind_license_key class="input-large"}}
             </div>
           </div>
-        {{/if}}
+          {{/if}}
       </div>
-    {{/unless}}
+      {{/unless}}
 
-    <div class="pull-right">
-      {{#if server.installed_version}}
-      {{conditional-loading-spinner condition=upgradeServerDisabled size="small"}}
+      <div class="pull-right">
+        {{#if server.installed_version}}
+        {{conditional-loading-spinner condition=upgradeServerDisabled size="small"}}
         {{d-button
-          label="pfaffmanager.server.run_upgrade"
-          action="upgradeServer"
-          icon="check"
-          class="btn btn-primary"
-          disabled=upgradeServerDisabled}}
-      {{else}}
+        label="pfaffmanager.server.run_upgrade"
+        action="upgradeServer"
+        icon="check"
+        class="btn btn-primary"
+        disabled=upgradeServerDisabled}}
+        {{else}}
         {{!-- need stuff to create/claim VM --}}
         {{#if isDropletInstallType}}
-          <div class="droplet-install-button">
+        <div class="droplet-install-button">
           {{conditional-loading-spinner condition=ansibleRunning size="small"}}
           {{#if createDropletDisabled}}
-            <span class="warning">{{updateReason}}</span>
+          <span class="warning">{{updateReason}}</span>
           {{else}}
-            <div class="pull-right">
-              {{d-button label="pfaffmanager.server.do_create"
-                action=(action "dropletCreate")
-                icon="plus"
-                class="btn btn-primary do-create"
-                disabled=ansibleRunning
-                }}
-            </div>
-          {{/if}}  
+          <div class="pull-right">
+            {{d-button label="pfaffmanager.server.do_create"
+            action=(action "dropletCreate")
+            icon="plus"
+            class="btn btn-primary do-create"
+            disabled=ansibleRunning
+            }}
           </div>
-      
+          {{/if}}
+        </div>
+
         {{else}}
-          Sorry! Install type "{{ server.install_type}}"" is not yet supported.
+        Sorry! Install type "{{ server.install_type}}"" is not yet supported.
         {{/if}}
-      {{/if}}
-    </div>
+        {{/if}}
+      </div>
 
 
   </form>
